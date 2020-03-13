@@ -1,0 +1,100 @@
+@import 'css/basics.scss';
+
+// TODO better solution to get rid this ugly blue outline on focus
+.input-multiselect .select-group.focus,
+.input-multiselect .select-group:focus,
+input[type='checkbox']:focus,
+input[type='checkbox'].focus,
+input[type='radio']:focus,
+input[type='radio'].focus,
+.custom-control-input:focus:not(:checked) ~ .custom-control-label::before,
+.custom-control-input:focus ~ .custom-control-label::before,
+a.active.focus,
+a.active:focus,
+a.focus,
+a:active.focus,
+a:active:focus,
+a:focus,
+button.active.focus,
+button.active:focus,
+button.focus,
+button:active.focus,
+button:active:focus,
+button:focus,
+.btn.active.focus,
+.btn.active:focus,
+.btn.focus,
+.btn:active.focus,
+.btn:active:focus,
+.btn:focus {
+    outline: none !important;
+    outline-color: transparent !important;
+    outline-width: 0 !important;
+    outline-style: none !important;
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0) !important;
+}
+
+// :root {
+// }
+
+body {
+    background-color: #f2f2f2 !important;
+}
+
+// ::placeholder,
+// :-ms-input-placeholder,
+// ::-ms-input-placeholder {
+//     color: red;
+// }
+
+input::-webkit-input-placeholder {
+    // color: red !important;
+    font-size: 12px;
+}
+input::-moz-placeholder {
+    // color: red !important;
+    font-size: 12px;
+}
+input:-moz-placeholder {
+    /* Older versions of Firefox */
+    // color: red !important;
+    font-size: 12px;
+}
+input:-ms-input-placeholder {
+    // color: red !important;
+    font-size: 12px;
+}
+
+.nav-item {
+    a {
+        color: gray;
+    }
+}
+
+// this adds the missing cursor-pointer to bt4 radio and select buttons
+.cursor-pointer,
+.custom-file-input,
+.custom-select,
+.custom-control-label::after {
+    cursor: pointer;
+}
+
+.form-group {
+    label {
+        margin-bottom: 0;
+        margin-left: 2px;
+        color: rgb(56, 105, 123);
+        font-size: 14px;
+    }
+    .b-form-tag.badge-secondary {
+        background-color: #e2f1f1;
+        border: 1px solid #b8c6c6;
+        color: rgb(82, 82, 82);
+    }
+
+    .custom-control-input:checked ~ .custom-control-label::before {
+        color: #fff;
+        border-color: #749a99;
+        background-color: #8cb7b6;
+    }
+}

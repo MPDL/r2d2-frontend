@@ -1,0 +1,78 @@
+{
+    "setup": {
+        "fallbackLocale": "en",
+        "locale": "en",
+        "translations": {
+            "en": {}
+        }
+    },
+    "router": [
+        {
+            "path": "*",
+            "redirect": "/devstore",
+            "children": "structure"
+        }
+    ],
+    "structure": {
+        "devstore": {}
+    },
+    "searches": {
+        "initial": {
+            "form": {
+                "input-1": {
+                    "type": "input",
+                    "placeholder": "Add input-1 stuff here :-)"
+                },
+                "input-2": {
+                    "type": "input",
+                    "prepend": "$",
+                    "append": ".00"
+                },
+
+                "file-upload-1": {
+                    "type": "file-upload"
+                },
+                "dropdown-1": {
+                    "type": "dropdown",
+                    "options": ["Apple", "Banana", "Cool", "Dirty"],
+                    "selected": "Cool"
+                },
+                "tags-1": {
+                    "type": "tags",
+                    "selected": ["Apple", "Banana", "Cool", "Dirty"]
+                },
+                "date-1": {
+                    "type": "date",
+                    "selected": "2020-03-16"
+                },
+                "multi-select-1": {
+                    "type": "multi-select",
+                    "options": ["Apple", "Banana", "Cool", "Dirty"],
+                    "selected": ["Cool", "Dirty"]
+                },
+                "single-select-1": {
+                    "type": "single-select",
+                    "options": ["Apple", "Banana", "Cool", "Dirty"],
+                    "selected": ["Cool", "Dirty"]
+                },
+                "textarea-1": {
+                    "type": "textarea"
+                }
+            }
+        },
+        "second": {
+            "label": "special",
+            "description": "special search description",
+            "form": {
+                "input-1": {
+                    "type": "input",
+                    "prepend": "$",
+                    "append": ".00"
+                },
+                "input-2": {
+                    "type": "input"
+                }
+            }
+        }
+    }
+}
