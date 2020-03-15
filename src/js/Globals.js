@@ -77,7 +77,6 @@ function Globals() {
     }
     this.parseSvgAttributes = parseSvgAttributes
 
-
     // ++++++++++++++++++++++++++++++++++++++++
     // +++++ CMS handling
     // ++++++++++++++++++++++++++++++++++++++++

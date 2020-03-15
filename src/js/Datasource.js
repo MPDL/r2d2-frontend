@@ -11,14 +11,20 @@ function Datasource() {
 
     const config = {
         root: window.baseConfig.root === '{ENV}' ? '' : window.baseConfig.root,
-
         structureApi: '/heidi/structure.en.json',
         translatinosApi: '/heidi/translations.en.json',
-
+        defaultApi: 'get',
+        devPaths: {
+            get: '/heidi/requests/get.json'
+        },
         structure: null,
         sessionTimeoutMsec: 10000,
         translations: {},
         searches: {}
+    }
+
+    const updateConfig = data => {
+        config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
     }
 
     const getConfig = () => config
@@ -29,8 +35,33 @@ function Datasource() {
     const getTranslationsApi = () => `${config.root}${config.translatinosApi}`
 
     const post = async (api, data = {}, options = {}) => {
-        data.token = globals.getAdminToken()
+        // data.token = globals.getAdminToken()
+        console.log('DS:post api, data = ', api, data)
+  
         return axios.create().post(api, data, options)
+    }
+
+    const getApi = api => {
+        console.log('DS:getApi api, config.devPaths = ', api, config.devPaths)
+        return globals.DEV_MODE ? config.devPaths[api] : api
+    }
+
+    this.request = async (key = null, api = null, data = {}) => {
+        api = _.isString(api) ? getApi(api) : config.defaultApi
+        console.log('DS:send key, api, data = ', key, api, data)
+
+        if (key) {
+            return post(api, {
+                key,
+                data
+            })
+                .then(res => {
+                    console.log('DS:send res = ', res)
+                })
+                .catch(error => console.log('DS:getTranslations ERROR error.message = ', error.message))
+        } else {
+            return null
+        }
     }
 
     const setTranslationFallbacks = (translations, lng, key, i18n) => {
@@ -70,6 +101,7 @@ function Datasource() {
         _.each(searches, (search, key) => {
             search.key = key
             search.label = _.isString(search.label) ? search.label : key
+            search.api = search.api && _.isString(search.api.target) ? search.api : { target: 'get' }
             search.description = _.isString(search.description) ? search.description : key
 
             _.each(search.form, (item, itemKey) => {
@@ -88,6 +120,7 @@ function Datasource() {
         }
         return post(getStructureApi())
             .then(res => {
+                updateConfig(res.data)
                 config.structure = generateStructure(res.data)
                 updateSearches(res.data.searches)
                 return config.structure

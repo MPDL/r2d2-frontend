@@ -130,14 +130,31 @@ export default {
         console.log('SZ:created this.searches = ', this.searches)
     },
     methods: {
+        getApi(key) {
+            return this.searches[key].api
+        },
+
+        collectData(key) {
+            // TODO add here api collect model later
+            const res = {}
+            _.each(this.searches[key].form, item => {
+                if (!_.isUndefined(item.selected)) {
+                    res[item.key] = item.selected
+                }
+                console.log('SZ:collectData item.selected = ', item.selected)
+            })
+            return res
+        },
         sendForm(key) {
+            console.log('SZ:sendForm this.getApi(key) = ', this.getApi(key))
+            console.log('SZ:sendForm this.getApi(key).target = ', this.getApi(key).target)
             console.log('SZ:sendForm key = ', key)
+            // datasource.send(key, this.getApi(key).target, this.collectData(key))
+            datasource.request(key, 'get', this.collectData(key))
         },
         onClick(key) {
             this.mousedown = true
-            setTimeout(() => {
-                this.mousedown = false
-            }, 100)
+            setTimeout(() => (this.mousedown = false), 100)
             this.sendForm(key)
         }
     }
@@ -184,7 +201,8 @@ export default {
                         background-color: #3a859b;
                     }
                     // &:active, // ths dont works on tap!!
-                    &.click { // use this to get the tap state also
+                    &.click {
+                        // use this to get the tap state also
                         background-color: #cde7ef;
                         color: #3a3838;
                     }

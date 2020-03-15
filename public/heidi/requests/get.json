@@ -1,0 +1,26 @@
+{
+    "searches": {
+        "get-basic": {
+            "label": "get-basic",
+            "description": "get-basic-request mock response",
+            "form": {
+                "input-1": {
+                    "type": "input",
+                    "prepend": "$",
+                    "append": ".00"
+                },
+                "dropdown-1": {
+                    "type": "dropdown",
+                    "options": ["Ferrari", "BMW", "Jeep", "Tesla"],
+                    "selected": "Jeep"
+                }
+            }
+        }
+    },
+    "validation": {
+        "info": "basically same structure as searches"
+    },
+    "result": {
+        "success": "YEAH!! :-)"
+    }
+}
