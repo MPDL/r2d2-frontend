@@ -68,6 +68,7 @@ function Datasource() {
 
     const updateSearches = searches => {
         _.each(searches, (search, key) => {
+            search.key = key
             search.label = _.isString(search.label) ? search.label : key
             search.description = _.isString(search.description) ? search.description : key
 

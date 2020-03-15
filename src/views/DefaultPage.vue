@@ -63,8 +63,12 @@ export default {
         left: 10px;
         width: 400px;
         ::v-deep {
-            .scroll-area {
+            .tab {
+                // TODO find a better, inner-search-zone css for this!
                 height: calc(100vh - 170px - 50px);
+            }
+            .scroll-area {
+                // height: calc(100vh - 170px - 100px);
                 width: 390px;
                 overflow-y: auto;
                 scrollbar-width: none;

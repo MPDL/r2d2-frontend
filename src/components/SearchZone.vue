@@ -2,9 +2,18 @@
     <div class="search-zone">
         <b-tabs>
             <b-tab v-for="(search, index) in searches" :key="index" class="tab hide-scrollbar" :title="search.label">
-                <vue-custom-scrollbar class="scroll-area" :settings="settings" @ps-scroll-y="scrollHanle">
+                <div class="info">
+                    <div class="description">{{ search.description }}</div>
+                    <div class="seperator">::</div>
+                    <div class="send">
+                        <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(search.key)">
+                            Send
+                        </b-button>
+                    </div>
+                </div>
+                <div class="scoll-area-edge"></div>
+                <vue-custom-scrollbar class="scroll-area">
                     <div class="form-elements">
-                        <b-alert show size="sm" variant="light">{{ search.description }}</b-alert>
                         <b-form-group
                             v-for="(item, index) in search.form"
                             :key="index"
@@ -112,12 +121,25 @@ export default {
     // },
     data() {
         return {
-            searches: {}
+            searches: {},
+            mousedown: false
         }
     },
     created() {
         this.searches = datasource.getSearches()
         console.log('SZ:created this.searches = ', this.searches)
+    },
+    methods: {
+        sendForm(key) {
+            console.log('SZ:sendForm key = ', key)
+        },
+        onClick(key) {
+            this.mousedown = true
+            setTimeout(() => {
+                this.mousedown = false
+            }, 100)
+            this.sendForm(key)
+        }
     }
 }
 </script>
@@ -127,6 +149,57 @@ export default {
     background-color: rgb(235, 250, 255);
     .tab {
         margin: 10px;
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 100px);
+        .alert {
+            padding: 0.5rem 0.5rem;
+            display: inline-block;
+            // width: 100%;
+            width: max-content;
+            max-width: 100%;
+        }
+        .scoll-area-edge {
+            height: 1px;
+            border-top: 1px dashed #50bbe4;
+            margin: 10px 0px 10px 0px;
+        }
+        .info {
+            display: flex;
+            flex-direction: row;
+            background-color: #fff;
+            padding: 5px 10px 5px 10px;
+            border: 1px solid #7fb6d0;
+            border-radius: 5px;
+            .description {
+                flex-grow: 1;
+            }
+            .send {
+                align-self: center;
+                .bt-send {
+                    position: relative;
+                    padding: 2px 10px 2px 10px;
+                    background-color: #4fa7c1;
+                    &:hover {
+                        background-color: #3a859b;
+                    }
+                    // &:active, // ths dont works on tap!!
+                    &.click { // use this to get the tap state also
+                        background-color: #cde7ef;
+                        color: #3a3838;
+                    }
+                }
+            }
+            .seperator {
+                align-self: center;
+                position: relative;
+                padding: 2px 5px 2px 5px;
+                border: none;
+            }
+        }
+        .scroll-area {
+            flex-grow: 1;
+        }
     }
 }
 </style>
