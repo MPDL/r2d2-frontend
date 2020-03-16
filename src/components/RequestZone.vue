@@ -1,12 +1,12 @@
 <template>
-    <div class="search-zone">
+    <div class="request-zone">
         <b-tabs>
-            <b-tab v-for="(search, index) in searches" :key="index" class="tab hide-scrollbar" :title="search.label">
+            <b-tab v-for="(request, index) in requests" :key="index" class="tab hide-scrollbar" :title="request.label">
                 <div class="info">
-                    <div class="description">{{ search.description }}</div>
+                    <div class="description">{{ request.description }}</div>
                     <div class="seperator">::</div>
                     <div class="send">
-                        <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(search.key)">
+                        <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(request.key)">
                             Send
                         </b-button>
                     </div>
@@ -15,7 +15,7 @@
                 <vue-custom-scrollbar class="scroll-area">
                     <div class="form-elements">
                         <b-form-group
-                            v-for="(item, index) in search.form"
+                            v-for="(item, index) in request.form"
                             :key="index"
                             :id="item.key"
                             :label="item.label"
@@ -121,23 +121,23 @@ export default {
     // },
     data() {
         return {
-            searches: {},
+            requests: {},
             mousedown: false
         }
     },
     created() {
-        this.searches = datasource.getRequests()
-        console.log('SZ:created this.searches = ', this.searches)
+        this.requests = datasource.getRequests()
+        console.log('SZ:created this.requests = ', this.requests)
     },
     methods: {
         getApi(key) {
-            return this.searches[key].api
+            return this.requests[key].api
         },
 
         collectData(key) {
             // TODO add here api collect model later
             const res = {}
-            _.each(this.searches[key].form, item => {
+            _.each(this.requests[key].form, item => {
                 if (!_.isUndefined(item.selected)) {
                     res[item.key] = item.selected
                 }
@@ -151,7 +151,7 @@ export default {
             console.log('SZ:sendForm key = ', key)
             // datasource.send(key, this.getApi(key).target, this.collectData(key))
             await datasource.request(key, 'get', this.collectData(key))
-            this.searches = datasource.getRequests()
+            this.requests = datasource.getRequests()
         },
         onClick(key) {
             this.mousedown = true
@@ -163,7 +163,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.search-zone {
+.request-zone {
     background-color: rgb(235, 250, 255);
     .tab {
         margin: 10px;

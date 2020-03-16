@@ -5,7 +5,7 @@
             <b-nav-item>Link</b-nav-item>
             <b-nav-item disabled>Disabled</b-nav-item>
         </b-nav> -->
-        <SearchZone class="view" :config="searchZone" :uKey="uKey" />
+        <RequestZone class="view" :config="searchZone" :uKey="uKey" />
         <Content class="view" :config="content" />
     </div>
 </template>
@@ -13,7 +13,7 @@
 <script>
 // @ is an alias to /src
 import Content from '@/components/Content.vue'
-import SearchZone from '@/components/SearchZone.vue'
+import RequestZone from '@/components/RequestZone.vue'
 
 export default {
     name: 'default-view',
@@ -31,7 +31,7 @@ export default {
     },
     components: {
         Content,
-        SearchZone
+        RequestZone
     },
     created() {
         this.loadData()
@@ -58,7 +58,7 @@ export default {
         top: 120px;
         height: calc(100vh - 170px);
     }
-    .search-zone {
+    .request-zone {
         position: absolute;
         left: 10px;
         width: 400px;
