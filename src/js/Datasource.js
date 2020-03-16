@@ -37,7 +37,6 @@ function Datasource() {
     const post = async (api, data = {}, options = {}) => {
         // data.token = globals.getAdminToken()
         console.log('DS:post api, data = ', api, data)
-  
         return axios.create().post(api, data, options)
     }
 
@@ -49,7 +48,6 @@ function Datasource() {
     this.request = async (key = null, api = null, data = {}) => {
         api = _.isString(api) ? getApi(api) : config.defaultApi
         console.log('DS:send key, api, data = ', key, api, data)
-
         if (key) {
             return post(api, {
                 key,
@@ -57,6 +55,7 @@ function Datasource() {
             })
                 .then(res => {
                     console.log('DS:send res = ', res)
+                    updateSearches(res.data.searches)
                 })
                 .catch(error => console.log('DS:getTranslations ERROR error.message = ', error.message))
         } else {

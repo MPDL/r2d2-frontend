@@ -145,12 +145,13 @@ export default {
             })
             return res
         },
-        sendForm(key) {
+        async sendForm(key) {
             console.log('SZ:sendForm this.getApi(key) = ', this.getApi(key))
             console.log('SZ:sendForm this.getApi(key).target = ', this.getApi(key).target)
             console.log('SZ:sendForm key = ', key)
             // datasource.send(key, this.getApi(key).target, this.collectData(key))
-            datasource.request(key, 'get', this.collectData(key))
+            await datasource.request(key, 'get', this.collectData(key))
+            this.searches = datasource.getSearches()
         },
         onClick(key) {
             this.mousedown = true
