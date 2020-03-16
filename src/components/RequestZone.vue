@@ -1,7 +1,19 @@
 <template>
     <div class="request-zone">
+        <!-- <div class="overlay tiny-close">
+            <div class="icon">x</div>
+        </div> -->
+        <!-- <div class="spacer-top"></div> -->
         <b-tabs>
-            <b-tab v-for="(request, index) in requests" :key="index" class="tab hide-scrollbar" :title="request.label">
+            <b-tab v-for="(request, index) in requests" :key="index" class="tab hide-scrollbar">
+                <template v-slot:title>
+                    <div class="title">
+                        <div class="tiny-close">
+                            <div class="icon">x</div>
+                        </div>
+                        {{ request.label }}
+                    </div>
+                </template>
                 <div class="info">
                     <div class="description">{{ request.description }}</div>
                     <div class="seperator">::</div>
@@ -11,6 +23,7 @@
                         </b-button>
                     </div>
                 </div>
+                <div class="target">api-target: {{ apiBase }}{{ request.api.target }}</div>
                 <div class="scoll-area-edge"></div>
                 <vue-custom-scrollbar class="scroll-area">
                     <div class="form-elements">
@@ -104,6 +117,7 @@
                         </b-form-group>
                     </div>
                 </vue-custom-scrollbar>
+                <div class="scoll-area-edge"></div>
             </b-tab>
         </b-tabs>
     </div>
@@ -116,9 +130,6 @@ export default {
     components: {
         vueCustomScrollbar
     },
-    // props: {
-    //     config: Object
-    // },
     data() {
         return {
             requests: {},
@@ -133,7 +144,6 @@ export default {
         getApi(key) {
             return this.requests[key].api
         },
-
         collectData(key) {
             // TODO add here api collect model later
             const res = {}
@@ -150,13 +160,18 @@ export default {
             console.log('SZ:sendForm this.getApi(key).target = ', this.getApi(key).target)
             console.log('SZ:sendForm key = ', key)
             // datasource.send(key, this.getApi(key).target, this.collectData(key))
-            await datasource.request(key, 'get', this.collectData(key))
+            await datasource.request(key, this.getApi(key).target, this.collectData(key))
             this.requests = datasource.getRequests()
         },
         onClick(key) {
             this.mousedown = true
             setTimeout(() => (this.mousedown = false), 100)
             this.sendForm(key)
+        }
+    },
+    computed: {
+        apiBase(key) {
+            return datasource.getConfig().apiBase
         }
     }
 }
@@ -165,15 +180,79 @@ export default {
 <style lang="scss" scoped>
 .request-zone {
     background-color: rgb(235, 250, 255);
+    border: 1px solid #b9d3dc;
+    border-radius: 5px;
+    // this keeps the close buttons visible on top
+    // TODO find better solution or dont use bootstrap tabs
+    // if you want this look!
+    padding-top: 6px;
+    margin-top: -6px;
+    ::v-deep {
+        .nav {
+            flex-wrap: nowrap;
+            .nav-link.active {
+                .tiny-close {
+                    visibility: visible;
+                }
+            }
+        }
+        .nav-tabs {
+            flex-wrap: nowrap;
+            white-space: nowrap;
+            scrollbar-width: none;
+            overflow-x: auto;
+            padding-top: 6px;
+            width: calc(100% - 20px);
+            margin-left: 10px;
+            &::-webkit-scrollbar {
+                display: none;
+            }
+            .nav-link {
+                border: 1px solid #4950571c;
+            }
+        }
+    }
+    .spacer-top {
+        height: 10px;
+    }
+
+    .tiny-close {
+        border: 1px solid #8ec3c3;
+        width: 15px;
+        height: 15px;
+        padding: 0;
+        line-height: 15px;
+        border-radius: 100%;
+        float: right;
+        margin-top: -14px;
+        margin-right: -22px;
+        visibility: hidden;
+        background-color: #fff;
+        .icon {
+            text-align: center;
+            vertical-align: middle;
+            line-height: 11px;
+            font-weight: bold;
+            font-size: 12px;
+            color: #539dab;
+        }
+        ::v-deep {
+            .close {
+                transform: scale(0.75);
+                position: relative;
+            }
+        }
+    }
+
     .tab {
         margin: 10px;
         display: flex;
         flex-direction: column;
         height: calc(100% - 100px);
+
         .alert {
             padding: 0.5rem 0.5rem;
             display: inline-block;
-            // width: 100%;
             width: max-content;
             max-width: 100%;
         }
@@ -215,6 +294,15 @@ export default {
                 padding: 2px 5px 2px 5px;
                 border: none;
             }
+        }
+        .target {
+            background-color: #ffffffa3;
+            padding: 5px 10px 5px 10px;
+            border: 1px solid #7fb6d0;
+            border-radius: 5px;
+            margin-top: 5px;
+            color: #686574;
+            font-size: 12px;
         }
         .scroll-area {
             flex-grow: 1;

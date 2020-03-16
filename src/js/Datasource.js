@@ -11,11 +11,13 @@ function Datasource() {
 
     const config = {
         root: window.baseConfig.root === '{ENV}' ? '' : window.baseConfig.root,
+        apiBase: window.baseConfig.apiBase,
         structureApi: '/heidi/structure.en.json',
         translatinosApi: '/heidi/translations.en.json',
         defaultApi: 'get',
         devPaths: {
-            get: '/heidi/requests/get.json'
+            get: '/heidi/requests/get.json',
+            'get-second': '/heidi/requests/get-second.json'
         },
         structure: null,
         sessionTimeoutMsec: 10000,
@@ -45,10 +47,14 @@ function Datasource() {
         return globals.DEV_MODE ? config.devPaths[api] : api
     }
 
-    this.request = async (key = null, api = null, data = {}) => {
+    this.request = async (key = null, api = null, rawData = {}) => {
         api = _.isString(api) ? getApi(api) : config.defaultApi
-        console.log('DS:send key, api, data = ', key, api, data)
+        console.log('DS:send key, api, rawData = ', key, api, rawData)
         if (key) {
+            const data = {}
+            _.each(rawData, (item, key) => {
+                data[key.split('--')[1]] = item
+            })
             return post(api, {
                 key,
                 data
@@ -97,10 +103,12 @@ function Datasource() {
     }
 
     const updateRequests = requests => {
+        const ordered = []
         _.each(requests, (request, key) => {
             request.key = key
             request.label = _.isString(request.label) ? request.label : key
             request.api = request.api && _.isString(request.api.target) ? request.api : { target: 'get' }
+            console.log('DS:updateRequests key, request.api = ',key, request.api)
             request.description = _.isString(request.description) ? request.description : key
 
             _.each(request.form, (item, itemKey) => {
@@ -108,9 +116,11 @@ function Datasource() {
                 item.description = _.isString(item.description) ? item.description : null
                 item.label = _.isString(item.label) ? item.label : itemKey
             })
+            ordered.push(request)
         })
-
-        config.requests = { ...config.requests, ...requests }
+        _.each(config.requests, request => ordered.push(request))
+        config.requests = {}
+        _.each(ordered, request => (config.requests[request.key] = request))
     }
 
     const getStructure = () => {

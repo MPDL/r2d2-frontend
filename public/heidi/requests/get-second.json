@@ -1,10 +1,10 @@
 {
     "requests": {
-        "get-basic": {
-            "label": "get-basic",
-            "description": "get-basic-request mock response",
+        "get-second": {
+            "label": "get-second",
+            "description": "get-second-request",
             "api": {
-                "target": "get-second"
+                "target": "get-third"
             },
             "form": {
                 "input-1": {
@@ -18,12 +18,18 @@
                     "selected": "Jeep"
                 }
             }
-        }
+        },
+        "djhsgj": {},
+        "rwzrt": {},
+        "gdhqh": {},
+        "khpkou": {},
+        "sdfax": {},
+        "qwrs": {}
     },
     "validation": {
         "info": "basically same structure as searches"
     },
     "result": {
-        "success": "YEAH!! :-)"
+        "success": "WOW!! :-)"
     }
 }
