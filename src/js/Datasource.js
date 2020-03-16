@@ -20,7 +20,7 @@ function Datasource() {
         structure: null,
         sessionTimeoutMsec: 10000,
         translations: {},
-        searches: {}
+        requests: {}
     }
 
     const updateConfig = data => {
@@ -29,7 +29,7 @@ function Datasource() {
 
     const getConfig = () => config
 
-    this.getSearches = () => config.searches
+    this.getRequests = () => config.requests
 
     const getStructureApi = () => `${config.root}${config.structureApi}`
     const getTranslationsApi = () => `${config.root}${config.translatinosApi}`
@@ -55,7 +55,7 @@ function Datasource() {
             })
                 .then(res => {
                     console.log('DS:send res = ', res)
-                    updateSearches(res.data.searches)
+                    updateRequests(res.data.requests)
                 })
                 .catch(error => console.log('DS:getTranslations ERROR error.message = ', error.message))
         } else {
@@ -96,21 +96,21 @@ function Datasource() {
         })
     }
 
-    const updateSearches = searches => {
-        _.each(searches, (search, key) => {
-            search.key = key
-            search.label = _.isString(search.label) ? search.label : key
-            search.api = search.api && _.isString(search.api.target) ? search.api : { target: 'get' }
-            search.description = _.isString(search.description) ? search.description : key
+    const updateRequests = requests => {
+        _.each(requests, (request, key) => {
+            request.key = key
+            request.label = _.isString(request.label) ? request.label : key
+            request.api = request.api && _.isString(request.api.target) ? request.api : { target: 'get' }
+            request.description = _.isString(request.description) ? request.description : key
 
-            _.each(search.form, (item, itemKey) => {
+            _.each(request.form, (item, itemKey) => {
                 item.key = `${key}--${itemKey}`
                 item.description = _.isString(item.description) ? item.description : null
                 item.label = _.isString(item.label) ? item.label : itemKey
             })
         })
 
-        config.searches = { ...config.searches, ...searches }
+        config.requests = { ...config.requests, ...requests }
     }
 
     const getStructure = () => {
@@ -121,7 +121,7 @@ function Datasource() {
             .then(res => {
                 updateConfig(res.data)
                 config.structure = generateStructure(res.data)
-                updateSearches(res.data.searches)
+                updateRequests(res.data.requests)
                 return config.structure
             })
             .catch(error => console.log('DS:getStructure ERROR error.message = ', error.message))

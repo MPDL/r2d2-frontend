@@ -16,7 +16,7 @@
     "structure": {
         "devstore": {}
     },
-    "searches": {
+    "requests": {
         "initial": {
             "description": "Sends the initial request and gives the fuck of a shit ;-)",
             "form": {

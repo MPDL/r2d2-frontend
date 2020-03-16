@@ -126,7 +126,7 @@ export default {
         }
     },
     created() {
-        this.searches = datasource.getSearches()
+        this.searches = datasource.getRequests()
         console.log('SZ:created this.searches = ', this.searches)
     },
     methods: {
@@ -151,7 +151,7 @@ export default {
             console.log('SZ:sendForm key = ', key)
             // datasource.send(key, this.getApi(key).target, this.collectData(key))
             await datasource.request(key, 'get', this.collectData(key))
-            this.searches = datasource.getSearches()
+            this.searches = datasource.getRequests()
         },
         onClick(key) {
             this.mousedown = true

@@ -1,5 +1,5 @@
 {
-    "searches": {
+    "requests": {
         "get-basic": {
             "label": "get-basic",
             "description": "get-basic-request mock response",
