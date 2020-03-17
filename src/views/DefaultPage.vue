@@ -5,14 +5,14 @@
             <b-nav-item>Link</b-nav-item>
             <b-nav-item disabled>Disabled</b-nav-item>
         </b-nav> -->
-        <RequestZone class="view" :config="searchZone" :uKey="uKey" />
-        <Content class="view" :config="content" />
+        <RequestZone class="view" :uKey="uKey" />
+        <ResultZone class="view" />
     </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import Content from '@/components/Content.vue'
+import ResultZone from '@/components/ResultZone.vue'
 import RequestZone from '@/components/RequestZone.vue'
 
 export default {
@@ -20,7 +20,8 @@ export default {
     data() {
         return {
             content: {
-                label: 'mock-content'
+                label: 'mock-content',
+                data: null
             },
             searchZone: {
                 'search-1': {}
@@ -30,7 +31,7 @@ export default {
         }
     },
     components: {
-        Content,
+        ResultZone,
         RequestZone
     },
     created() {
@@ -62,34 +63,12 @@ export default {
         position: absolute;
         left: 10px;
         width: 400px;
-        ::v-deep {
-            .tab {
-                // TODO find a better, inner-search-zone css for this!
-                height: calc(100vh - 170px - 70px);
-            }
-            .scroll-area {
-                width: 390px;
-                overflow-y: auto;
-                scrollbar-width: none;
-                &::-webkit-scrollbar {
-                    display: none;
-                }
-                .form-elements {
-                    width: 378px;
-                }
-                .ps__thumb-x,
-                .ps__thumb-y {
-                    background-color: #b2d8d7;
-                }
-            }
-        }
     }
-    .content {
+    .result-zone {
         position: absolute;
         top: 120px;
         left: 420px;
         width: calc(100vw - 400px - 20px - 170px);
-        // height: calc(100vh - 165px - 80px);
         background-color: white;
     }
 }

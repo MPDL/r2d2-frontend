@@ -22,16 +22,25 @@ function Datasource() {
         structure: null,
         sessionTimeoutMsec: 10000,
         translations: {},
-        requests: {}
+        requests: {},
+        results: []
     }
 
     const updateConfig = data => {
         config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
     }
 
+    const getFilteredConfig = () => {
+        const keys = 'root,apiBase,structureApi,translatinosApi,defaultApi'.split(',')
+        const res = {}
+        _.each(keys, key => (res[key] = config[key]))
+        return res
+    }
+
     const getConfig = () => config
 
     this.getRequests = () => config.requests
+    this.getResults = () => config.results
 
     const getStructureApi = () => `${config.root}${config.structureApi}`
     const getTranslationsApi = () => `${config.root}${config.translatinosApi}`
@@ -62,8 +71,13 @@ function Datasource() {
                 .then(res => {
                     console.log('DS:send res = ', res)
                     updateRequests(res.data.requests)
+                    updateResults(res.data, key, api)
+                    globals.eventBus.$emit('onLoadResults', { error: null })
                 })
-                .catch(error => console.log('DS:getTranslations ERROR error.message = ', error.message))
+                .catch(error => {
+                    globals.eventBus.$emit('onLoadResults', { error })
+                    console.log('DS:getTranslations ERROR error.message = ', error.message)
+                })
         } else {
             return null
         }
@@ -123,6 +137,18 @@ function Datasource() {
         _.each(ordered, request => (config.requests[request.key] = request))
     }
 
+    const updateResults = (data, key, api) => {
+        console.log('DS:updateResults data, key, api = ', data, key, api)
+        console.log('DS:updateResults config.results BF = ', config.results)
+
+        config.results.unshift({
+            data,
+            key,
+            api
+        })
+        console.log('DS:updateResults config.results = ', config.results)
+    }
+
     const removeRequestByKey = key => {
         delete config.requests[key]
         console.log('DS:removeRequestByKey key, config.requests = ', config.requests)
@@ -138,6 +164,8 @@ function Datasource() {
                 updateConfig(res.data)
                 config.structure = generateStructure(res.data)
                 updateRequests(res.data.requests)
+                updateResults(getFilteredConfig(), 'config', null)
+                globals.eventBus.$emit('onLoadResults', { error: null })
                 return config.structure
             })
             .catch(error => console.log('DS:getStructure ERROR error.message = ', error.message))

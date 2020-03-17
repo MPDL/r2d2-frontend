@@ -65,13 +65,6 @@ input:-ms-input-placeholder {
     font-size: 12px;
 }
 
-.nav-item {
-    a {
-        color: gray;
-    }
-}
-
-
 // this adds the missing cursor-pointer to bt4 radio and select buttons
 .cursor-pointer,
 .custom-file-input,
@@ -97,5 +90,168 @@ input:-ms-input-placeholder {
         color: #fff;
         border-color: #749a99;
         background-color: #8cb7b6;
+    }
+}
+.request-zone .scroll-area {
+    width: 390px;
+    flex-grow: 1;
+}
+
+.result-zone .vjs-tree {
+    font-size: 13px;
+}
+
+.request-zone,
+.result-zone {
+    // TODO: refacor and sort these classes
+    .nav-item {
+        a {
+            color: gray;
+        }
+    }
+
+    .nav {
+        flex-wrap: nowrap;
+        .nav-link.active {
+            .tiny-close {
+                visibility: visible;
+            }
+        }
+        .title {
+            font-size: 14px;
+        }
+    }
+    .nav-tabs {
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        scrollbar-width: none;
+        overflow-x: auto;
+        padding-top: 6px;
+        width: calc(100% - 20px);
+        margin-left: 10px;
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        .nav-link {
+            border: 1px solid #4950571c;
+        }
+    }
+
+    .spacer-top {
+        height: 10px;
+    }
+
+    .tiny-close {
+        border: 1px solid #8ec3c3;
+        width: 15px;
+        height: 15px;
+        padding: 0;
+        line-height: 15px;
+        border-radius: 100%;
+        float: right;
+        margin-top: -14px;
+        margin-right: -22px;
+        visibility: hidden;
+        background-color: #fff;
+        &:hover {
+            border-color: #7b9d9d;
+        }
+        .icon {
+            text-align: center;
+            vertical-align: middle;
+            line-height: 11px;
+            font-weight: bold;
+            font-size: 12px;
+            color: #539dab;
+            &:hover {
+                color: #4a4a4a;
+            }
+        }
+    }
+
+    .scroll-area {
+        overflow-y: auto;
+        scrollbar-width: none;
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        .form-elements {
+            width: 378px;
+        }
+        .ps__thumb-x,
+        .ps__thumb-y {
+            background-color: #b2d8d7;
+        }
+    }
+    .tab-content > .active {
+        display: flex;
+    }
+
+    .tab {
+        margin: 10px;
+        flex-direction: column;
+        height: calc(100vh - 170px - 70px);
+
+        input{
+            font-size: 14px;
+        }
+
+        .alert {
+            padding: 0.5rem 0.5rem;
+            display: inline-block;
+            width: max-content;
+            max-width: 100%;
+        }
+        .scoll-area-edge {
+            height: 1px;
+            border-top: 1px dashed #50bbe4;
+            margin: 10px 0px 10px 0px;
+        }
+        .info {
+            display: flex;
+            flex-direction: row;
+            background-color: #fff;
+            padding: 5px 10px 5px 10px;
+            border: 1px solid #7fb6d0;
+            border-radius: 5px;
+            .description {
+                flex-grow: 1;
+                font-size: 14px;
+                line-height: 16px;
+                color: #5c7777;
+            }
+            .send {
+                align-self: center;
+                .bt-send {
+                    position: relative;
+                    padding: 2px 10px 2px 10px;
+                    background-color: #4fa7c1;
+                    &:hover {
+                        background-color: #3a859b;
+                    }
+                    // &:active, // ths dont works on tap!!
+                    &.click {
+                        // use this to get the tap state also
+                        background-color: #cde7ef;
+                        color: #3a3838;
+                    }
+                }
+            }
+            .seperator {
+                align-self: center;
+                position: relative;
+                padding: 2px 5px 2px 5px;
+                border: none;
+            }
+        }
+        .target {
+            background-color: #ffffffa3;
+            padding: 5px 10px 5px 10px;
+            border: 1px solid #7fb6d0;
+            border-radius: 5px;
+            margin-top: 5px;
+            color: #686574;
+            font-size: 12px;
+        }
     }
 }
