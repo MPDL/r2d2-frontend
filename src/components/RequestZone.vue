@@ -1,14 +1,10 @@
 <template>
     <div class="request-zone">
-        <!-- <div class="overlay tiny-close">
-            <div class="icon">x</div>
-        </div> -->
-        <!-- <div class="spacer-top"></div> -->
-        <b-tabs>
+        <b-tabs :key="uKey">
             <b-tab v-for="(request, index) in requests" :key="index" class="tab hide-scrollbar">
                 <template v-slot:title>
                     <div class="title">
-                        <div class="tiny-close">
+                        <div class="tiny-close" @click="onClickRemove(request.key)">
                             <div class="icon">x</div>
                         </div>
                         {{ request.label }}
@@ -133,14 +129,27 @@ export default {
     data() {
         return {
             requests: {},
-            mousedown: false
+            mousedown: false,
+            uKey: 0
         }
     },
     created() {
-        this.requests = datasource.getRequests()
+        this.updateRequests()
         console.log('SZ:created this.requests = ', this.requests)
     },
     methods: {
+        update() {
+            this.uKey = this.uKey > 1000 ? 1 : ++this.uKey
+        },
+        updateRequests() {
+            this.requests = datasource.getRequests()
+            this.update()
+            console.log('SZ:updateRequests this.requests = ', this.requests)
+        },
+        onClickRemove(key) {
+            datasource.removeRequestByKey(key)
+            this.updateRequests()
+        },
         getApi(key) {
             return this.requests[key].api
         },
@@ -161,7 +170,7 @@ export default {
             console.log('SZ:sendForm key = ', key)
             // datasource.send(key, this.getApi(key).target, this.collectData(key))
             await datasource.request(key, this.getApi(key).target, this.collectData(key))
-            this.requests = datasource.getRequests()
+            this.updateRequests()
         },
         onClick(key) {
             this.mousedown = true
@@ -228,6 +237,9 @@ export default {
         margin-right: -22px;
         visibility: hidden;
         background-color: #fff;
+        &:hover {
+            border-color: #7b9d9d;
+        }
         .icon {
             text-align: center;
             vertical-align: middle;
@@ -235,11 +247,8 @@ export default {
             font-weight: bold;
             font-size: 12px;
             color: #539dab;
-        }
-        ::v-deep {
-            .close {
-                transform: scale(0.75);
-                position: relative;
+            &:hover {
+                color: #4a4a4a;
             }
         }
     }

@@ -108,7 +108,7 @@ function Datasource() {
             request.key = key
             request.label = _.isString(request.label) ? request.label : key
             request.api = request.api && _.isString(request.api.target) ? request.api : { target: 'get' }
-            console.log('DS:updateRequests key, request.api = ',key, request.api)
+            console.log('DS:updateRequests key, request.api = ', key, request.api)
             request.description = _.isString(request.description) ? request.description : key
 
             _.each(request.form, (item, itemKey) => {
@@ -122,6 +122,12 @@ function Datasource() {
         config.requests = {}
         _.each(ordered, request => (config.requests[request.key] = request))
     }
+
+    const removeRequestByKey = key => {
+        delete config.requests[key]
+        console.log('DS:removeRequestByKey key, config.requests = ', config.requests)
+    }
+    this.removeRequestByKey = removeRequestByKey
 
     const getStructure = () => {
         if (config.structure) {
