@@ -1,4 +1,10 @@
 {
+    "result": {
+        "success": "WOW!! :-)"
+    },
+    "validation": {
+        "info": "basically same structure as requests"
+    },
     "requests": {
         "get-second": {
             "label": "get-second",
@@ -25,11 +31,5 @@
         "khpkou": {},
         "sdfax": {},
         "qwrs": {}
-    },
-    "validation": {
-        "info": "basically same structure as searches"
-    },
-    "result": {
-        "success": "WOW!! :-)"
     }
 }

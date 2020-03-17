@@ -1,4 +1,10 @@
 {
+    "result": {
+        "success": "YEAH!! :-)"
+    },
+    "validation": {
+        "info": "basically same structure as requests"
+    },
     "requests": {
         "get-basic": {
             "label": "get-basic",
@@ -19,11 +25,5 @@
                 }
             }
         }
-    },
-    "validation": {
-        "info": "basically same structure as searches"
-    },
-    "result": {
-        "success": "YEAH!! :-)"
     }
 }

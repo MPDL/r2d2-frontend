@@ -23,7 +23,7 @@ function Datasource() {
         sessionTimeoutMsec: 10000,
         translations: {},
         requests: {},
-        results: []
+        results: {}
     }
 
     const updateConfig = data => {
@@ -58,18 +58,21 @@ function Datasource() {
 
     this.request = async (key = null, api = null, rawData = {}) => {
         api = _.isString(api) ? getApi(api) : config.defaultApi
-        console.log('DS:send key, api, rawData = ', key, api, rawData)
+        console.log('DS:request key, api, rawData = ', key, api, rawData)
         if (key) {
             const data = {}
             _.each(rawData, (item, key) => {
                 data[key.split('--')[1]] = item
             })
+            console.log('DS:request api = ', api)
+
             return post(api, {
                 key,
                 data
             })
                 .then(res => {
-                    console.log('DS:send res = ', res)
+                    console.log('DS:request res = ', res)
+                    console.log('DS:request then api = ', api)
                     updateRequests(res.data.requests)
                     updateResults(res.data, key, api)
                     globals.eventBus.$emit('onLoadResults', { error: null })
@@ -137,23 +140,33 @@ function Datasource() {
         _.each(ordered, request => (config.requests[request.key] = request))
     }
 
-    const updateResults = (data, key, api) => {
-        console.log('DS:updateResults data, key, api = ', data, key, api)
-        console.log('DS:updateResults config.results BF = ', config.results)
-
-        config.results.unshift({
-            data,
-            key,
-            api
-        })
-        console.log('DS:updateResults config.results = ', config.results)
-    }
-
     const removeRequestByKey = key => {
         delete config.requests[key]
         console.log('DS:removeRequestByKey key, config.requests = ', config.requests)
     }
     this.removeRequestByKey = removeRequestByKey
+
+    const updateResults = (data, key, api) => {
+        console.log('DS:updateResults ++++++++ data, key, api = ', data, key, api)
+        console.log('DS:updateResults api = ', api)
+        console.log('DS:updateResults config.results BF = ', config.results)
+        const ts = new Date().getTime()
+        console.log('DS:updateResults ts BF = ', ts)
+
+        config.results[ts.toString()] = {
+            ts,
+            data,
+            key,
+            api: api || '-'
+        }
+        console.log('DS:updateResults config.results = ', config.results)
+    }
+
+    const removeResultByTs = ts => {
+        delete config.results[ts]
+        console.log('DS:removeResultByTs key, config.results = ', config.results)
+    }
+    this.removeResultByTs = removeResultByTs
 
     const getStructure = () => {
         if (config.structure) {

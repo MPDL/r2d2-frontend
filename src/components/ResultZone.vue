@@ -4,12 +4,21 @@
             <b-tab v-for="(result, index) in results" :key="index" class="tab hide-scrollbar">
                 <template v-slot:title>
                     <div class="title">
-                        <div class="tiny-close" @click="onClickRemove(result.key)">
+                        <div class="tiny-close" @click="onClickRemove(result.ts)">
                             <div class="icon">x</div>
                         </div>
                         {{ result.key }}
                     </div>
                 </template>
+                <div class="info">
+                    <div class="description">received: {{ getDate(result.ts) }} | from: {{ result.api }}</div>
+                    <!-- <div class="seperator">::</div>
+                    <div class="send">
+                        <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(request.key)">
+                            Send
+                        </b-button>
+                    </div> -->
+                </div>
                 <div class="scoll-area-edge"></div>
                 <vue-custom-scrollbar class="scroll-area">
                     <vue-json-pretty :data="result.data"></vue-json-pretty>
@@ -32,7 +41,7 @@ export default {
     },
     data() {
         return {
-            results: [],
+            results: {},
             uKey: 0
         }
     },
@@ -45,14 +54,22 @@ export default {
             this.uKey = this.uKey > 1000 ? 1 : ++this.uKey
         },
         updateResults(evt) {
-            this.results = datasource.getResults()
+            this.results = _.values(datasource.getResults()).reverse()
             this.update()
         },
-        onClickRemove() {},
+        onClickRemove(ts) {
+            datasource.removeResultByTs(ts)
+            this.updateResults()
+        },
         getResult(index) {
             console.log('CT:getResult this.results[index] = ', this.results[index])
             console.log('CT:getResult this.results[index].data = ', this.results[index].data)
             return this.results[index] && _.isPlainObject(this.results[index].data) ? this.results[index].data : null
+        },
+        getDate(ts) {
+            const d = new Date(ts).toISOString().slice(0, 19).split('T').join('  ')
+            // console.log('CT:getDate d = ', d)
+            return d
         }
     },
     mounted() {
@@ -74,6 +91,4 @@ export default {
     padding-top: 6px;
     margin-top: -6px;
 }
-
-
 </style>
