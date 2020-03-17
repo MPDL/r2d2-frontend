@@ -12,12 +12,6 @@
                 </template>
                 <div class="info">
                     <div class="description">received: {{ getDate(result.ts) }} | from: {{ result.api }}</div>
-                    <!-- <div class="seperator">::</div>
-                    <div class="send">
-                        <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(request.key)">
-                            Send
-                        </b-button>
-                    </div> -->
                 </div>
                 <div class="scoll-area-edge"></div>
                 <vue-custom-scrollbar class="scroll-area">

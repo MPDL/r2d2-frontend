@@ -104,10 +104,11 @@
                             <b-input-group v-if="item.type === 'file-upload'" class="pointer">
                                 <b-form-file
                                     :id="item.key"
-                                    v-model="item.selected"
-                                    :state="Boolean(item.selected)"
+                                    v-model="item.meta"
+                                    :state="Boolean(item.meta)"
                                     :placeholder="item.placeholder"
                                     :drop-placeholder="item.placeholder"
+                                    @input="onFileInput(item)"
                                 ></b-form-file>
                             </b-input-group>
                         </b-form-group>
@@ -176,6 +177,17 @@ export default {
             this.mousedown = true
             setTimeout(() => (this.mousedown = false), 100)
             this.sendForm(key)
+        },
+        onFileInput(item) {
+            const meta = globals.filterObjectByKeys(item.meta, 'type,name,size,lastModified')
+            const reader = new FileReader()
+            reader.onload = evt => {
+                item.selected = {
+                    meta,
+                    base64: evt.target.result
+                }
+            }
+            reader.readAsDataURL(item.meta)
         }
     },
     computed: {
@@ -196,7 +208,5 @@ export default {
     // if you want this look!
     padding-top: 6px;
     margin-top: -6px;
-
- 
 }
 </style>

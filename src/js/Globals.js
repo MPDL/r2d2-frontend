@@ -77,6 +77,15 @@ function Globals() {
     }
     this.parseSvgAttributes = parseSvgAttributes
 
+    const filterObjectByKeys = (obj = {}, keys) => {
+        keys = _.isString(keys) ? keys.split(',') : keys
+        keys = _.isArray(keys) ? keys : []
+        const res = {}
+        _.each(keys, key => (res[key] = obj[key]))
+        return res
+    }
+    this.filterObjectByKeys = filterObjectByKeys
+
     // ++++++++++++++++++++++++++++++++++++++++
     // +++++ CMS handling
     // ++++++++++++++++++++++++++++++++++++++++

@@ -25,7 +25,16 @@
                 }
             }
         },
-        "djhsgj": {},
+        "uploooaad": {
+            "form": {
+                "loodaa": {
+                    "type": "file-upload"
+                },
+                "filesucca": {
+                    "type": "file-upload"
+                }
+            }
+        },
         "rwzrt": {},
         "gdhqh": {},
         "khpkou": {},

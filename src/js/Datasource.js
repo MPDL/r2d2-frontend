@@ -31,10 +31,7 @@ function Datasource() {
     }
 
     const getFilteredConfig = () => {
-        const keys = 'root,apiBase,structureApi,translatinosApi,defaultApi'.split(',')
-        const res = {}
-        _.each(keys, key => (res[key] = config[key]))
-        return res
+        return globals.filterObjectByKeys(config, 'root,apiBase,structureApi,translatinosApi,defaultApi')
     }
 
     const getConfig = () => config
