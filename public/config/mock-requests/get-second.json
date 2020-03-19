@@ -10,7 +10,7 @@
             "label": "get-second",
             "description": "get-second-request",
             "api": {
-                "target": "get-third"
+                "target": "https://127.0.0.1:3000/translations"
             },
             "form": {
                 "input-1": {

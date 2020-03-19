@@ -1,7 +1,9 @@
 import Vue from 'vue'
 
 function Globals() {
-    const DEV_MODE = true
+    console.log('GLB: window.CONFIG_DEV = ',window.CONFIG_DEV)
+
+    const DEV_MODE = window.CONFIG_DEV && window.CONFIG_DEV.devmode === true
     this.DEV_MODE = DEV_MODE
     //
     let router = null

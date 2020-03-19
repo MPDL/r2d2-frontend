@@ -6,19 +6,24 @@ function Datasource() {
     // -----------------------------------
     // -----------------------------------
 
-    // const srv = 'http://localhost:8081/'
-    const srv = 'https://127.0.0.1:3000/'
+    console.log('DS: window.location = ', window.location)
+    console.log('DS: window.location.pathname = ', window.location.pathname)
+
+    const getPath = path => {
+        if (path.substr(0, 1) === '/') {
+            // this resolves a relative path on the own server
+            path = path.substr(1)
+            return `${window.location.pathname}${path}`
+        }
+        // this resolves a absolute path from a remote api
+        return path
+    }
 
     const config = {
-        root: window.baseConfig.root === '{ENV}' ? '' : window.baseConfig.root,
-        apiBase: window.baseConfig.apiBase,
-        structureApi: '/heidi/structure.en.json',
-        translatinosApi: '/heidi/translations.en.json',
+        structureApi: '/config/structure.en.json',
+        translatinosApi: '/config/translations.en.json',
         defaultApi: 'get',
-        devPaths: {
-            get: '/heidi/requests/get.json',
-            'get-second': '/heidi/requests/get-second.json'
-        },
+        devPaths: window.CONFIG_DEV ? window.CONFIG_DEV.paths : {},
         structure: null,
         sessionTimeoutMsec: 10000,
         translations: {},
@@ -31,7 +36,7 @@ function Datasource() {
     }
 
     const getFilteredConfig = () => {
-        return globals.filterObjectByKeys(config, 'root,apiBase,structureApi,translatinosApi,defaultApi')
+        return globals.filterObjectByKeys(config, 'structureApi,translatinosApi,defaultApi')
     }
 
     const getConfig = () => config
@@ -39,18 +44,18 @@ function Datasource() {
     this.getRequests = () => config.requests
     this.getResults = () => config.results
 
-    const getStructureApi = () => `${config.root}${config.structureApi}`
-    const getTranslationsApi = () => `${config.root}${config.translatinosApi}`
+    const getStructureApi = () => config.structureApi
+    const getTranslationsApi = () => config.translatinosApi
 
     const post = async (api, data = {}, options = {}) => {
         // data.token = globals.getAdminToken()
         console.log('DS:post api, data = ', api, data)
-        return axios.create().post(api, data, options)
+        return axios.create().post(getPath(api), data, options)
     }
 
     const getApi = api => {
         console.log('DS:getApi api, config.devPaths = ', api, config.devPaths)
-        return globals.DEV_MODE ? config.devPaths[api] : api
+        return globals.DEV_MODE && config.devPaths[api] ? config.devPaths[api] : api
     }
 
     this.request = async (key = null, api = null, rawData = {}) => {
@@ -121,7 +126,7 @@ function Datasource() {
         _.each(requests, (request, key) => {
             request.key = key
             request.label = _.isString(request.label) ? request.label : key
-            request.api = request.api && _.isString(request.api.target) ? request.api : { target: 'get' }
+            request.api = request.api && _.isString(request.api.target) ? request.api : { target: '/get' }
             console.log('DS:updateRequests key, request.api = ', key, request.api)
             request.description = _.isString(request.description) ? request.description : key
 

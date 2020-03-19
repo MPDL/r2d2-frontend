@@ -10,7 +10,7 @@
             "label": "get-basic",
             "description": "get-basic-request mock response",
             "api": {
-                "target": "get-second"
+                "target": "/get-second"
             },
             "form": {
                 "input-1": {

@@ -9,15 +9,19 @@
         <script src="./lib/lodash/lodash.min.js"></script>
         <script src="./lib/jquery/jquery.3.4.1.min.js"></script>
         <script src="./lib/jquery/jquery-ui.min.js"></script>
+        <script src="./config/dev.js"></script>
     </head>
     <body>
         <noscript>
             <strong>
-                We're sorry but Heidi's Dev Store doesn't work properly without JavaScript enabled. Please enable it to continue.
+                We're sorry but Heidi's Dev Store doesn't work properly without JavaScript enabled. Please enable it to
+                continue.
             </strong>
         </noscript>
 
         <script>
+            console.log('INDEX: window.location = ', window.location)
+            // /r2d2/
             window.baseConfig = {
                 root: '{ENV}',
                 apiBase: '/heidi/requests/'

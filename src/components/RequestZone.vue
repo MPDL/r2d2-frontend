@@ -19,7 +19,7 @@
                         </b-button>
                     </div>
                 </div>
-                <div class="target">api-target: {{ apiBase }}{{ request.api.target }}</div>
+                <div class="target">api-target: {{ request.api.target }}</div>
                 <div class="scoll-area-edge"></div>
                 <vue-custom-scrollbar class="scroll-area">
                     <div class="form-elements">
@@ -188,11 +188,6 @@ export default {
                 }
             }
             reader.readAsDataURL(item.meta)
-        }
-    },
-    computed: {
-        apiBase(key) {
-            return datasource.getConfig().apiBase
         }
     }
 }
