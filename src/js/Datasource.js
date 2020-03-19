@@ -6,9 +6,6 @@ function Datasource() {
     // -----------------------------------
     // -----------------------------------
 
-    console.log('DS: window.location = ', window.location)
-    console.log('DS: window.location.pathname = ', window.location.pathname)
-
     const getPath = path => {
         if (path.substr(0, 1) === '/') {
             // this resolves a relative path on the own server
@@ -20,6 +17,8 @@ function Datasource() {
     }
 
     const config = {
+        subpath: location.pathname,
+        origin: location.origin,
         structureApi: '/config/structure.en.json',
         translatinosApi: '/config/translations.en.json',
         defaultApi: 'get',
@@ -36,10 +35,11 @@ function Datasource() {
     }
 
     const getFilteredConfig = () => {
-        return globals.filterObjectByKeys(config, 'structureApi,translatinosApi,defaultApi')
+        return globals.filterObjectByKeys(config, 'origin,subpath,structureApi,translatinosApi,defaultApi')
     }
 
     const getConfig = () => config
+    this.getConfig = getConfig
 
     this.getRequests = () => config.requests
     this.getResults = () => config.results
@@ -48,33 +48,26 @@ function Datasource() {
     const getTranslationsApi = () => config.translatinosApi
 
     const post = async (api, data = {}, options = {}) => {
-        // data.token = globals.getAdminToken()
-        console.log('DS:post api, data = ', api, data)
+        data.token = globals.getAdminToken()
         return axios.create().post(getPath(api), data, options)
     }
 
     const getApi = api => {
-        console.log('DS:getApi api, config.devPaths = ', api, config.devPaths)
         return globals.DEV_MODE && config.devPaths[api] ? config.devPaths[api] : api
     }
 
     this.request = async (key = null, api = null, rawData = {}) => {
         api = _.isString(api) ? getApi(api) : config.defaultApi
-        console.log('DS:request key, api, rawData = ', key, api, rawData)
         if (key) {
             const data = {}
             _.each(rawData, (item, key) => {
                 data[key.split('--')[1]] = item
             })
-            console.log('DS:request api = ', api)
-
             return post(api, {
                 key,
                 data
             })
                 .then(res => {
-                    console.log('DS:request res = ', res)
-                    console.log('DS:request then api = ', api)
                     updateRequests(res.data.requests)
                     updateResults(res.data, key, api)
                     globals.eventBus.$emit('onLoadResults', { error: null })
@@ -120,6 +113,7 @@ function Datasource() {
             })
         })
     }
+    this.getInitialData = () => getInitialData()
 
     const updateRequests = requests => {
         const ordered = []
@@ -127,7 +121,6 @@ function Datasource() {
             request.key = key
             request.label = _.isString(request.label) ? request.label : key
             request.api = request.api && _.isString(request.api.target) ? request.api : { target: '/get' }
-            console.log('DS:updateRequests key, request.api = ', key, request.api)
             request.description = _.isString(request.description) ? request.description : key
 
             _.each(request.form, (item, itemKey) => {
@@ -149,24 +142,18 @@ function Datasource() {
     this.removeRequestByKey = removeRequestByKey
 
     const updateResults = (data, key, api) => {
-        console.log('DS:updateResults ++++++++ data, key, api = ', data, key, api)
-        console.log('DS:updateResults api = ', api)
-        console.log('DS:updateResults config.results BF = ', config.results)
         const ts = new Date().getTime()
-        console.log('DS:updateResults ts BF = ', ts)
-
+        console.log('updateResults ts.toString() = ', ts.toString())
         config.results[ts.toString()] = {
             ts,
             data,
             key,
             api: api || '-'
         }
-        console.log('DS:updateResults config.results = ', config.results)
     }
 
     const removeResultByTs = ts => {
         delete config.results[ts]
-        console.log('DS:removeResultByTs key, config.results = ', config.results)
     }
     this.removeResultByTs = removeResultByTs
 
@@ -179,13 +166,20 @@ function Datasource() {
                 updateConfig(res.data)
                 config.structure = generateStructure(res.data)
                 updateRequests(res.data.requests)
-                updateResults(getFilteredConfig(), 'config', null)
-                globals.eventBus.$emit('onLoadResults', { error: null })
+                setInitialResults()
                 return config.structure
             })
             .catch(error => console.log('DS:getStructure ERROR error.message = ', error.message))
     }
     this.getStructure = getStructure
+
+    const setInitialResults = () => {
+        updateResults(config.requests, 'initial-loaded', 'initial loaded structure')
+        setTimeout(() => {
+            updateResults(getFilteredConfig(), 'config', 'config')
+            globals.eventBus.$emit('onLoadResults', { error: null })
+        }, 100)
+    }
 
     const getTranslations = () => {
         return post(getTranslationsApi())
@@ -195,6 +189,7 @@ function Datasource() {
             })
             .catch(error => console.log('DS:getTranslations ERROR error.message = ', error.message))
     }
+    this.getTranslations = getTranslations
 
     const generateStructure = raw => {
         const navigation = {}
@@ -244,8 +239,6 @@ function Datasource() {
             })
         })
 
-        console.log('DS:generateStructure routes = ', routes)
-
         return {
             navigation,
             router: {
@@ -255,12 +248,6 @@ function Datasource() {
             setup: raw.setup
         }
     }
-
-    // publix
-
-    this.getConfig = getConfig
-    this.getTranslations = getTranslations
-    this.getInitialData = () => getInitialData()
 }
 
 export default Datasource

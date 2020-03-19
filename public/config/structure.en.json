@@ -18,7 +18,7 @@
     },
     "requests": {
         "initial": {
-            "description": "Sends the initial request and gives the fuck of a shit ;-)",
+            "description": "Sends the initial request and gives some useless stuff ;-)",
             "form": {
                 "input-1": {
                     "type": "input",
@@ -63,7 +63,7 @@
         },
         "second": {
             "label": "special",
-            "description": "special search description",
+            "description": "special search description, also useless but in a beautiful way .. :-)",
             "form": {
                 "input-1": {
                     "type": "input",
