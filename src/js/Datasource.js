@@ -16,13 +16,18 @@ function Datasource() {
         return path
     }
 
+    const initial = window.BASE_CONFIG ? window.BASE_CONFIG.initial : {}
+    initial.structure = _.isString(initial.structure) ? initial.structure : '/config/structure.en.json'
+    initial.translations = _.isString(initial.translations) ? initial.translations : '/config/translations.en.json'
+    initial.defaultApi = _.isString(initial.defaultApi) ? initial.defaultApi : 'get'
+
     const config = {
         subpath: location.pathname,
         origin: location.origin,
-        structureApi: '/config/structure.en.json',
-        translatinosApi: '/config/translations.en.json',
-        defaultApi: 'get',
-        devPaths: window.CONFIG_DEV ? window.CONFIG_DEV.paths : {},
+        structureApi: initial.structure,
+        translatinosApi: initial.translations,
+        defaultApi: initial.defaultApi,
+        devPaths: window.BASE_CONFIG ? window.BASE_CONFIG.paths : {},
         structure: null,
         sessionTimeoutMsec: 10000,
         translations: {},

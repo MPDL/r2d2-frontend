@@ -1,7 +1,5 @@
 const queue = [
-    './config/dev.js',
-    // './css/app.css.preload',
-    // './app.js.preload',
+    './config/setup.js',
     './lib/lodash/lodash.min.js',
     './lib/jquery/jquery.3.4.1.min.js',
     './lib/jquery/jquery-ui.min.js',
@@ -34,7 +32,7 @@ const loadNext = () => {
             elm.setAttribute(attr[0], attr[1])
         }
         document.head.appendChild(elm)
-        console.log('INDEX: elm load = ', elm)
+        console.log('INDEX: elm queue load = ', elm)
         elm.onload = () => loadNext()
     }
 }
