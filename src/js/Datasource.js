@@ -19,7 +19,33 @@ function Datasource() {
     const initial = window.BASE_CONFIG ? window.BASE_CONFIG.initial : {}
     initial.structure = _.isString(initial.structure) ? initial.structure : '/config/structure.en.json'
     initial.translations = _.isString(initial.translations) ? initial.translations : '/config/translations.en.json'
-    initial.defaultApi = _.isString(initial.defaultApi) ? initial.defaultApi : 'get'
+    initial.defaultApi = _.isString(initial.defaultApi) ? initial.defaultApi : '/get'
+    initial.defaultApi = _.isPlainObject(initial.defaultApi)
+        ? initial.defaultApi
+        : { target: initial.defaultApi, method: 'post' }
+
+    console.log('DS:INIT window.BASE_CONFIG = ', window.BASE_CONFIG)
+
+    const getDevApis = () => {
+        const apis = {}
+        const dp = _.isPlainObject(window.BASE_CONFIG.devApis) ? window.BASE_CONFIG.devApis : {}
+        _.each(dp, (value, key) => {
+            value = _.isString(value)
+                ? {
+                      target: value,
+                      method: 'post'
+                  }
+                : value
+
+            apis[key] = value
+
+            console.log('DS:getDevApis value, key = ', value, key)
+        })
+        console.log('DS:getDevApis apis = ', apis)
+
+        return apis
+    }
+    getDevApis()
 
     const config = {
         subpath: location.pathname,
@@ -27,15 +53,18 @@ function Datasource() {
         structureApi: initial.structure,
         translatinosApi: initial.translations,
         defaultApi: initial.defaultApi,
-        devPaths: window.BASE_CONFIG ? window.BASE_CONFIG.paths : {},
+        devApis: window.BASE_CONFIG ? window.BASE_CONFIG.devApis : {},
         structure: null,
         sessionTimeoutMsec: 10000,
         translations: {},
         requests: {},
-        results: {}
+        results: {},
+        setup: {}
     }
 
     const updateConfig = data => {
+        console.log('DS:updateConfig config = ', { ...config })
+        console.log('DS:updateConfig data = ', data)
         config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
     }
 
@@ -53,36 +82,84 @@ function Datasource() {
     const getTranslationsApi = () => config.translatinosApi
 
     const post = async (api, data = {}, options = {}) => {
+        console.log('DS:post api = ', api)
+        console.log('DS:post data = ', data)
+        console.log('DS:post options = ', options)
         data.token = globals.getAdminToken()
         return axios.create().post(getPath(api), data, options)
     }
 
+    const get = async (api, dta = {}, options = {}) => {
+        console.log('DS:get api = ', api)
+        console.log('DS:get dta = ', dta)
+        console.log('DS:get options = ', options)
+        // data.token = globals.getAdminToken()
+        const target = [getPath(api)]
+        _.each(dta.data, (value, key) => {
+            console.log('DS:get value = ', value)
+            console.log('DS:get key = ', key)
+            target.push(value[0])
+        })
+        console.log('DS:get target = ', target)
+       
+        return axios.create().get(target.join('/'), {}, options)
+    }
+
     const getApi = api => {
-        return globals.DEV_MODE && config.devPaths[api] ? config.devPaths[api] : api
+        return globals.DEV_MODE && config.devApis[api.target] ? config.devApis[target] : api
     }
 
     this.request = async (key = null, api = null, rawData = {}) => {
-        api = _.isString(api) ? getApi(api) : config.defaultApi
-        if (key) {
-            const data = {}
-            _.each(rawData, (item, key) => {
-                data[key.split('--')[1]] = item
-            })
-            return post(api, {
-                key,
-                data
-            })
-                .then(res => {
-                    updateRequests(res.data.requests)
-                    updateResults(res.data, key, api)
-                    globals.eventBus.$emit('onLoadResults', { error: null })
+        api = _.isPlainObject(api) ? getApi(api) : config.defaultApi
+        console.log('DS:request key = ', key)
+        console.log('DS:request api = ', api)
+        console.log('DS:request rawData = ', rawData)
+        const data = {}
+        _.each(rawData, (item, key) => {
+            data[key.split('--')[1]] = item
+        })
+        switch (true) {
+            case key && api.method === 'get':
+                return get(api.target, {
+                    key,
+                    data
                 })
-                .catch(error => {
-                    globals.eventBus.$emit('onLoadResults', { error })
-                    console.log('DS:getTranslations ERROR error.message = ', error.message)
+                    .then(res => {
+                        updateRequests(res.data.requests)
+                        updateResults(res.data, key, api)
+                        globals.eventBus.$emit('onLoadResults', { error: null })
+                    })
+                    .catch(error => {
+                        try {
+                            updateResults(JSON.stringify(error.response.data), key, api)
+                        } catch (error) {
+                            updateResults(JSON.stringify(error), key, api)
+                        }
+                        globals.eventBus.$emit('onLoadResults', { error })
+                        console.log('DS:getTranslations ERROR error.message = ', error.message)
+                    })
+
+            case key && api.method === 'post':
+                return post(api.target, {
+                    key,
+                    data
                 })
-        } else {
-            return null
+                    .then(res => {
+                        updateRequests(res.data.requests)
+                        updateResults(res.data, key, api)
+                        globals.eventBus.$emit('onLoadResults', { error: null })
+                    })
+                    .catch(error => {
+                        try {
+                            updateResults(JSON.stringify(error.response.data), key, api)
+                        } catch (error) {
+                            updateResults(JSON.stringify(error), key, api)
+                        }
+                        globals.eventBus.$emit('onLoadResults', { error })
+                        console.log('DS:getTranslations ERROR error.message = ', error.message)
+                    })
+            default:
+                return null
         }
     }
 
@@ -125,19 +202,33 @@ function Datasource() {
         _.each(requests, (request, key) => {
             request.key = key
             request.label = _.isString(request.label) ? request.label : key
-            request.api = request.api && _.isString(request.api.target) ? request.api : { target: '/get' }
+            request.api = request.api && _.isString(request.api.target) ? request.api : { target: '/get', method: 'post' }
+            request.api.method = request.api.method === 'get' ? 'get' : 'post'
             request.description = _.isString(request.description) ? request.description : key
+            console.log('DS:updateRequests request.key = ', request.key)
+            console.log('DS:updateRequests request.form = ', request.form)
 
             _.each(request.form, (item, itemKey) => {
                 item.key = `${key}--${itemKey}`
                 item.description = _.isString(item.description) ? item.description : null
                 item.label = _.isString(item.label) ? item.label : itemKey
+                if (item.type === 'dropdown') {
+                    // selection by value
+                    item.selected = _.isNil(item.selected) ? item.options[0] : item.selected
+                    // selection by index
+                    if (_.isNumber(item.selected) && _.isPlainObject(item.options[item.selected])) {
+                        item.selected = item.options[item.selected].value
+                    }
+                }
+                console.log('DS:updateRequests item.selected = ', item.selected)
             })
             ordered.push(request)
         })
         _.each(config.requests, request => ordered.push(request))
         config.requests = {}
         _.each(ordered, request => (config.requests[request.key] = request))
+
+        console.log('DS:updateRequests config.requests = ', config.requests)
     }
 
     const removeRequestByKey = key => {
@@ -149,12 +240,15 @@ function Datasource() {
     const updateResults = (data, key, api) => {
         const ts = new Date().getTime()
         console.log('updateResults ts.toString() = ', ts.toString())
+
         config.results[ts.toString()] = {
             ts,
             data,
             key,
             api: api || '-'
         }
+
+        console.log('DS:updateResults config.results = ', config.results)
     }
 
     const removeResultByTs = ts => {
@@ -163,6 +257,7 @@ function Datasource() {
     this.removeResultByTs = removeResultByTs
 
     const getStructure = () => {
+        console.log('DS:getStructure config = ', { ...config })
         if (config.structure) {
             return config.structure
         }

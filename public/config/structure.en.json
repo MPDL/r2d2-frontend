@@ -17,6 +17,37 @@
         "devstore": {}
     },
     "requests": {
+        "r2d2-datasets-get": {
+            "label": "r2d2-datasets-get",
+            "description": "Heidi takes a ride with R2  ;-)",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/",
+                "method": "get",
+                "schema": "hardcoded"
+            },
+            "form": {
+                "dropdown-1": {
+                    "type": "dropdown",
+                    "label": "dummy values",
+                    "options": [
+                        {
+                            "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd23 (label)",
+                            "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23"]
+                        },                        {
+                            "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd24 (label)",
+                            "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd24"]
+                        },
+                        {
+                            "text": "a6124f2a-xxy-dummyy (label)",
+                            "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd25"]
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        }
+    },
+    "requestsXX": {
         "initial": {
             "description": "Sends the initial request and gives some useless stuff ;-)",
             "form": {
@@ -72,6 +103,25 @@
                 },
                 "input-2": {
                     "type": "input"
+                }
+            }
+        },
+        "r2d2": {
+            "label": "r2d2",
+            "description": "Heidi rides the R2 machine ;-)",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/"
+            },
+            "form": {
+                "dropdown-1": {
+                    "type": "dropdown",
+                    "options": [
+                        {
+                            "key": "a6124f2a-xxx",
+                            "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd24"
+                        }
+                    ],
+                    "selected": "a6124f2a-xxx"
                 }
             }
         }

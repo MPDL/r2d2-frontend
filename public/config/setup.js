@@ -5,11 +5,18 @@ window.BASE_CONFIG = {
         // e.g.:
         // structure: '/get/structure',
         // translations: '/get/translations'
+        defaultApi: {
+            target: '/get',
+            method: 'post'
+        }
     },
     devmode: true,
-    devPaths: { 
+    devApis: {
         // devPaths are only mapped when devmode === true
         '/get': '/config/mock-requests/get.json',
-        '/get-second': '/config/mock-requests/get-second.json'
+        '/get-second': {
+            target: '/config/mock-requests/get-second.json',
+            method: 'post'
+        }
     }
 }

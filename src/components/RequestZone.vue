@@ -19,7 +19,11 @@
                         </b-button>
                     </div>
                 </div>
-                <div class="target">api-target: {{ request.api.target }}</div>
+                <div class="target">
+                    <span>api-target: {{ request.api.target }}</span>
+                    <br />
+                    <span>api-method: {{ request.api.method }}</span>
+                </div>
                 <div class="scoll-area-edge"></div>
                 <vue-custom-scrollbar class="scroll-area">
                     <div class="form-elements">
@@ -131,7 +135,8 @@ export default {
         return {
             requests: {},
             mousedown: false,
-            uKey: 0
+            uKey: 0,
+            ddSelected: 0
         }
     },
     created() {
@@ -145,7 +150,6 @@ export default {
         updateRequests() {
             this.requests = datasource.getRequests()
             this.update()
-            console.log('SZ:updateRequests this.requests = ', this.requests)
         },
         onClickRemove(key) {
             datasource.removeRequestByKey(key)
@@ -170,7 +174,7 @@ export default {
             console.log('SZ:sendForm this.getApi(key).target = ', this.getApi(key).target)
             console.log('SZ:sendForm key = ', key)
             // datasource.send(key, this.getApi(key).target, this.collectData(key))
-            await datasource.request(key, this.getApi(key).target, this.collectData(key))
+            await datasource.request(key, this.getApi(key), this.collectData(key))
             this.updateRequests()
         },
         onClick(key) {
