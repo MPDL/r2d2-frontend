@@ -1,6 +1,6 @@
 <template>
     <div class="result-zone">
-        <b-tabs :key="uKey">
+        <b-tabs :key="uKey" v-model="tabIndex">
             <b-tab v-for="(result, index) in results" :key="index" class="tab hide-scrollbar">
                 <template v-slot:title>
                     <div class="title">
@@ -36,40 +36,67 @@ export default {
     data() {
         return {
             results: {},
-            uKey: 0
+            uKey: 0,
+            tix: null,
+            tme: null
         }
     },
     created() {
         globals.eventBus.$on('onLoadResults', this.updateResults)
+        this.tabIndex = null
         this.updateResults()
     },
     methods: {
         update() {
             this.uKey = this.uKey > 1000 ? 1 : ++this.uKey
         },
+        updateTabActiveState() {
+            // TODO unify this (redundant in result and request zone)
+            let $sel = $('.result-zone .nav-item')
+            $sel.removeClass('active')
+            clearTimeout(this.tme)
+            this.tme = setTimeout(() => {
+                $sel = $('.result-zone .nav-item')
+                $sel.removeClass('active')
+                $($sel[this.tabIndex]).addClass('active')
+            }, 100)
+        },
         updateResults(evt) {
             this.results = _.values(datasource.getResults()).reverse()
             this.update()
+            this.updateTabActiveState()
         },
         onClickRemove(ts) {
             datasource.removeResultByTs(ts)
             this.updateResults()
         },
         getResult(index) {
-            console.log('CT:getResult this.results[index] = ', this.results[index])
-            console.log('CT:getResult this.results[index].data = ', this.results[index].data)
+            console.log('RZ:getResult this.results[index] = ', this.results[index])
+            console.log('RZ:getResult this.results[index].data = ', this.results[index].data)
             return this.results[index] && _.isPlainObject(this.results[index].data) ? this.results[index].data : null
         },
         getDate(ts) {
-            const d = new Date(ts).toISOString().slice(0, 19).split('T').join('  ')
+            const d = new Date(ts)
+                .toISOString()
+                .slice(0, 19)
+                .split('T')
+                .join('  ')
             // console.log('CT:getDate d = ', d)
             return d
         }
     },
-    mounted() {
-        console.log('C:mounted:route  = ')
-    },
-    computed: {}
+    computed: {
+        // TODO unify this (redundant in result and request zone)
+        tabIndex: {
+            get() {
+                return this.tix
+            },
+            set(index) {
+                this.tix = index
+                this.updateTabActiveState(index)
+            }
+        }
+    }
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
     <div class="request-zone">
-        <b-tabs :key="uKey">
+        <b-tabs :key="uKey" v-model="tabIndex">
             <b-tab v-for="(request, index) in requests" :key="index" class="tab hide-scrollbar">
                 <template v-slot:title>
                     <div class="title">
@@ -136,7 +136,9 @@ export default {
             requests: {},
             mousedown: false,
             uKey: 0,
-            ddSelected: 0
+            ddSelected: 0,
+            tix: null,
+            tme: null
         }
     },
     created() {
@@ -147,9 +149,22 @@ export default {
         update() {
             this.uKey = this.uKey > 1000 ? 1 : ++this.uKey
         },
+        updateTabActiveState() {
+            // TODO unify this (redundant in result and request zone)
+            let $sel = $('.request-zone .nav-item')
+            $sel.removeClass('active')
+            clearTimeout(this.tme)
+            this.tme = setTimeout(() => {
+                $sel = $('.request-zone .nav-item')
+                $sel.removeClass('active')
+                $($sel[this.tabIndex]).addClass('active')
+            }, 100)
+        },
         updateRequests() {
             this.requests = datasource.getRequests()
+            console.log('obj:updateRequests this.requests = ',this.requests)
             this.update()
+            this.updateTabActiveState()
         },
         onClickRemove(key) {
             datasource.removeRequestByKey(key)
@@ -164,7 +179,7 @@ export default {
             _.each(this.requests[key].form, item => {
                 if (!_.isUndefined(item.selected)) {
                     if (item.sendKey === null || item.sendKey === '') {
-                        res = {...res, ...item.selected}
+                        res = { ...res, ...item.selected }
                     } else {
                         res[item.key] = item.selected
                     }
@@ -191,6 +206,18 @@ export default {
                 }
             }
             reader.readAsDataURL(item.meta)
+        }
+    },
+    computed: {
+        // TODO unify this (redundant in result and request zone)
+        tabIndex: {
+            get() {
+                return this.tix
+            },
+            set(index) {
+                this.tix = index
+                this.updateTabActiveState(index)
+            }
         }
     }
 }

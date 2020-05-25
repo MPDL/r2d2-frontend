@@ -251,7 +251,10 @@ function Datasource() {
     }
 
     const removeResultByTs = ts => {
+        console.log('DS:removeResultByTs ts = ', ts)
+        console.log('DS:removeResultByTs config.results BF = ', { ...config.results })
         delete config.results[ts]
+        console.log('DS:removeResultByTs config.results AF = ', { ...config.results })
     }
     this.removeResultByTs = removeResultByTs
 

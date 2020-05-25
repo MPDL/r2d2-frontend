@@ -135,6 +135,9 @@ input:-ms-input-placeholder {
         .nav-link {
             border: 1px solid #4950571c;
         }
+        .nav-item.active {
+            z-index: 100000 !important;
+        }
     }
 
     .spacer-top {
@@ -162,6 +165,7 @@ input:-ms-input-placeholder {
             line-height: 11px;
             font-weight: bold;
             font-size: 12px;
+
             color: #539dab;
             &:hover {
                 color: #4a4a4a;
@@ -192,7 +196,7 @@ input:-ms-input-placeholder {
         flex-direction: column;
         height: calc(100vh - 170px - 70px);
 
-        input{
+        input {
             font-size: 14px;
         }
 
