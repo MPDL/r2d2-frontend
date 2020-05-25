@@ -1,7 +1,7 @@
 import Vue from 'vue'
 
 function Globals() {
-    console.log('GLB: window.BASE_CONFIG = ',window.BASE_CONFIG)
+    console.log('GLB: window.BASE_CONFIG = ', window.BASE_CONFIG)
 
     const DEV_MODE = window.BASE_CONFIG && window.BASE_CONFIG.devmode === true
     this.DEV_MODE = DEV_MODE
@@ -104,11 +104,12 @@ function Globals() {
     this.getAdminToken = () => {
         // console.log('GLB:getAdminToken adminToken = ', adminToken)
         return adminToken || null
+        // return 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0dXNlckBtcGRsLm1wZy5kZSIsInVzZXJfaWQiOiIyZDBkZDg1MC1lYWJiLTQzZmUtOGI4Zi0xYTFiNTQwMTg3MzgiLCJleHAiOjE1OTEyNTY3NjZ9._xWPbAMgMB8FZgf-FjWd8aM0UrCZ1CG0J-rIU7vJ49Q5_q8Wzxu1hv_9rwZil2aHeEWgeZSUNEQ6H8WoMIuFCQ'
     }
 
     this.setAdminToken = (token = null) => {
-        // adminToken = token
-        // console.log('GLB:setAdminToken token = ', token)
+        adminToken = token
+        console.log('GLB:setAdminToken token = ', token)
         // if (adminToken) {
         //     loadCms()
         // }

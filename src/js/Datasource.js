@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { _isString } from 'gsap/gsap-core'
 
 function Datasource() {
     //
@@ -82,27 +83,19 @@ function Datasource() {
     const getTranslationsApi = () => config.translatinosApi
 
     const post = async (api, data = {}, options = {}) => {
-        console.log('DS:post api = ', api)
-        console.log('DS:post data = ', data)
-        console.log('DS:post options = ', options)
-        data.token = globals.getAdminToken()
         return axios.create().post(getPath(api), data, options)
     }
 
     const get = async (api, dta = {}, options = {}) => {
-        console.log('DS:get api = ', api)
-        console.log('DS:get dta = ', dta)
-        console.log('DS:get options = ', options)
-        // data.token = globals.getAdminToken()
+        let data = {}
         const target = [getPath(api)]
-        _.each(dta.data, (value, key) => {
-            console.log('DS:get value = ', value)
-            console.log('DS:get key = ', key)
-            target.push(value[0])
+        _.each(dta, (value, key) => {
+            _.isString(value[0]) ? target.push(value[0]) : null
+            _.isPlainObject(value[0]) ? (data = { ...data, ...value[0] }) : null
         })
         console.log('DS:get target = ', target)
-       
-        return axios.create().get(target.join('/'), {}, options)
+        console.log('DS:get data = ', data)
+        return axios.create().get(target.join('/'), options)
     }
 
     const getApi = api => {
@@ -114,53 +107,59 @@ function Datasource() {
         console.log('DS:request key = ', key)
         console.log('DS:request api = ', api)
         console.log('DS:request rawData = ', rawData)
-        const data = {}
+        let data = {}
         _.each(rawData, (item, key) => {
-            data[key.split('--')[1]] = item
+            if (key.split('--')[1]) {
+                data[key.split('--')[1]] = item
+            } else {
+                data[key] = item
+            }
         })
-        switch (true) {
-            case key && api.method === 'get':
-                return get(api.target, {
-                    key,
-                    data
-                })
-                    .then(res => {
-                        updateRequests(res.data.requests)
-                        updateResults(res.data, key, api)
-                        globals.eventBus.$emit('onLoadResults', { error: null })
-                    })
-                    .catch(error => {
-                        try {
-                            updateResults(JSON.stringify(error.response.data), key, api)
-                        } catch (error) {
-                            updateResults(JSON.stringify(error), key, api)
-                        }
-                        globals.eventBus.$emit('onLoadResults', { error })
-                        console.log('DS:getTranslations ERROR error.message = ', error.message)
-                    })
+        console.log('DS:request data = ', { ...data })
+        // schema '{*}' means the plain data object is send,
+        // without the standard key-data structure
+        // token is set to header (2Do)
+        // TODO refactor the schema / schema parser thing
+        const schema = _.isString(api.schema) ? api.schema.split(',') : []
+        console.log('DS:request schema = ', schema)
+        const options = {}
 
-            case key && api.method === 'post':
-                return post(api.target, {
-                    key,
-                    data
-                })
-                    .then(res => {
-                        updateRequests(res.data.requests)
-                        updateResults(res.data, key, api)
-                        globals.eventBus.$emit('onLoadResults', { error: null })
-                    })
-                    .catch(error => {
-                        try {
-                            updateResults(JSON.stringify(error.response.data), key, api)
-                        } catch (error) {
-                            updateResults(JSON.stringify(error), key, api)
-                        }
-                        globals.eventBus.$emit('onLoadResults', { error })
-                        console.log('DS:getTranslations ERROR error.message = ', error.message)
-                    })
-            default:
-                return null
+        if (_.includes(schema, 'data:{*}')) {
+            if (_.includes(schema, 'header-set:{Authorization}')) {
+                options.headers = {
+                    Authorization: globals.getAdminToken()
+                }
+            }
+        } else {
+            // standard format
+            data = { key, data }
+            data.token = globals.getAdminToken()
         }
+
+        const methods = {
+            get,
+            post
+        }
+        console.log('DS:request data 2 = ', { ...data })
+        return methods[api.method](api.target, data, options)
+            .then(res => {
+                console.log('DS:post res = ', res)
+                if (_.includes(schema, 'header-get:{authorization}')) {
+                    globals.setAdminToken(res.headers.authorization)
+                }
+                updateRequests(res.data.requests)
+                updateResults(res.data, key, api)
+                globals.eventBus.$emit('onLoadResults', { error: null })
+            })
+            .catch(error => {
+                try {
+                    updateResults(JSON.stringify(error.response.data), key, api)
+                } catch (error) {
+                    updateResults(JSON.stringify(error), key, api)
+                }
+                globals.eventBus.$emit('onLoadResults', { error })
+                console.log('DS:getTranslations ERROR error.message = ', error.message)
+            })
     }
 
     const setTranslationFallbacks = (translations, lng, key, i18n) => {
@@ -202,12 +201,12 @@ function Datasource() {
         _.each(requests, (request, key) => {
             request.key = key
             request.label = _.isString(request.label) ? request.label : key
-            request.api = request.api && _.isString(request.api.target) ? request.api : { target: '/get', method: 'post' }
+            request.api =
+                request.api && _.isString(request.api.target) ? request.api : { target: '/get', method: 'post' }
             request.api.method = request.api.method === 'get' ? 'get' : 'post'
             request.description = _.isString(request.description) ? request.description : key
             console.log('DS:updateRequests request.key = ', request.key)
             console.log('DS:updateRequests request.form = ', request.form)
-
             _.each(request.form, (item, itemKey) => {
                 item.key = `${key}--${itemKey}`
                 item.description = _.isString(item.description) ? item.description : null

@@ -160,20 +160,19 @@ export default {
         },
         collectData(key) {
             // TODO add here api collect model later
-            const res = {}
+            let res = {}
             _.each(this.requests[key].form, item => {
                 if (!_.isUndefined(item.selected)) {
-                    res[item.key] = item.selected
+                    if (item.sendKey === null || item.sendKey === '') {
+                        res = {...res, ...item.selected}
+                    } else {
+                        res[item.key] = item.selected
+                    }
                 }
-                console.log('SZ:collectData item.selected = ', item.selected)
             })
             return res
         },
         async sendForm(key) {
-            console.log('SZ:sendForm this.getApi(key) = ', this.getApi(key))
-            console.log('SZ:sendForm this.getApi(key).target = ', this.getApi(key).target)
-            console.log('SZ:sendForm key = ', key)
-            // datasource.send(key, this.getApi(key).target, this.collectData(key))
             await datasource.request(key, this.getApi(key), this.collectData(key))
             this.updateRequests()
         },

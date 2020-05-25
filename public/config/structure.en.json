@@ -17,29 +17,88 @@
         "devstore": {}
     },
     "requests": {
-        "r2d2-datasets-get": {
-            "label": "r2d2-datasets-get",
-            "description": "Heidi takes a ride with R2  ;-)",
+        "r2d2-login": {
+            "label": "r2d2-login-post",
+            "description": "Heidi calls for a ride with R2  ;-)",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/login",
+                "method": "post",
+                "schema": "data:{*},header-get:{authorization}"
+            },
+            "form": {
+                "dd-auth": {
+                    "type": "dropdown",
+                    "label": "mocky login",
+                    "sendKey": null,
+                    "options": [
+                        {
+                            "text": "login",
+                            "value": {
+                                "username": "testuser@mpdl.mpg.de",
+                                "password": "test"
+                            }
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-get-dataset": {
+            "label": "r2d2-dataset-get",
+            "description": "Calls a single dataset",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/",
                 "method": "get",
-                "schema": "hardcoded"
+                "schema": "data:{*},header-set:{Authorization}"
+
             },
             "form": {
-                "dropdown-1": {
+                "keys": {
                     "type": "dropdown",
-                    "label": "dummy values",
+                    "label": "mocky keys",
                     "options": [
                         {
-                            "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd23 (label)",
+                            "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd23 (needs token)",
                             "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23"]
-                        },                        {
-                            "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd24 (label)",
+                        },
+                        {
+                            "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd24 (no token)",
                             "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd24"]
                         },
                         {
-                            "text": "a6124f2a-xxy-dummyy (label)",
-                            "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd25"]
+                            "text": "489d-a7e2-invalid (invalid)",
+                            "value": ["a6124f2a-9a06-489d-a7e2-invalid"]
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-get-datasets": {
+            "label": "r2d2-datasets-get",
+            "description": "Calls multiple datasets",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/",
+                "method": "post",
+                "schema": "data:{*},header-set:{Authorization}"
+
+            },
+            "form": {
+                "keys": {
+                    "type": "dropdown",
+                    "label": "mocky keys",
+                    "options": [
+                        {
+                            "text": "all",
+                            "value": {
+                                "query": {
+                                    "match_all": {}
+                                }  
+                            }
+                        },
+                        {
+                            "text": "invalid",
+                            "value": ""
                         }
                     ],
                     "selected": 0
