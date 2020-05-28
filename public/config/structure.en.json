@@ -50,9 +50,9 @@
         },
         "r2d2-file-create": {
             "label": "r2d2-file-create",
-            "description": "Creates a file in fileset",
+            "description": "Creates a file in dataset",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{fileset-id}/files",
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
                 "method": "post",
                 "schema": {
                     "data": null,
@@ -64,9 +64,9 @@
                 }
             },
             "form": {
-                "fileset-id": {
+                "dataset-id": {
                     "type": "dropdown",
-                    "label": "select target fileset",
+                    "label": "select target dataset",
                     "options": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23", "282fbbe0-97b3-40c6-aa8a-37fcf29c734b"],
                     "selected": 0
                 },
@@ -84,12 +84,71 @@
                 }
             }
         },
-        "r2d2-fileset-create": {
-            "label": "r2d2-fileset-create",
-            "description": "Creates a fileset",
+        "r2d2-dataset-update": {
+            "label": "r2d2-dataset-update",
+            "description": "Updates a dataset (metadata)",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}",
+                "method": "put",
+                "schema": {
+                    "data": "{*}",
+                    "data-setXX": {
+                        "modificationDate": {
+                            "key": "DateToIsoString",
+                            "value": "now"
+                        }
+                    },
+                    "header-set": {
+                        "Authorization": "token"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "dropdown",
+                    "label": "mocky update values",
+                    "options": [
+                        {
+                            "text": "Uri Zatonga: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        }
+                    ],
+                    "selected": 0
+                },
+                "update": {
+                    "type": "dropdown",
+                    "label": "mocky update values",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "Uri Zatonga's Amazin World Formula",
+                            "value": {
+                                "modificationDate": "Should be: modificationDate from source file",
+                                "metadata": {
+                                    "title": "Uri Zatonga's Amazi'n World Formula"
+                                }
+                            }
+                        },
+                        {
+                            "text": "DOI: 999",
+                            "value": {
+                                "modificationDate": "Should be: modificationDate from source file",
+                                "metadata": {
+                                    "doi": 999
+                                }
+                            }
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-dataset-create": {
+            "label": "r2d2-dataset-create",
+            "description": "Creates a dataset",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/",
-                "method": "put",
+                "method": "post",
                 "schema": {
                     "data": "*",
                     "header-set": {
@@ -98,15 +157,35 @@
                 }
             },
             "form": {
-                "upload": {
-                    "component": "r2-chunky",
-                    "label": "r2-chunky"
+                "create": {
+                    "type": "dropdown",
+                    "label": "mocky create dataset",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "Uri Zatonga's Amazi'n World Formula",
+                            "value": {
+                                "creator": {
+                                    "name": "Uri Zatonga"
+                                },
+                                "metadata": {
+                                    "title": "Amazin World Formula",
+                                    "authors": [],
+                                    "doi": 666,
+                                    "keywords": "42",
+                                    "license": "dtfyw",
+                                    "language": "ru"
+                                }
+                            }
+                        }
+                    ],
+                    "selected": 0
                 }
             }
         },
         "r2d2-upload": {
             "label": "r2d2-upload",
-            "description": "Chunk filez and move ;-)",
+            "description": "Chunk filez and up 'them ;-)",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/",
                 "method": "put",
@@ -165,7 +244,7 @@
             "label": "r2d2-datasets-get",
             "description": "Calls multiple datasets",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/",
+                "target": "http://130.183.216.136/r2d2/datasets/search",
                 "method": "post",
                 "schema": {
                     "data": "{*}",
@@ -178,6 +257,7 @@
                 "keys": {
                     "type": "dropdown",
                     "label": "mocky keys",
+                    "sendKey": "",
                     "options": [
                         {
                             "text": "all",

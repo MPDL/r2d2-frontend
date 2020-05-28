@@ -179,7 +179,7 @@ export default {
         getApi(key) {
             return this.requests[key].api
         },
-        collectData(key) {
+        collectData(key, schema) {
             let res = {}
             _.each(this.requests[key].form, item => {
                 if (!_.isUndefined(item.selected)) {
@@ -193,10 +193,18 @@ export default {
                     }
                 }
             })
+
+            // TODO make this generic!
+            const mod = _.get(schema,'data-set.modificationDate')
+            if (mod && mod.key === 'DateToIsoString' && mod.value === 'now') {
+                res['modificationDate'] = new Date().toISOString()
+            }
+
             return res
         },
         async sendForm(key) {
-            await datasource.request(key, this.getApi(key), this.collectData(key))
+            const api = this.getApi(key)
+            await datasource.request(key, api, this.collectData(key, api.schema))
             this.updateRequests()
         },
         onClick(key) {

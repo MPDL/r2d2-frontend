@@ -187,6 +187,7 @@ function Datasource() {
         const dts = _.get(schema, 'data')
         switch (dts) {
             case '{*}':
+            case '*':
             case null:
                 break
             default:
