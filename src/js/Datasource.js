@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { _isString } from 'gsap/gsap-core'
+import { _forEachName } from 'gsap/gsap-core'
 
 function Datasource() {
     //
@@ -82,69 +83,123 @@ function Datasource() {
     const getStructureApi = () => config.structureApi
     const getTranslationsApi = () => config.translatinosApi
 
+    const getApi = api => {
+        return globals.DEV_MODE && config.devApis[api.target] ? config.devApis[target] : api
+    }
+
     const post = async (api, data = {}, options = {}) => {
         return axios.create().post(getPath(api), data, options)
     }
 
     const get = async (api, dta = {}, options = {}) => {
-        let data = {}
-        const target = [getPath(api)]
-        _.each(dta, (value, key) => {
-            _.isString(value[0]) ? target.push(value[0]) : null
-            _.isPlainObject(value[0]) ? (data = { ...data, ...value[0] }) : null
-        })
-        console.log('DS:get target = ', target)
-        console.log('DS:get data = ', data)
-        return axios.create().get(target.join('/'), options)
+        return axios.create().get(getPath(api), options)
     }
 
-    const getApi = api => {
-        return globals.DEV_MODE && config.devApis[api.target] ? config.devApis[target] : api
+    const put = async (api, data = {}, options = {}) => {
+        return axios.create().put(getPath(api), data, options)
+    }
+
+    const METHODS = {
+        post,
+        get,
+        put,
+        default: 'post'
     }
 
     this.request = async (key = null, api = null, rawData = {}) => {
-        api = _.isPlainObject(api) ? getApi(api) : config.defaultApi
+        api = _.isPlainObject(api) ? { ...getApi(api) } : { ...config.defaultApi }
         console.log('DS:request key = ', key)
         console.log('DS:request api = ', api)
+        console.log('DS:request api.schema = ', api.schema)
         console.log('DS:request rawData = ', rawData)
-        let data = {}
-        _.each(rawData, (item, key) => {
-            if (key.split('--')[1]) {
-                data[key.split('--')[1]] = item
-            } else {
-                data[key] = item
-            }
-        })
-        console.log('DS:request data = ', { ...data })
+        let data = rawData
         // schema '{*}' means the plain data object is send,
         // without the standard key-data structure
-        // token is set to header (2Do)
-        // TODO refactor the schema / schema parser thing
-        const schema = _.isString(api.schema) ? api.schema.split(',') : []
-        console.log('DS:request schema = ', schema)
-        const options = {}
+        // console.log('obj:fc value = ',value)
+        // const schema = _.isString(api.schema) ? api.schema.split(',') : []
+        const schema = _.isPlainObject(api.schema) ? api.schema : {}
 
-        if (_.includes(schema, 'data:{*}')) {
-            if (_.includes(schema, 'header-set:{Authorization}')) {
-                options.headers = {
-                    Authorization: globals.getAdminToken()
-                }
+        // TODO extract 'getValueByKey' to global class or someting ...
+        const getValueByKey = (key, value, cut = false) => {
+            console.log('DS:getValueByKey key, value = ', key, value)
+            console.log('DS:getValueByKey _.isString(value) = ', _.isString(value))
+            switch (true) {
+                case _.isString(value):
+                    return value
+                case _.isPlainObject(value):
+                    const res = value[key] ? value[key].toString() : key
+                    cut ? delete value[key] : null
+                    return res
             }
-        } else {
-            // standard format
-            data = { key, data }
-            data.token = globals.getAdminToken()
+            return key
         }
 
-        const methods = {
-            get,
-            post
+        const options = {}
+        // +++++++++++++++++
+        // TODO extract header handling to global class or someting ...
+        console.log('DS:request _.get(schema header-set.Authorization = ', _.get(schema, 'header-set.Authorization'))
+        if (_.get(schema, 'header-set.Authorization') === 'token') {
+            _.set(options, 'headers.Authorization', globals.getAdminToken())
         }
+        let filename = _.get(schema, 'header-set.X-File-Name')
+        if (filename) {
+            filename = getValueByKey(filename, data, true)
+            _.set(options, 'headers.X-File-Name', filename)
+        }
+        let filesize = _.get(schema, 'header-set.X-File-Total-Size')
+        if (filename) {
+            filesize = getValueByKey(filesize, data, true)
+            _.set(options, 'headers.X-File-Total-Size', filesize)
+        }
+        // +++++++++++++++++
+        // TODO extract api-target-parser to global class or someting ...
+
+        let inside = false
+        const source = api.target.split('').reverse()
+        const parts = [[[], []]]
+
+        while (source.length > 0) {
+            const char = source.pop()
+            switch (char) {
+                case '{':
+                case '}':
+                    parts[0] = inside ? getValueByKey(parts[0][1].join(''), data, true) : parts[0][0].join('')
+                    parts.unshift([[], []])
+                    inside = char === '{'
+                    // console.log('DS:request WHILE {} parts = ', parts)
+                    break
+                default:
+                    const tg = inside ? parts[0][1] : parts[0][0]
+                    // console.log('DS:requesttg = ', tg)
+                    tg.push(char)
+            }
+            if (source.length === 0) {
+                // console.log('DS:request WHILE source.length === 0 = ')
+                parts[0] = inside ? getValueByKey(parts[0][1].join(''), data, true) : parts[0][0].join('')
+                parts.reverse()
+                break
+            }
+        }
+        // +++++++++++++++++
+        console.log('DS:request parts = ', parts)
+        api.target = parts.join('')
+
+        const dts = _.get(schema, 'data')
+        switch (dts) {
+            case '{*}':
+            case null:
+                break
+            default:
+                data = { key, data }
+                data.token = globals.getAdminToken()
+        }
+
         console.log('DS:request data 2 = ', { ...data })
-        return methods[api.method](api.target, data, options)
+        console.log('DS:request options 2 = ', { ...options })
+        return METHODS[api.method](api.target, data, options)
             .then(res => {
                 console.log('DS:post res = ', res)
-                if (_.includes(schema, 'header-get:{authorization}')) {
+                if (_.get(schema, 'header-get.Authorization') === 'token') {
                     globals.setAdminToken(res.headers.authorization)
                 }
                 updateRequests(res.data.requests)
@@ -198,25 +253,31 @@ function Datasource() {
 
     const updateRequests = requests => {
         const ordered = []
-        _.each(requests, (request, key) => {
-            request.key = key
-            request.label = _.isString(request.label) ? request.label : key
+        _.each(requests, (request, rqKey) => {
+            request.key = rqKey
+            request.label = _.isString(request.label) ? request.label : rqKey
             request.api =
                 request.api && _.isString(request.api.target) ? request.api : { target: '/get', method: 'post' }
-            request.api.method = request.api.method === 'get' ? 'get' : 'post'
-            request.description = _.isString(request.description) ? request.description : key
+
+            request.api.method = METHODS[request.api.method] ? request.api.method : METHODS.default
+            request.description = _.isString(request.description) ? request.description : rqKey
             console.log('DS:updateRequests request.key = ', request.key)
             console.log('DS:updateRequests request.form = ', request.form)
             _.each(request.form, (item, itemKey) => {
-                item.key = `${key}--${itemKey}`
+                item.sendKey = _.isString(item.sendKey) ? item.sendKey : itemKey
+                item.key = `${rqKey}--${itemKey}`
                 item.description = _.isString(item.description) ? item.description : null
                 item.label = _.isString(item.label) ? item.label : itemKey
                 if (item.type === 'dropdown') {
                     // selection by value
                     item.selected = _.isNil(item.selected) ? item.options[0] : item.selected
                     // selection by index
-                    if (_.isNumber(item.selected) && _.isPlainObject(item.options[item.selected])) {
-                        item.selected = item.options[item.selected].value
+                    if (_.isNumber(item.selected)) {
+                        if (_.isPlainObject(item.options[item.selected])) {
+                            item.selected = item.options[item.selected].value
+                        } else {
+                            item.selected = item.options[item.selected]
+                        }
                     }
                 }
                 console.log('DS:updateRequests item.selected = ', item.selected)

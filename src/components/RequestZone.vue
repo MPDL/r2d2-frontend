@@ -35,6 +35,10 @@
                             :label-for="item.key"
                             :description="item.description"
                         >
+                            <b-input-group v-if="item.component === 'r2-chunky'">
+                                <r2-chunky :config="item" />
+                            </b-input-group>
+
                             <b-input-group
                                 v-if="item.type === 'input'"
                                 size="sm"
@@ -126,10 +130,12 @@
 
 <script>
 import vueCustomScrollbar from 'vue-custom-scrollbar'
+import R2Chunky from '@/components/R2Chunky.vue'
 export default {
     name: 'SearchZone',
     components: {
-        vueCustomScrollbar
+        vueCustomScrollbar,
+        R2Chunky
     },
     data() {
         return {
@@ -162,7 +168,7 @@ export default {
         },
         updateRequests() {
             this.requests = datasource.getRequests()
-            console.log('obj:updateRequests this.requests = ',this.requests)
+            console.log('obj:updateRequests this.requests = ', this.requests)
             this.update()
             this.updateTabActiveState()
         },
@@ -174,14 +180,16 @@ export default {
             return this.requests[key].api
         },
         collectData(key) {
-            // TODO add here api collect model later
             let res = {}
             _.each(this.requests[key].form, item => {
                 if (!_.isUndefined(item.selected)) {
-                    if (item.sendKey === null || item.sendKey === '') {
-                        res = { ...res, ...item.selected }
+                    if (item.sendKey === '') {
+                        // set 'selected' value to root
+                        // if selected is typeof string, res also gets a plain string no object!
+                        res = _.isString(item.selected) ? item.selected : { ...res, ...item.selected }
+                        // console.log('RZ:collectData item.selected = ', item.selected)
                     } else {
-                        res[item.key] = item.selected
+                        res[item.sendKey] = item.selected
                     }
                 }
             })

@@ -23,13 +23,18 @@
             "api": {
                 "target": "http://130.183.216.136/r2d2/login",
                 "method": "post",
-                "schema": "data:{*},header-get:{authorization}"
+                "schema": {
+                    "data": "{*}",
+                    "header-get": {
+                        "Authorization": "token"
+                    }
+                }
             },
             "form": {
                 "dd-auth": {
                     "type": "dropdown",
                     "label": "mocky login",
-                    "sendKey": null,
+                    "sendKey": "",
                     "options": [
                         {
                             "text": "login",
@@ -43,19 +48,101 @@
                 }
             }
         },
+        "r2d2-file-create": {
+            "label": "r2d2-file-create",
+            "description": "Creates a file in fileset",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{fileset-id}/files",
+                "method": "post",
+                "schema": {
+                    "data": null,
+                    "header-set": {
+                        "Authorization": "token",
+                        "X-File-Name": "file-name",
+                        "X-File-Total-Size": "file-size"
+                    }
+                }
+            },
+            "form": {
+                "fileset-id": {
+                    "type": "dropdown",
+                    "label": "select target fileset",
+                    "options": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23", "282fbbe0-97b3-40c6-aa8a-37fcf29c734b"],
+                    "selected": 0
+                },
+                "file-name": {
+                    "type": "dropdown",
+                    "label": "select target mock-filename",
+                    "options": ["api-crasher-2", "chakka lakka"],
+                    "selected": 0
+                },
+                "file-size": {
+                    "type": "dropdown",
+                    "label": "select target mock-filesize",
+                    "options": [556333, 77766777],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-fileset-create": {
+            "label": "r2d2-fileset-create",
+            "description": "Creates a fileset",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/",
+                "method": "put",
+                "schema": {
+                    "data": "*",
+                    "header-set": {
+                        "Authorization": "token"
+                    }
+                }
+            },
+            "form": {
+                "upload": {
+                    "component": "r2-chunky",
+                    "label": "r2-chunky"
+                }
+            }
+        },
+        "r2d2-upload": {
+            "label": "r2d2-upload",
+            "description": "Chunk filez and move ;-)",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/",
+                "method": "put",
+                "schema": {
+                    "data": "*",
+                    "header-set": {
+                        "Authorization": "token"
+                    }
+                }
+            },
+            "form": {
+                "upload": {
+                    "component": "r2-chunky",
+                    "label": "r2-chunky"
+                }
+            }
+        },
+
         "r2d2-get-dataset": {
             "label": "r2d2-dataset-get",
             "description": "Calls a single dataset",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/",
+                "target": "http://130.183.216.136/r2d2/datasets/{file-id}",
                 "method": "get",
-                "schema": "data:{*},header-set:{Authorization}"
-
+                "schema": {
+                    "data": "{*}",
+                    "header-set": {
+                        "Authorization": "token"
+                    }
+                }
             },
             "form": {
-                "keys": {
+                "file-id-select": {
                     "type": "dropdown",
                     "label": "mocky keys",
+                    "sendKey": "file-id",
                     "options": [
                         {
                             "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd23 (needs token)",
@@ -80,8 +167,12 @@
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/",
                 "method": "post",
-                "schema": "data:{*},header-set:{Authorization}"
-
+                "schema": {
+                    "data": "{*}",
+                    "header-set": {
+                        "Authorization": "token"
+                    }
+                }
             },
             "form": {
                 "keys": {
@@ -93,7 +184,7 @@
                             "value": {
                                 "query": {
                                     "match_all": {}
-                                }  
+                                }
                             }
                         },
                         {
