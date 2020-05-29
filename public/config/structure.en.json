@@ -24,7 +24,6 @@
                 "target": "http://130.183.216.136/r2d2/login",
                 "method": "post",
                 "schema": {
-                    "data": "{*}",
                     "header-get": {
                         "Authorization": "token"
                     }
@@ -48,38 +47,117 @@
                 }
             }
         },
-        "r2d2-file-create": {
-            "label": "r2d2-file-create",
-            "description": "Creates a file in dataset",
+        "r2d2-chunkload": {
+            "label": "r2d2-chunkload",
+            "description": "Chunk filez and up 'them ;-)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
-                "method": "post",
+                "target": "http://130.183.216.136/r2d2/datasets/{zatongas-id}/files/{file-id}",
+                "method": "put",
                 "schema": {
-                    "data": null,
+                    "data": "cunky.base64",
                     "header-set": {
                         "Authorization": "token",
-                        "X-File-Name": "file-name",
-                        "X-File-Total-Size": "file-size"
+                        "X-File-Chunk-Number": "cunky.chunknumber"
                     }
                 }
             },
             "form": {
-                "dataset-id": {
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "r2-chunky"
+                },
+                "zatongas-id": {
                     "type": "dropdown",
-                    "label": "select target dataset",
-                    "options": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23", "282fbbe0-97b3-40c6-aa8a-37fcf29c734b"],
+                    "label": "mocky target dataset select",
+                    "options": [
+                        {
+                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        }
+                    ],
                     "selected": 0
                 },
-                "file-name": {
+                "file-id": {
                     "type": "dropdown",
-                    "label": "select target mock-filename",
-                    "options": ["api-crasher-2", "chakka lakka"],
+                    "label": "mocky target file select",
+                    "options": [
+                        {
+                            "text": "Zatonga's target file: chunky-1 *-1a0e0fb78f6c",
+                            "value": "70fb8442-0102-4905-b4c2-1a0e0fb78f6c"
+                        }
+                    ],
                     "selected": 0
+                }
+            }
+        },
+        "r2d2-upload": {
+            "label": "r2d2-upload",
+            "description": "Single file & hau wech ;-)",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{zatongas-id}/files",
+                "method": "post",
+                "schema": {
+                    "data": "cunky.base64",
+                    "header-set": {
+                        "Authorization": "token",
+                        "X-File-Name": "cunky.filename",
+                        "X-File-Total-Size": "cunky.filesize"
+                    }
+                }
+            },
+            "form": {
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "r2-chunky"
                 },
-                "file-size": {
+                "zatongas-id": {
                     "type": "dropdown",
-                    "label": "select target mock-filesize",
-                    "options": [556333, 77766777],
+                    "label": "mocky target dataset select",
+                    "options": [
+                        {
+                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-dataset-create": {
+            "label": "r2d2-dataset-create",
+            "description": "Creates a dataset",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/",
+                "method": "post",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "token"
+                    }
+                }
+            },
+            "form": {
+                "create": {
+                    "type": "dropdown",
+                    "label": "mocky create dataset",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "Uri Zatonga's Amazi'n World Formula",
+                            "value": {
+                                "creator": {
+                                    "name": "Uri Zatonga"
+                                },
+                                "metadata": {
+                                    "title": "Amazin World Formula",
+                                    "authors": [],
+                                    "doi": 666,
+                                    "keywords": "42",
+                                    "license": "dtfyw",
+                                    "language": "ru"
+                                }
+                            }
+                        }
+                    ],
                     "selected": 0
                 }
             }
@@ -91,7 +169,6 @@
                 "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}",
                 "method": "put",
                 "schema": {
-                    "data": "{*}",
                     "data-setXX": {
                         "modificationDate": {
                             "key": "DateToIsoString",
@@ -143,67 +220,55 @@
                 }
             }
         },
-        "r2d2-dataset-create": {
-            "label": "r2d2-dataset-create",
-            "description": "Creates a dataset",
+        "r2d2-empty-file-create": {
+            "label": "r2d2-empty-file-create",
+            "description": "Creates a empty file in dataset (just testing)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/",
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
                 "method": "post",
                 "schema": {
-                    "data": "*",
                     "header-set": {
-                        "Authorization": "token"
+                        "Authorization": "token",
+                        "X-File-Name": "file-name",
+                        "X-File-Total-Size": "file-size"
                     }
                 }
             },
             "form": {
-                "create": {
+                "dataset-id": {
                     "type": "dropdown",
-                    "label": "mocky create dataset",
-                    "sendKey": "",
+                    "label": "select target dataset",
                     "options": [
                         {
-                            "text": "Uri Zatonga's Amazi'n World Formula",
-                            "value": {
-                                "creator": {
-                                    "name": "Uri Zatonga"
-                                },
-                                "metadata": {
-                                    "title": "Amazin World Formula",
-                                    "authors": [],
-                                    "doi": 666,
-                                    "keywords": "42",
-                                    "license": "dtfyw",
-                                    "language": "ru"
-                                }
-                            }
+                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        },
+                        {
+                            "text": "X Fileset: *-40b583ebbd23",
+                            "value": "a6124f2a-9a06-489d-a7e2-40b583ebbd23"
+                        },
+                        {
+                            "text": "Y Fileset: *-37fcf29c734b",
+                            "value": "282fbbe0-97b3-40c6-aa8a-37fcf29c734b"
                         }
                     ],
+
+                    "selected": 0
+                },
+                "file-name": {
+                    "type": "dropdown",
+                    "label": "select target mock-filename",
+                    "options": ["chunky-1","api-crasher-2", "chakka lakka"],
+                    "selected": 0
+                },
+                "file-size": {
+                    "type": "dropdown",
+                    "label": "select target mock-filesize",
+                    "options": [556333, 77766777, 0, null, -1],
                     "selected": 0
                 }
             }
         },
-        "r2d2-upload": {
-            "label": "r2d2-upload",
-            "description": "Chunk filez and up 'them ;-)",
-            "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/",
-                "method": "put",
-                "schema": {
-                    "data": "*",
-                    "header-set": {
-                        "Authorization": "token"
-                    }
-                }
-            },
-            "form": {
-                "upload": {
-                    "component": "r2-chunky",
-                    "label": "r2-chunky"
-                }
-            }
-        },
-
         "r2d2-get-dataset": {
             "label": "r2d2-dataset-get",
             "description": "Calls a single dataset",
@@ -211,7 +276,6 @@
                 "target": "http://130.183.216.136/r2d2/datasets/{file-id}",
                 "method": "get",
                 "schema": {
-                    "data": "{*}",
                     "header-set": {
                         "Authorization": "token"
                     }
@@ -247,7 +311,6 @@
                 "target": "http://130.183.216.136/r2d2/datasets/search",
                 "method": "post",
                 "schema": {
-                    "data": "{*}",
                     "header-set": {
                         "Authorization": "token"
                     }

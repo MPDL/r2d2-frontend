@@ -23,44 +23,35 @@ export default {
     },
     created() {},
     methods: {
-        onFileInput() {
-            console.log('CKY:onFileInput = ')
-        },
         onFileSelect(event) {
-            // console.log('IU:previewImage event = ', event)
-            // console.log('IU:previewImage event.dataTransfer.getData() = ', event.dataTransfer.getData('text/plain'))
             const input = event.target
-            console.log('CKY:previewImage input = ', input)
-
+            console.log('CKY:onFileSelect input = ', input)
             if (input.files && input.files[0]) {
                 const reader = new FileReader()
                 reader.onload = e => {
-                    console.log('CKY:previewImage onload e = ', e)
-                    const base64 = e.target.result
-                    console.log('CKY:previewImage onload base64.substr(0,100) = ', base64.substr(0,100))
-                    this.config.selected = base64
+                    this.config.selected = {
+                        // base64: e.target.result.substr(0, 20),
+                        base64: e.target.result,
+                        filename: input.files[0].name,
+                        filesize: e.total,
+                        chunknumber: 1 // TEST
+                    }
                 }
-                // this.setImageFieldText(input.files[0].name)
                 reader.readAsDataURL(input.files[0])
             }
         },
 
-
-    //     PUT http://130.183.216.136/r2d2/datasets/<id>/files/<file_id>
-    // header: Authorization, <token from login>
-    //     X-File-Chunk-Number, <number of chunk>
-    //     etag, <checksum> OPTIONAL
-    //     Content-Length, <number of bytes> OPTIONAL
-    // body:
-    // base64 encoded file
-    // returns uploaded filechunk
-
-
+        //     PUT http://130.183.216.136/r2d2/datasets/<id>/files/<file_id>
+        // header: Authorization, <token from login>
+        //     X-File-Chunk-Number, <number of chunk>
+        //     etag, <checksum> OPTIONAL
+        //     Content-Length, <number of bytes> OPTIONAL
+        // body:
+        // base64 encoded file
+        // returns uploaded filechunk
 
         // editor.on('fileUploadRequest', evt =>
         // window.datasource.ckUploadFileRequest(evt).then(res => resolveUpload(evt, res))
-
-
 
         // let file = document.getElementById('file').files[0];
         // let fr = new FileReader();

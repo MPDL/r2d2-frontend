@@ -106,13 +106,15 @@ function Datasource() {
         default: 'post'
     }
 
-    this.request = async (key = null, api = null, rawData = {}) => {
+    this.request = async (key = null, api = null, data = {}) => {
         api = _.isPlainObject(api) ? { ...getApi(api) } : { ...config.defaultApi }
         console.log('DS:request key = ', key)
         console.log('DS:request api = ', api)
         console.log('DS:request api.schema = ', api.schema)
-        console.log('DS:request rawData = ', rawData)
-        let data = rawData
+        console.log('DS:request data = ', data)
+
+        // console.log('DS:request rawData = ', rawData)
+        // let data = rawData
         // schema '{*}' means the plain data object is send,
         // without the standard key-data structure
         // console.log('obj:fc value = ',value)
@@ -120,18 +122,22 @@ function Datasource() {
         const schema = _.isPlainObject(api.schema) ? api.schema : {}
 
         // TODO extract 'getValueByKey' to global class or someting ...
-        const getValueByKey = (key, value, cut = false) => {
-            console.log('DS:getValueByKey key, value = ', key, value)
-            console.log('DS:getValueByKey _.isString(value) = ', _.isString(value))
+        const getValueByKey = (key, data, cut = false) => {
+            console.log('DS:getValueByKey ++++++++ key = ', key)
+            console.log('DS:getValueByKey data BF = ', { ...data })
+            console.log('DS:getValueByKey _.isString(data) = ', _.isString(data))
             switch (true) {
-                case _.isString(value):
-                    return value
-                case _.isPlainObject(value):
-                    const res = value[key] ? value[key].toString() : key
-                    cut ? delete value[key] : null
+                case _.isString(data):
+                    return data
+                case _.isPlainObject(data):
+                    const res = _.get(data, key)
+                    console.log('DS:getValueByKey res = ', res)
+                    // const res = _.isUndefined(value) ? key : value
+                    cut ? _.unset(data, key) : null
+                    console.log('DS:getValueByKey data AF = ', { ...data })
                     return res
             }
-            return key
+            return undefined
         }
 
         const options = {}
@@ -141,6 +147,7 @@ function Datasource() {
         if (_.get(schema, 'header-set.Authorization') === 'token') {
             _.set(options, 'headers.Authorization', globals.getAdminToken())
         }
+        // TODO this dynamic!
         let filename = _.get(schema, 'header-set.X-File-Name')
         if (filename) {
             filename = getValueByKey(filename, data, true)
@@ -151,9 +158,13 @@ function Datasource() {
             filesize = getValueByKey(filesize, data, true)
             _.set(options, 'headers.X-File-Total-Size', filesize)
         }
+        let chunknumber = _.get(schema, 'header-set.X-File-Chunk-Number')
+        if (chunknumber) {
+            chunknumber = getValueByKey(chunknumber, data, true)
+            _.set(options, 'headers.X-File-Chunk-Number', chunknumber)
+        }
         // +++++++++++++++++
         // TODO extract api-target-parser to global class or someting ...
-
         let inside = false
         const source = api.target.split('').reverse()
         const parts = [[[], []]]
@@ -166,37 +177,36 @@ function Datasource() {
                     parts[0] = inside ? getValueByKey(parts[0][1].join(''), data, true) : parts[0][0].join('')
                     parts.unshift([[], []])
                     inside = char === '{'
-                    // console.log('DS:request WHILE {} parts = ', parts)
                     break
                 default:
                     const tg = inside ? parts[0][1] : parts[0][0]
-                    // console.log('DS:requesttg = ', tg)
                     tg.push(char)
             }
             if (source.length === 0) {
-                // console.log('DS:request WHILE source.length === 0 = ')
                 parts[0] = inside ? getValueByKey(parts[0][1].join(''), data, true) : parts[0][0].join('')
                 parts.reverse()
                 break
             }
         }
-        // +++++++++++++++++
+        // +++++++++++++++++ finalize data structure for sending
         console.log('DS:request parts = ', parts)
         api.target = parts.join('')
 
-        const dts = _.get(schema, 'data')
-        switch (dts) {
-            case '{*}':
-            case '*':
-            case null:
+        const directDataKey = _.get(schema, 'data')
+        const directDataValue = getValueByKey(directDataKey, data)
+        switch (true) {
+            case !_.isUndefined(directDataValue):
+                data = directDataValue
+                console.log('DS:request getValueByKey(directDataKey, data) = ', data)
+                break
+            case !_.isUndefined(data.___ROOT):
+                data = { ...data.___ROOT }
                 break
             default:
                 data = { key, data }
                 data.token = globals.getAdminToken()
         }
 
-        console.log('DS:request data 2 = ', { ...data })
-        console.log('DS:request options 2 = ', { ...options })
         return METHODS[api.method](api.target, data, options)
             .then(res => {
                 console.log('DS:post res = ', res)

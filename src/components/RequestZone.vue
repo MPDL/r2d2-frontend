@@ -179,29 +179,53 @@ export default {
         getApi(key) {
             return this.requests[key].api
         },
-        collectData(key, schema) {
+
+        collectDataXXX(key, schema) {
             let res = {}
             _.each(this.requests[key].form, item => {
                 if (!_.isUndefined(item.selected)) {
+                    console.log('RZ:collectData +++++++++++++++++ = ')
+                    console.log('RZ:collectData item.selected = ', item.selected)
+                    console.log('RZ:collectData typeof item.selected = ', typeof item.selected)
                     if (item.sendKey === '') {
                         // set 'selected' value to root
                         // if selected is typeof string, res also gets a plain string no object!
-                        res = _.isString(item.selected) ? item.selected : { ...res, ...item.selected }
+                        res['___ROOT'] = _.isString(item.selected)
+                            ? item.selected
+                            : { ...res['___ROOT'], ...item.selected }
+
                         // console.log('RZ:collectData item.selected = ', item.selected)
                     } else {
                         res[item.sendKey] = item.selected
                     }
                 }
             })
+            const directSetData = _.get(this.requests, schema.data)
+            if (!_.isUndefined(directSetData)) {
+                res['___ROOT'] = directSetData
+            }
+            console.log('RZ:collectData directSetData = ', directSetData)
+            console.log('RZ:collectData schema.data = ', schema.data)
 
             // TODO make this generic!
-            const mod = _.get(schema,'data-set.modificationDate')
+            const mod = _.get(schema, 'data-set.modificationDate')
             if (mod && mod.key === 'DateToIsoString' && mod.value === 'now') {
                 res['modificationDate'] = new Date().toISOString()
             }
-
             return res
         },
+
+        collectData(key) {
+            let res = {}
+            _.each(this.requests[key].form, item => {
+                if (!_.isUndefined(item.selected)) {
+                    const ky = item.sendKey === '' ? '___ROOT' : item.sendKey
+                    res[ky] = item.selected
+                }
+            })
+            return res
+        },
+
         async sendForm(key) {
             const api = this.getApi(key)
             await datasource.request(key, api, this.collectData(key, api.schema))
