@@ -31,7 +31,7 @@
                 "method": "post",
                 "schema": {
                     "header-get": {
-                        "Authorization": "token"
+                        "Authorization": "auth.token"
                     }
                 }
             },
@@ -62,7 +62,7 @@
                 "schema": {
                     "data": "cunky.base64",
                     "header-set": {
-                        "Authorization": "token",
+                        "Authorization": "auth.token",
                         "X-File-Chunk-Number": "cunky.chunknumber"
                     }
                 }
@@ -105,7 +105,7 @@
                 "schema": {
                     "data": "cunky.base64",
                     "header-set": {
-                        "Authorization": "token",
+                        "Authorization": "auth.token",
                         "X-File-Name": "cunky.filename",
                         "X-File-Total-Size": "cunky.filesize"
                     }
@@ -137,7 +137,7 @@
                 "method": "post",
                 "schema": {
                     "header-set": {
-                        "Authorization": "token"
+                        "Authorization": "auth.token"
                     }
                 }
             },
@@ -182,7 +182,7 @@
                         }
                     },
                     "header-set": {
-                        "Authorization": "token"
+                        "Authorization": "auth.token"
                     }
                 }
             },
@@ -234,7 +234,7 @@
                 "method": "post",
                 "schema": {
                     "header-set": {
-                        "Authorization": "token",
+                        "Authorization": "auth.token",
                         "X-File-Name": "file-name",
                         "X-File-Total-Size": "file-size"
                     }
@@ -283,7 +283,7 @@
                 "method": "get",
                 "schema": {
                     "header-set": {
-                        "Authorization": "token"
+                        "Authorization": "auth.token"
                     }
                 }
             },
@@ -318,7 +318,7 @@
                 "method": "post",
                 "schema": {
                     "header-set": {
-                        "Authorization": "token"
+                        "Authorization": "auth.token"
                     }
                 }
             },

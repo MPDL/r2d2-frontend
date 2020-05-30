@@ -140,29 +140,17 @@ function Datasource() {
             return undefined
         }
 
-        const options = {}
         // +++++++++++++++++
         // TODO extract header handling to global class or someting ...
-        console.log('DS:request _.get(schema header-set.Authorization = ', _.get(schema, 'header-set.Authorization'))
-        if (_.get(schema, 'header-set.Authorization') === 'token') {
-            _.set(options, 'headers.Authorization', globals.getAdminToken())
+        const options = {}
+        const fcxSet = {
+            'auth.token': () => globals.getAdminToken()
         }
-        // TODO this dynamic!
-        let filename = _.get(schema, 'header-set.X-File-Name')
-        if (filename) {
-            filename = getValueByKey(filename, data, true)
-            _.set(options, 'headers.X-File-Name', filename)
-        }
-        let filesize = _.get(schema, 'header-set.X-File-Total-Size')
-        if (filename) {
-            filesize = getValueByKey(filesize, data, true)
-            _.set(options, 'headers.X-File-Total-Size', filesize)
-        }
-        let chunknumber = _.get(schema, 'header-set.X-File-Chunk-Number')
-        if (chunknumber) {
-            chunknumber = getValueByKey(chunknumber, data, true)
-            _.set(options, 'headers.X-File-Chunk-Number', chunknumber)
-        }
+        const headerSet = _.get(schema, 'header-set') || {}
+        _.each(headerSet, (sourceKey, targetKey) => {
+            let value = fcxSet[sourceKey] ? fcxSet[sourceKey]() : getValueByKey(sourceKey, data, true)
+            _.set(options, `headers.${targetKey}`, value)
+        })
         // +++++++++++++++++
         // TODO extract api-target-parser to global class or someting ...
         let inside = false
@@ -210,9 +198,15 @@ function Datasource() {
         return METHODS[api.method](api.target, data, options)
             .then(res => {
                 console.log('DS:post res = ', res)
-                if (_.get(schema, 'header-get.Authorization') === 'token') {
-                    globals.setAdminToken(res.headers.authorization)
+                // TODO make this fully generic
+                const fcxGet = {
+                    'auth.token': (headers) => globals.setAdminToken(headers.authorization)
                 }
+                const headerGet = _.get(schema, 'header-get') || {}
+                _.each(headerGet, (sourceKey, targetKey) => {
+                    fcxGet[sourceKey] ? fcxGet[sourceKey](res.headers) : null
+                })
+
                 updateRequests(res.data.requests)
                 updateResults(res.data, key, api)
                 globals.eventBus.$emit('onLoadResults', { error: null })
