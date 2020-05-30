@@ -387,6 +387,7 @@ function Datasource() {
                     subKey: null
                     // i18nKey: `navigation.${key}`
                 },
+                component: _.isString(item.component) ? item.component : null,
                 children: []
             }
             routes.push(mainRoute)
@@ -408,7 +409,8 @@ function Datasource() {
                         mainKey: key,
                         subKey: subKey,
                         i18nKey: `navigation.${key}`
-                    }
+                    },
+                    component: _.isString(item.component) ? item.component : null
                 })
             })
         })

@@ -10,11 +10,17 @@
         {
             "path": "*",
             "redirect": "/devstore",
-            "children": "structure"
+            "children": "structure",
+            "component": "DefaultView"
         }
     ],
     "structure": {
-        "devstore": {}
+        "devstore": {
+            "component": "DevStore"
+        },
+        "prototype": {
+            "component": "R2-Prototype"
+        }
     },
     "requests": {
         "r2d2-login": {
@@ -258,7 +264,7 @@
                 "file-name": {
                     "type": "dropdown",
                     "label": "select target mock-filename",
-                    "options": ["chunky-1","api-crasher-2", "chakka lakka"],
+                    "options": ["chunky-1", "api-crasher-2", "chakka lakka"],
                     "selected": 0
                 },
                 "file-size": {

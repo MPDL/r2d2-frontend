@@ -1,10 +1,5 @@
 <template>
-    <div class="default-view">
-        <!-- <b-nav>
-            <b-nav-item active>Active</b-nav-item>
-            <b-nav-item>Link</b-nav-item>
-            <b-nav-item disabled>Disabled</b-nav-item>
-        </b-nav> -->
+    <div class="dev-store">
         <RequestZone class="view" :uKey="uKey" />
         <ResultZone class="view" />
     </div>
@@ -16,7 +11,7 @@ import ResultZone from '@/components/ResultZone.vue'
 import RequestZone from '@/components/RequestZone.vue'
 
 export default {
-    name: 'default-view',
+    name: 'Devstore',
     data() {
         return {
             content: {
@@ -54,7 +49,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.default-view {
+.dev-store{
     .view {
         top: 120px;
         height: calc(100vh - 170px);
