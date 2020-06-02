@@ -190,6 +190,8 @@ function Datasource() {
             case !_.isUndefined(data.___ROOT):
                 data = { ...data.___ROOT }
                 break
+            case directDataKey === 'ROOT':
+                break
             default:
                 data = { key, data }
                 data.token = globals.getAdminToken()
@@ -200,16 +202,15 @@ function Datasource() {
                 console.log('DS:post res = ', res)
                 // TODO make this fully generic
                 const fcxGet = {
-                    'auth.token': (headers) => globals.setAdminToken(headers.authorization)
+                    'auth.token': headers => globals.setAdminToken(headers.authorization)
                 }
                 const headerGet = _.get(schema, 'header-get') || {}
                 _.each(headerGet, (sourceKey, targetKey) => {
                     fcxGet[sourceKey] ? fcxGet[sourceKey](res.headers) : null
                 })
-
                 updateRequests(res.data.requests)
-                updateResults(res.data, key, api)
-                globals.eventBus.$emit('onLoadResults', { error: null })
+                const dts = updateResults(res.data, key, api)
+                globals.eventBus.$emit('onLoadResults', { error: null, key, data: dts })
             })
             .catch(error => {
                 try {
@@ -217,7 +218,7 @@ function Datasource() {
                 } catch (error) {
                     updateResults(JSON.stringify(error), key, api)
                 }
-                globals.eventBus.$emit('onLoadResults', { error })
+                globals.eventBus.$emit('onLoadResults', { error, key, data: null })
                 console.log('DS:getTranslations ERROR error.message = ', error.message)
             })
     }
@@ -285,7 +286,11 @@ function Datasource() {
                         }
                     }
                 }
-                console.log('DS:updateRequests item.selected = ', item.selected)
+                // if (item.type === 'input') {
+                //     if (_.isObject(item.selected)) {
+                //         item.selected = JSON.stringify(item.selected)
+                //     }
+                // }
             })
             ordered.push(request)
         })
@@ -314,6 +319,8 @@ function Datasource() {
         }
 
         console.log('DS:updateResults config.results = ', config.results)
+
+        return config.results[ts.toString()]
     }
 
     const removeResultByTs = ts => {

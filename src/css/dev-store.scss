@@ -92,15 +92,19 @@ input:-ms-input-placeholder {
         background-color: #8cb7b6;
     }
 }
-.request-zone .scroll-area {
-    width: 390px;
-    flex-grow: 1;
+.request-zone,
+.action-cell {
+    &.scroll-area {
+        width: 390px;
+        flex-grow: 1;
+    }
 }
 
 .result-zone .vjs-tree {
     font-size: 13px;
 }
 
+.action-cell,
 .request-zone,
 .result-zone {
     // TODO: refacor and sort these classes

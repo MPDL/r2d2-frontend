@@ -1,5 +1,5 @@
 <template>
-    <div class="request-zone">
+    <div class="action-cell" :class="{ 'tabs-hidden': !showTabs }">
         <b-tabs :key="uKey" v-model="tabIndex">
             <b-tab v-for="(request, index) in requests" :key="index" class="tab hide-scrollbar">
                 <template v-slot:title>
@@ -19,7 +19,7 @@
                         </b-button>
                     </div>
                 </div>
-                <div class="target">
+                <div v-if="showApiInfo" class="target">
                     <span>api-target: {{ request.api.target }}</span>
                     <br />
                     <span>api-method: {{ request.api.method }}</span>
@@ -123,6 +123,29 @@
                     </div>
                 </vue-custom-scrollbar>
                 <div class="scoll-area-edge"></div>
+                <vue-custom-scrollbar class="scroll-area">
+                    <div class="list-pane" :key="rsKey">
+                        <div
+                            v-for="(item, index) in request.result"
+                            :key="index"
+                            class="info"
+                            @click="onClickListItem(item)"
+                        >
+                            <div class="description">{{ item.label }}</div>
+                            <div class="seperator">::</div>
+
+                            <!-- <div class="seperator">::</div>
+                    <div class="send">
+                        <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(request.key)">
+                            Send
+                        </b-button>
+                    </div> -->
+                        </div>
+                    </div>
+                    <!-- <div class="view-pane" :key="rsKey">{{ request.result }}</div> -->
+                    <!-- <vue-json-pretty :data="request.result"></vue-json-pretty> -->
+                </vue-custom-scrollbar>
+                <div class="scoll-area-edge"></div>
             </b-tab>
         </b-tabs>
     </div>
@@ -131,47 +154,99 @@
 <script>
 import vueCustomScrollbar from 'vue-custom-scrollbar'
 import R2Chunky from '@/components/R2Chunky.vue'
+import VueJsonPretty from 'vue-json-pretty'
+
 export default {
-    name: 'SearchZone',
+    name: 'ActionCell',
     components: {
         vueCustomScrollbar,
-        R2Chunky
+        R2Chunky,
+        VueJsonPretty
+    },
+    props: {
+        config: {
+            requests: {
+                type: Object,
+                default: {
+                    result: ''
+                }
+            },
+            options: {
+                type: Object,
+                default: {
+                    result: ''
+                }
+            }
+        }
     },
     data() {
         return {
-            requests: {},
+            // requests: {},
             mousedown: false,
             uKey: 0,
+            rsKey: 0,
             ddSelected: 0,
             tix: null,
             tme: null
         }
     },
     created() {
-        this.updateRequests()
+        globals.eventBus.$on('onLoadResults', this.updateResults)
+        // this.updateRequests()
         console.log('SZ:created this.requests = ', this.requests)
     },
     methods: {
-        update() {
-            this.uKey = this.uKey > 1000 ? 1 : ++this.uKey
+        update(updateKey = 'uKey') {
+            this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         updateTabActiveState() {
             // TODO unify this (redundant in result and request zone)
-            let $sel = $('.request-zone .nav-item')
+            let $sel = $('.action-cell .nav-item')
             $sel.removeClass('active')
             clearTimeout(this.tme)
             this.tme = setTimeout(() => {
-                $sel = $('.request-zone .nav-item')
+                $sel = $('.action-cell .nav-item')
                 $sel.removeClass('active')
                 $($sel[this.tabIndex]).addClass('active')
             }, 100)
         },
         updateRequests() {
             this.requests = datasource.getRequests()
-            console.log('obj:updateRequests this.requests = ', this.requests)
+            console.log('AC:updateRequests this.requests = ', this.requests)
             this.update()
             this.updateTabActiveState()
         },
+        updateResults(evt) {
+            // console.log('AC:updateResults evt = ', evt)
+            // console.log('AC:updateResults evt.data = ', evt.data)
+            // console.log('AC:updateResults evt.key = ', evt.key)
+            // // console.log('AC:updateResults this.config.requests[evt.key] = ', this.config.requests[evt.key])
+
+            if (this.config.requests[evt.key]) {
+                console.log('AC:updateResults evt = ', evt)
+                console.log('AC:updateResults evt.data = ', evt.data)
+                console.log('AC:updateResults evt.key = ', evt.key)
+                let res = _.isFunction(this.config.getResult) ? this.config.getResult(evt.data) : evt.data
+                // res = JSON.stringify(res)
+                this.config.requests[evt.key].result = res
+                // console.log('AC:updateResults res = ', res)
+                console.log('AC:updateResults evt.key = ', evt.key)
+                console.log('AC:updateResults this.config.requests[evt.key] = ', this.config.requests[evt.key])
+
+                console.log(
+                    'AC:updateResults this.config.requests[evt.key].result = ',
+                    this.config.requests[evt.key].result
+                )
+                this.update('rsKey')
+            }
+        },
+        onClickListItem(item) {
+            this.$emit('onClickListItem', {
+                item
+            })
+            console.log('AC:onClickListItem item = ', item)
+        },
+
         onClickRemove(key) {
             datasource.removeRequestByKey(key)
             this.updateRequests()
@@ -179,7 +254,6 @@ export default {
         getApi(key) {
             return this.requests[key].api
         },
-
         collectData(key) {
             let res = {}
             _.each(this.requests[key].form, item => {
@@ -190,11 +264,12 @@ export default {
             })
             return res
         },
-
         async sendForm(key) {
             const api = this.getApi(key)
             await datasource.request(key, api, this.collectData(key, api.schema))
-            this.updateRequests()
+            // console.log('AC:sendForm this.config.requests[key].result = ', this.config.requests[key].result)
+            // console.log('AC:sendForm this.config.requests[key] = ', this.config.requests[key])
+            // this.updateRequests()
         },
         onClick(key) {
             this.mousedown = true
@@ -223,13 +298,23 @@ export default {
                 this.tix = index
                 this.updateTabActiveState(index)
             }
+        },
+        requests() {
+            console.log('AC:requests this.config.requests = ', this.config.requests)
+            return this.config.requests
+        },
+        showApiInfo() {
+            return this.config.options.showApiInfo !== false
+        },
+        showTabs() {
+            return this.config.options.showTabs !== false
         }
     }
 }
 </script>
 
 <style lang="scss" scoped>
-.request-zone {
+.action-cell {
     background-color: rgb(235, 250, 255);
     border: 1px solid #b9d3dc;
     border-radius: 5px;
@@ -238,5 +323,20 @@ export default {
     // if you want this look!
     padding-top: 6px;
     margin-top: -6px;
+    &.tabs-hidden {
+        ::v-deep {
+            .nav-tabs {
+                display: none;
+            }
+        }
+    }
+    .list-pane {
+        background-color: rgb(248, 255, 250);
+        height: 400px;
+        .info {
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+    }
 }
 </style>
