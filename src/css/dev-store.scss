@@ -104,6 +104,30 @@ input:-ms-input-placeholder {
     font-size: 13px;
 }
 
+.value-cell {
+    .scroll-area-vc {
+        overflow-y: auto;
+        scrollbar-width: none;
+        height: 60px;
+        padding-right: 10px;
+        &::-webkit-scrollbar {
+            display: none;
+        }
+        .ps__thumb-x,
+        .ps__thumb-y {
+            background-color: #b2d8d7;
+        }
+    }
+    .text-area {
+        background-color: #fff;
+        padding: 5px 2px 5px 10px;
+        margin-right: 10px;
+        border: 1px solid #ced7dd;
+        border-radius: 5px;
+        width: 100%;
+    }
+}
+
 .action-cell,
 .request-zone,
 .result-zone {

@@ -15,7 +15,14 @@
                 </div>
                 <div class="scoll-area-edge"></div>
                 <vue-custom-scrollbar class="scroll-area">
-                    <vue-json-pretty :data="result.data"></vue-json-pretty>
+                    <vue-json-pretty
+                        :data="result.data"
+                        :show-length="true"
+                        :show-line="true"
+                        :highlight-mouseover-node="true"
+                        :collapsed-on-click-brackets="true"
+                        :showDoubleQuotes="false"
+                    ></vue-json-pretty>
                 </vue-custom-scrollbar>
                 <div class="scoll-area-edge"></div>
             </b-tab>
@@ -24,7 +31,7 @@
 </template>
 
 <script>
-import VueJsonPretty from 'vue-json-pretty'
+import VueJsonPretty from '@/lib/vue-json-pretty.1.6.3.js'
 import vueCustomScrollbar from 'vue-custom-scrollbar'
 
 export default {

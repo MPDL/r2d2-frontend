@@ -292,7 +292,7 @@
                     "type": "dropdown",
                     "label": "mocky keys",
                     "sendKey": "file-id",
-                    "options": [
+                    "optionsXX": [
                         {
                             "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd23 (needs token)",
                             "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23"]
@@ -306,6 +306,12 @@
                             "value": ["a6124f2a-9a06-489d-a7e2-invalid"]
                         }
                     ],
+                    "options": [
+                        "c42f96b0-80f1-48ff-bf51-9f2ad5bbad6d",
+                        "1a8fe164-9eab-48c6-b072-c409854df3ac",
+                        "4bd0eecc-37fb-4319-ba6e-e11bc6c386f5"
+                    ],
+
                     "selected": 0
                 }
             }

@@ -7,6 +7,12 @@
             :uKey="uKey"
             @onClickListItem="onClickListItem"
         />
+        <ActionCell
+            class="view get-files"
+            :config="cfgGetDataset"
+            :uKey="uKey"
+            @onClickListItem="onClickListItem"
+        />
         <!-- <RequestZone class="view" :uKey="uKey" /> -->
         <!-- <ResultZone class="view" /> -->
     </div>
@@ -50,6 +56,14 @@ export default {
                     showApiInfo: false
                 },
                 getResult: data => r2.getDatasets(data, { as: 'key-list' })
+            },
+            cfgGetDataset: {
+                requests: {},
+                options: {
+                    showTabs: false,
+                    showApiInfo: false
+                },
+                getResult: data => r2.getFilesOfDataset(data, { as: 'key-list' })
             }
         }
     },
@@ -101,7 +115,7 @@ export default {
             // get datasets
             rq = this.cfgGetDatasets.requests['r2d2-get-datasets'] = { ...requests['r2d2-get-datasets'] }
             rq.form['keys'].label = 'query:'
-            rq.form['keys'].type = 'input'
+            rq.form['keys'].type = 'value-cell'
             // rq.form['keys'].selected = JSON.stringify(rq.form['keys'].selected)
             rq.api.schema.data = ''
 
@@ -114,6 +128,27 @@ export default {
 
             // }
             console.log('R2:loadData requests = ', requests)
+
+            // get files
+            rq = this.cfgGetDataset.requests['r2d2-get-dataset'] = { ...requests['r2d2-get-dataset'] }
+            rq.form['file-id-select'].label = 'dataset-id:'
+            rq.form['file-id-select'].type = 'value-cell'
+
+            rq.description = 'lists all files of a dataset'
+
+
+
+                    //         "file-id-select": {
+                    // "type": "dropdown",
+                    // "label": "mocky keys",
+                    // "sendKey": "file-id",
+                    // "options": [
+                    //     {
+                    //         "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd23 (needs token)",
+                    //         "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23"]
+                    //     },
+
+
 
             // this.setNavigation(strc.navigation)
             // this.update()
@@ -151,6 +186,13 @@ export default {
         &.get-datasets {
             position: absolute;
             left: 10px;
+            top: 330px;
+            width: 400px;
+            height: 600px;
+        }
+        &.get-files {
+            position: absolute;
+            left: 420px;
             top: 330px;
             width: 400px;
             height: 600px;
