@@ -2,16 +2,20 @@
     <div id="app">
         <Background />
         <router-view class="view" />
+                <HeadNavigation />
+
     </div>
 </template>
 
 <script>
 import Background from '@/components/Background'
+import HeadNavigation from '@/components/HeadNavigation'
 
 export default {
     name: 'App',
     components: {
-        Background
+        Background,
+        HeadNavigation
     },
     created() {
         console.log('APP:created this.$route.meta = ', this.$route.meta)
@@ -32,6 +36,4 @@ export default {
     height: 100vh;
     overflow: hidden;
 }
-
-
 </style>

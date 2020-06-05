@@ -7,12 +7,7 @@
             :uKey="uKey"
             @onClickListItem="onClickListItem"
         />
-        <ActionCell
-            class="view get-files"
-            :config="cfgGetDataset"
-            :uKey="uKey"
-            @onClickListItem="onClickListItem"
-        />
+        <ActionCell class="view get-files" :config="cfgGetDataset" :uKey="uKey" @onClickListItem="onClickListItem" />
         <!-- <RequestZone class="view" :uKey="uKey" /> -->
         <!-- <ResultZone class="view" /> -->
     </div>
@@ -73,9 +68,6 @@ export default {
     created() {
         this.loadData()
     },
-    mounted() {
-        // this.loadData()
-    },
     methods: {
         update() {
             this.uKey = this.uKey > 1000 ? 1 : ++this.uKey
@@ -87,13 +79,10 @@ export default {
             this.navigation = nav
         },
         async loadData() {
-            // const strc = await datasource.getStructure()
-            // console.log('R2:loadData strc = ', strc)
             const requests = datasource.getRequests()
-
             let rq
-
             // login
+            // clone request as its inner data gets mutated !
             rq = this.cfgLogin.requests['r2d2-login'] = { ...requests['r2d2-login'] }
             rq.form = {
                 username: {
@@ -111,48 +100,19 @@ export default {
             }
             rq.description = 'login'
             rq.api.schema.data = 'ROOT'
-
             // get datasets
+            // clone request as its inner data gets mutated !
             rq = this.cfgGetDatasets.requests['r2d2-get-datasets'] = { ...requests['r2d2-get-datasets'] }
             rq.form['keys'].label = 'query:'
             rq.form['keys'].type = 'value-cell'
-            // rq.form['keys'].selected = JSON.stringify(rq.form['keys'].selected)
             rq.api.schema.data = ''
-
             rq.description = 'lists all datasets'
-            // rq.api.schema.data = 'ROOT'
-
-            console.log('R2:loadData rq = ', rq)
-
-            // this.cfgLogin.requests['r2d2-login'].options = {
-
-            // }
-            console.log('R2:loadData requests = ', requests)
-
             // get files
+            // clone request as its inner data gets mutated !
             rq = this.cfgGetDataset.requests['r2d2-get-dataset'] = { ...requests['r2d2-get-dataset'] }
             rq.form['file-id-select'].label = 'dataset-id:'
             rq.form['file-id-select'].type = 'value-cell'
-
             rq.description = 'lists all files of a dataset'
-
-
-
-                    //         "file-id-select": {
-                    // "type": "dropdown",
-                    // "label": "mocky keys",
-                    // "sendKey": "file-id",
-                    // "options": [
-                    //     {
-                    //         "text": "a6124f2a-9a06-489d-a7e2-40b583ebbd23 (needs token)",
-                    //         "value": ["a6124f2a-9a06-489d-a7e2-40b583ebbd23"]
-                    //     },
-
-
-
-            // this.setNavigation(strc.navigation)
-            // this.update()
-            // globals.defaultPageReady()
         }
     }
 }

@@ -276,7 +276,7 @@
             }
         },
         "r2d2-get-dataset": {
-            "label": "r2d2-dataset-get",
+            "label": "r2d2-get-dataset",
             "description": "Calls a single dataset",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/{file-id}",
@@ -311,13 +311,12 @@
                         "1a8fe164-9eab-48c6-b072-c409854df3ac",
                         "4bd0eecc-37fb-4319-ba6e-e11bc6c386f5"
                     ],
-
                     "selected": 0
                 }
             }
         },
         "r2d2-get-datasets": {
-            "label": "r2d2-datasets-get",
+            "label": "r2d2-get-datasets",
             "description": "Calls multiple datasets",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/search",

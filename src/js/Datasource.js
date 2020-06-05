@@ -205,12 +205,12 @@ function Datasource() {
                     'auth.token': headers => globals.setAdminToken(headers.authorization)
                 }
                 const headerGet = _.get(schema, 'header-get') || {}
-                _.each(headerGet, (sourceKey, targetKey) => {
+                _.each(headerGet, sourceKey => {
                     fcxGet[sourceKey] ? fcxGet[sourceKey](res.headers) : null
                 })
                 updateRequests(res.data.requests)
-                const dts = updateResults(res.data, key, api)
-                globals.eventBus.$emit('onLoadResults', { error: null, key, data: dts })
+                updateResults(res.data, key, api)
+                globals.eventBus.$emit('onLoadResults', { error: null, key})
             })
             .catch(error => {
                 try {
@@ -218,7 +218,7 @@ function Datasource() {
                 } catch (error) {
                     updateResults(JSON.stringify(error), key, api)
                 }
-                globals.eventBus.$emit('onLoadResults', { error, key, data: null })
+                globals.eventBus.$emit('onLoadResults', { error, key })
                 console.log('DS:getTranslations ERROR error.message = ', error.message)
             })
     }
@@ -308,6 +308,9 @@ function Datasource() {
     this.removeRequestByKey = removeRequestByKey
 
     const updateResults = (data, key, api) => {
+        console.log('DS:updateResults key = ', key)
+        console.log('DS:updateResults data = ', data)
+
         const ts = new Date().getTime()
         console.log('updateResults ts.toString() = ', ts.toString())
 
@@ -317,9 +320,8 @@ function Datasource() {
             key,
             api: api || '-'
         }
-
-        console.log('DS:updateResults config.results = ', config.results)
-
+        // set the latest result directly into the request
+        config.requests[key] ? config.requests[key].result = data : null
         return config.results[ts.toString()]
     }
 

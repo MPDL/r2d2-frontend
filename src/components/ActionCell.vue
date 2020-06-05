@@ -30,7 +30,7 @@
                 <vue-custom-scrollbar class="scroll-area">
                     <div class="list-pane" :key="rsKey">
                         <div
-                            v-for="(item, index) in request.result"
+                            v-for="(item, index) in filteredResult"
                             :key="index"
                             class="info"
                             @click="onClickListItem(item)"
@@ -86,14 +86,21 @@ export default {
             rsKey: 0,
             ddSelected: 0,
             tix: null,
-            tme: null
+            tme: null,
+            filteredResult: {}
         }
     },
     created() {
         globals.eventBus.$on('onLoadResults', this.updateResults)
     },
+    mounted() {
+        // TODO this is hardcoded to tab 1 currently, make the persist key dynamic!
+        const key = Object.keys(this.config.requests)[0]
+        this.updateResults({ key })
+    },
     methods: {
         update(updateKey = 'uKey') {
+            console.log('AC:updateKey = ', updateKey)
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         updateTabActiveState() {
@@ -109,14 +116,16 @@ export default {
         },
         updateRequests() {
             this.requests = datasource.getRequests()
-            console.log('AC:updateRequests this.requests = ', this.requests)
             this.update()
             this.updateTabActiveState()
         },
         updateResults(evt) {
             if (this.config.requests[evt.key]) {
-                let res = _.isFunction(this.config.getResult) ? this.config.getResult(evt.data) : evt.data
-                this.config.requests[evt.key].result = res
+                this.filteredResult = {}
+                const data = datasource.getConfig().requests[evt.key].result
+                if (data) {
+                    this.filteredResult = _.isFunction(this.config.getResult) ? this.config.getResult(data) : data
+                }
                 this.update('rsKey')
             }
         },
