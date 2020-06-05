@@ -4,12 +4,10 @@ const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 module.exports = {
     lintOnSave: false,
     runtimeCompiler: true,
-    // publicPath: '- not longer needed with dynamic deploy setup - ',
     filenameHashing: false,
     chainWebpack: config => {
-        config.module.rules.delete('svg')
+        config.module.rules.delete('svg'), config.optimization.minimize(false)
     },
-
     configureWebpack: {
         output: {
             filename: '[name].js',
