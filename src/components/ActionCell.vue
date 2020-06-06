@@ -92,11 +92,20 @@ export default {
     },
     created() {
         globals.eventBus.$on('onLoadResults', this.updateResults)
+        if (this.config.sendFormEventKey) {
+            globals.eventBus.$on(`${this.config.sendFormEventKey}`, this.sendForm)
+        }
+        console.log('AC:created this.config.requests = ', this.config.requests)
+    },
+    beforeDestroy() {
+        globals.eventBus.$off('onLoadResults', this.updateResults)
+        globals.eventBus.$off(`${this.config.sendFormEventKey}`, this.sendForm)
     },
     mounted() {
         // TODO this is hardcoded to tab 1 currently, make the persist key dynamic!
         const key = Object.keys(this.config.requests)[0]
         this.updateResults({ key })
+        console.log('AC:mounted this.config.requests = ', this.config.requests)
     },
     methods: {
         update(updateKey = 'uKey') {
@@ -134,7 +143,6 @@ export default {
                 item
             })
         },
-
         onClickRemove(key) {
             datasource.removeRequestByKey(key)
             this.updateRequests()
@@ -153,6 +161,7 @@ export default {
             return res
         },
         async sendForm(key) {
+            console.log('AC:sendForm key = ', key)
             const api = this.getApi(key)
             await datasource.request(key, api, this.collectData(key, api.schema))
         },
@@ -193,6 +202,12 @@ export default {
         showTabs() {
             return this.config.options.showTabs !== false
         }
+    },
+    watch: {
+        config(now, prev) {
+            console.log('AC:W:config now, prev = ', now, prev)
+        },
+        deep: true
     }
 }
 </script>

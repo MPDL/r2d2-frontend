@@ -20,7 +20,6 @@
 //
 import VueJsonPretty from '@/lib/vue-json-pretty.1.6.3.js'
 import vueCustomScrollbar from 'vue-custom-scrollbar'
-
 //
 export default {
     name: 'ValueCell',
@@ -33,13 +32,22 @@ export default {
     },
     data() {
         return {
-            showAsJson: true
+            showAsJson: true,
+            uKey: 1
         }
+    },
+    created() {
+        if (this.config.updateEventKey) {
+            globals.eventBus.$on(`${this.config.updateEventKey}`, this.update)
+        }
+    },
+    beforeDestroy() {
+        globals.eventBus.$off(`${this.config.updateEventKey}`, this.update)
     },
     computed: {
         selected: {
             get() {
-                console.log('VC:selected:get this.config.selected = ', this.config.selected)
+                let uKey = this.uKey
                 const value = this.config.selected
                 this.showAsJson = false
                 this.dataType = 'String'
@@ -63,6 +71,9 @@ export default {
         }
     },
     methods: {
+        update(updateKey = 'uKey') {
+            this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
+        },
         handleClick(value) {
             //
         },

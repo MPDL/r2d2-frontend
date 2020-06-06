@@ -51,7 +51,15 @@ export default {
     created() {
         globals.eventBus.$on('onLoadResults', this.updateResults)
         this.tabIndex = null
-        this.updateResults()
+    },
+    mounted() {
+        setTimeout(() => {
+            this.updateResults()
+        }, 100)
+    },
+    beforeDestroy() {
+        globals.eventBus.$off('onLoadResults', this.updateResults)
+        this.tabIndex = null
     },
     methods: {
         update() {

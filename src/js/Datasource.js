@@ -67,6 +67,7 @@ function Datasource() {
     const updateConfig = data => {
         console.log('DS:updateConfig config = ', { ...config })
         console.log('DS:updateConfig data = ', data)
+        config.setup = {...config.setup, ...data.setup}
         config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
     }
 
@@ -308,11 +309,11 @@ function Datasource() {
     this.removeRequestByKey = removeRequestByKey
 
     const updateResults = (data, key, api) => {
-        console.log('DS:updateResults key = ', key)
-        console.log('DS:updateResults data = ', data)
+        // console.log('DS:updateResults key = ', key)
+        // console.log('DS:updateResults data = ', data)
 
         const ts = new Date().getTime()
-        console.log('updateResults ts.toString() = ', ts.toString())
+        // console.log('updateResults ts.toString() = ', ts.toString())
 
         config.results[ts.toString()] = {
             ts,
@@ -320,6 +321,18 @@ function Datasource() {
             key,
             api: api || '-'
         }
+
+        const keys = Object.keys(config.results).reverse()
+        while (keys.length > config.setup.maxStoreResults) {
+            delete config.results[keys.pop()]
+        }
+
+        console.log('DS:updateResults config.setup = ', config.setup)
+        console.log('DS:updateResults keys = ', keys)
+        // console.log('DS:updateResults config.results = ', config.results)
+
+
+
         // set the latest result directly into the request
         config.requests[key] ? config.requests[key].result = data : null
         return config.results[ts.toString()]

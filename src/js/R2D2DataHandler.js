@@ -1,5 +1,7 @@
 const R2D2DataHandler = function() {
+    //
     this.getDatasets = (data, options = {}) => {
+        console.log('R2:getDatasets data = ', data)
         const res = {}
         if (options.as === 'key-list') {
             _.each(data.hits.hits, (value, index) => {
@@ -15,6 +17,7 @@ const R2D2DataHandler = function() {
     }
 
     this.getFilesOfDataset = (data, options = {}) => {
+        console.log('R2:getFilesOfDataset data = ', data)
         const res = {}
         if (options.as === 'key-list') {
             _.each(data.files, (value, index) => {
@@ -23,7 +26,7 @@ const R2D2DataHandler = function() {
                     title: value.filename
                 }
                 d.label = `${d.title} | ${d.key}`
-                res[value._id] = d
+                res[value.id] = d
             })
         }
         return res

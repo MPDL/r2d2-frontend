@@ -1,6 +1,6 @@
 <template>
     <div class="form-cell">
-        <!-- <vue-custom-scrollbar class="scroll-area"> -->
+        <vue-custom-scrollbar class="scroll-area">
             <div class="form-elements">
                 <b-form-group
                     v-for="(item, index) in request.form"
@@ -77,12 +77,10 @@
                             @input="onFileInput(item)"
                         ></b-form-file>
                     </b-input-group>
-                    <!-- <b-input-group v-if="item.type === 'value-cell'"> -->
                         <value-cell v-if="item.type === 'value-cell'" :config="item" v-model="item.selected"></value-cell>
-                    <!-- </b-input-group> -->
                 </b-form-group>
             </div>
-        <!-- </vue-custom-scrollbar> -->
+        </vue-custom-scrollbar>
     </div>
 </template>
 
@@ -112,9 +110,6 @@ export default {
             tix: null,
             tme: null
         }
-    },
-    created() {
-        console.log('FC:created this.request = ', this.request)
     },
     methods: {
         update(updateKey = 'uKey') {
@@ -158,11 +153,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.form-cell {
-    // background-color: rgb(235, 250, 255);
-    // border: 1px solid #b9d3dc;
-    // border-radius: 5px;
-}
 .form-elements{
     // TEST ON
     height: 100px;

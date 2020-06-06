@@ -4,7 +4,8 @@
         "locale": "en",
         "translations": {
             "en": {}
-        }
+        },
+        "maxStoreResults" : 10
     },
     "router": [
         {

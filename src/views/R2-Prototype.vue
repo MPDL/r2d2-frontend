@@ -1,29 +1,21 @@
 <template>
     <div class="r2-prototype">
-        <ActionCell class="view login" :config="cfgLogin" :uKey="uKey" />
+        <ActionCell class="view login" :config="cfgLogin" />
+        <ActionCell class="view get-datasets" :config="cfgGetDatasets" @onClickListItem="onClickDatasetListItem" />
         <ActionCell
-            class="view get-datasets"
-            :config="cfgGetDatasets"
-            :uKey="uKey"
-            @onClickListItem="onClickListItem"
+            class="view get-files"
+            :config="cfgGetDataset"
+            @onClickListItem="onClickFileListItem"
         />
-        <ActionCell class="view get-files" :config="cfgGetDataset" :uKey="uKey" @onClickListItem="onClickListItem" />
-        <!-- <RequestZone class="view" :uKey="uKey" /> -->
-        <!-- <ResultZone class="view" /> -->
     </div>
 </template>
 
 <script>
-// @ is an alias to /src
+//
 import ActionCell from '@/components/ActionCell.vue'
 import R2D2DataHandler from '@/js/R2D2DataHandler'
-
 const r2 = new R2D2DataHandler()
-
-// import ResultZone from '@/components/ResultZone.vue'
-// import RequestZone from '@/components/RequestZone.vue'
-// import FunctionCell from '@/components/FunctionCell.vue'
-
+//
 export default {
     name: 'R2-Prototype',
     data() {
@@ -37,6 +29,7 @@ export default {
             },
             navigation: {},
             uKey: 1,
+            dsKey: 1,
             cfgLogin: {
                 requests: {},
                 options: {
@@ -58,7 +51,8 @@ export default {
                     showTabs: false,
                     showApiInfo: false
                 },
-                getResult: data => r2.getFilesOfDataset(data, { as: 'key-list' })
+                getResult: data => r2.getFilesOfDataset(data, { as: 'key-list' }),
+                sendFormEventKey: 'sendform--get-dataset'
             }
         }
     },
@@ -69,11 +63,17 @@ export default {
         this.loadData()
     },
     methods: {
-        update() {
-            this.uKey = this.uKey > 1000 ? 1 : ++this.uKey
+        update(updateKey = 'uKey') {
+            this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
-        onClickListItem(evt) {
-            console.log('R2:onClickListItem evt = ', evt)
+        onClickDatasetListItem(evt) {
+            const cfg = this.cfgGetDataset
+            cfg.requests['r2d2-get-dataset'].form['file-id-select'].selected = evt.item.key
+            globals.eventBus.$emit('update--r2d2-get-dataset')
+            globals.eventBus.$emit('sendform--get-dataset', 'r2d2-get-dataset')
+        },
+        onClickFileListItem(evt) {
+            console.log('R2:onClickFileListItem evt = ', evt)
         },
         setNavigation(nav) {
             this.navigation = nav
@@ -112,6 +112,7 @@ export default {
             rq = this.cfgGetDataset.requests['r2d2-get-dataset'] = { ...requests['r2d2-get-dataset'] }
             rq.form['file-id-select'].label = 'dataset-id:'
             rq.form['file-id-select'].type = 'value-cell'
+            rq.form['file-id-select'].updateEventKey = 'update--r2d2-get-dataset'
             rq.description = 'lists all files of a dataset'
         }
     }
