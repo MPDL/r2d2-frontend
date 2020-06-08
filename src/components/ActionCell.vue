@@ -33,9 +33,12 @@
                             v-for="(item, index) in filteredResult"
                             :key="index"
                             class="info"
+                            :class="{ selected: item.key === config.selected }"
                             @click="onClickListItem(item)"
                         >
                             <div class="description">{{ item.label }}</div>
+                            <!-- <div class="description">{{ item.key }}</div> -->
+                            <!-- <div class="description">{{ config.selected }}</div> -->
                             <div class="seperator">::</div>
                         </div>
                     </div>
@@ -109,7 +112,8 @@ export default {
     },
     methods: {
         update(updateKey = 'uKey') {
-            console.log('AC:updateKey = ', updateKey)
+            console.log('AC:update updateKey = ', updateKey)
+            console.log('AC:update this.config = ', this.config)
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         updateTabActiveState() {
@@ -139,6 +143,7 @@ export default {
             }
         },
         onClickListItem(item) {
+            console.log('AC:onClickListItem item = ', item)
             this.$emit('onClickListItem', {
                 item
             })
@@ -238,6 +243,9 @@ export default {
             margin-left: 5px;
             cursor: pointer;
             width: calc(100% - 15px);
+            &.selected {
+                background-color: #e8faff;
+            }
         }
     }
 }

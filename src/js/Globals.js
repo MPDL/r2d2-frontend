@@ -1,4 +1,6 @@
 import Vue from 'vue'
+import R2D2DataHandler from '@/js/R2D2DataHandler'
+
 
 function Globals() {
     console.log('GLB: window.BASE_CONFIG = ', window.BASE_CONFIG)
@@ -27,6 +29,10 @@ function Globals() {
     //
     const eventBus = new Vue()
     this.eventBus = eventBus
+
+    //
+    const r2 = new R2D2DataHandler()
+    this.getDataHandler = () => r2
 
     // route handling
 

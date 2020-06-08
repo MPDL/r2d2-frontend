@@ -1,25 +1,21 @@
 <template>
-    <div class="r2-prototype">
+    <div class="r2-prototype" :key="uKey">
         <ActionCell class="view login" :config="cfgLogin" />
         <ActionCell class="view get-datasets" :config="cfgGetDatasets" @onClickListItem="onClickDatasetListItem" />
-        <ActionCell
-            class="view get-files"
-            :config="cfgGetDataset"
-            @onClickListItem="onClickFileListItem"
-        />
+        <ActionCell class="view get-files" :config="cfgGetDataset" @onClickListItem="onClickFileListItem" />
     </div>
 </template>
 
 <script>
 //
 import ActionCell from '@/components/ActionCell.vue'
-import R2D2DataHandler from '@/js/R2D2DataHandler'
-const r2 = new R2D2DataHandler()
+const r2 = globals.getDataHandler('r2d2')
 //
 export default {
     name: 'R2-Prototype',
     data() {
         return {
+            r2,
             content: {
                 label: 'mock-content',
                 data: null
@@ -29,8 +25,9 @@ export default {
             },
             navigation: {},
             uKey: 1,
-            dsKey: 1,
+            sdsKey: 1,
             cfgLogin: {
+                id: 'r2d2-login',
                 requests: {},
                 options: {
                     showTabs: false,
@@ -38,21 +35,39 @@ export default {
                 }
             },
             cfgGetDatasets: {
+                id: 'r2d2-get-datasets',
                 requests: {},
                 options: {
                     showTabs: false,
                     showApiInfo: false
                 },
-                getResult: data => r2.getDatasets(data, { as: 'key-list' })
+                getResult: (data, me = this.cfgGetDatasets) => {
+                    const key = me.initialRequest ? this.getSelectedDataset(key) : null
+                    this.setSelectedDataset(key)
+                    me.initialRequest = false
+                    return r2.getDatasets(data, { as: 'key-list' })
+                },
+                selected: this.getSelectedDataset(),
+                initialRequest: true
             },
             cfgGetDataset: {
+                id: 'r2d2-get-dataset',
                 requests: {},
                 options: {
                     showTabs: false,
                     showApiInfo: false
                 },
-                getResult: data => r2.getFilesOfDataset(data, { as: 'key-list' }),
-                sendFormEventKey: 'sendform--get-dataset'
+                getResult: (data, me = this.cfgGetDataset) => {
+                    const key = me.initialRequest ? this.getSelectedFile(key) : null
+                    this.setSelectedFile(key)
+                    me.initialRequest = false
+                    return r2.getFilesOfDataset(data, { as: 'key-list' })
+                },
+
+                // getResult: data => r2.getFilesOfDataset(data, { as: 'key-list' }),
+                sendFormEventKey: 'sendform--get-dataset',
+                selected: this.getSelectedFile(),
+                initialRequest: true
             }
         }
     },
@@ -60,6 +75,7 @@ export default {
         ActionCell
     },
     created() {
+        console.log('R2P:created evt = ')
         this.loadData()
     },
     methods: {
@@ -67,53 +83,46 @@ export default {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         onClickDatasetListItem(evt) {
-            const cfg = this.cfgGetDataset
-            cfg.requests['r2d2-get-dataset'].form['file-id-select'].selected = evt.item.key
-            globals.eventBus.$emit('update--r2d2-get-dataset')
-            globals.eventBus.$emit('sendform--get-dataset', 'r2d2-get-dataset')
+            this.setSelectedDataset(evt.item.key)
+            globals.eventBus.$emit('sendform--get-dataset', this.cfgGetDataset.id)
         },
         onClickFileListItem(evt) {
-            console.log('R2:onClickFileListItem evt = ', evt)
+            this.setSelectedFile(evt.item.key)
+            // this.selectedDataset = evt.key
+            console.log('R2P:onClickFileListItem evt = ', evt)
         },
         setNavigation(nav) {
             this.navigation = nav
         },
         async loadData() {
-            const requests = datasource.getRequests()
-            let rq
-            // login
-            // clone request as its inner data gets mutated !
-            rq = this.cfgLogin.requests['r2d2-login'] = { ...requests['r2d2-login'] }
-            rq.form = {
-                username: {
-                    type: 'input',
-                    label: 'username:',
-                    sendKey: 'username',
-                    selected: rq.form['dd-auth'].options[0].value.username
-                },
-                password: {
-                    type: 'input',
-                    label: 'password:',
-                    sendKey: 'password',
-                    selected: rq.form['dd-auth'].options[0].value.password
-                }
-            }
-            rq.description = 'login'
-            rq.api.schema.data = 'ROOT'
-            // get datasets
-            // clone request as its inner data gets mutated !
-            rq = this.cfgGetDatasets.requests['r2d2-get-datasets'] = { ...requests['r2d2-get-datasets'] }
-            rq.form['keys'].label = 'query:'
-            rq.form['keys'].type = 'value-cell'
-            rq.api.schema.data = ''
-            rq.description = 'lists all datasets'
-            // get files
-            // clone request as its inner data gets mutated !
-            rq = this.cfgGetDataset.requests['r2d2-get-dataset'] = { ...requests['r2d2-get-dataset'] }
-            rq.form['file-id-select'].label = 'dataset-id:'
-            rq.form['file-id-select'].type = 'value-cell'
-            rq.form['file-id-select'].updateEventKey = 'update--r2d2-get-dataset'
-            rq.description = 'lists all files of a dataset'
+            const requests = await r2.ppGetRequests()
+            this.cfgLogin.requests[this.cfgLogin.id] = requests[this.cfgLogin.id]
+            this.cfgGetDatasets.requests[this.cfgGetDatasets.id] = requests[this.cfgGetDatasets.id]
+            this.cfgGetDataset.requests[this.cfgGetDataset.id] = requests[this.cfgGetDataset.id]
+            this.update()
+        },
+        // computed prop dont works
+        setSelectedDataset(key) {
+            r2.ppSetSelectedDataset(key)
+            this.cfgGetDatasets.selected = key
+            //
+            const cfg = this.cfgGetDataset
+            cfg.requests[cfg.id].form['file-id-select'].selected = key
+            globals.eventBus.$emit(`update--${cfg.id}`)
+        },
+        getSelectedDataset() {
+            return r2.ppGetSelectedDataset()
+        },
+        setSelectedFile(key) {
+            r2.ppSetSelectedFile(key)
+            this.cfgGetDataset.selected = key
+            //
+            // const cfg = this.cfgGetDataset
+            // cfg.requests[cfg.id].form['file-id-select'].selected = key
+            // globals.eventBus.$emit(`update--${cfg.id}`)
+        },
+        getSelectedFile() {
+            return r2.ppGetSelectedFile()
         }
     }
 }
