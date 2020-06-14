@@ -1,7 +1,10 @@
 <template>
     <div class="head-navigation">
-        <div class="left" v-html="left"></div>
-
+        <div class="left">
+            <router-link to="/devstore" active-class="active">devstore</router-link>
+            <span>{{ span }}</span>
+            <router-link to="/prototype" active-class="active">prototype</router-link>
+        </div>
         <!-- <div class="left" v-html="$t('head.title')"></div> -->
         <!-- <div class="right">
             <div class="logo">
@@ -17,7 +20,8 @@ export default {
     name: 'HeadNavigation',
     data() {
         return {
-            tx: 299
+            tx: 299,
+            span: '  ::  '
         }
     },
     computed: {
@@ -27,18 +31,6 @@ export default {
             _.each(keyz, key => {
                 const i18n = this.$t(`head.${key}`)
                 trns.push(`<a href='#/welcome/${key}'>${i18n}</a>`)
-            })
-            return trns.join(' ')
-        },
-        left() {
-            const keyz = 'devstore,{SP},prototype'.split(',')
-            const trns = []
-            _.each(keyz, key => {
-                let str = '    ::    '
-                if (key !== '{SP}') {
-                    str = `<a href='#/${key}'>${key}</a>`
-                }
-                trns.push(str)
             })
             return trns.join(' ')
         }
@@ -74,6 +66,11 @@ export default {
             color: #7d7c7c;
             text-decoration: none;
         }
+        &.active {
+            color: #2b6565;
+            text-decoration: none;
+        }
+
         // cursor: pointer;
     }
 
