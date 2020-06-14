@@ -1,0 +1,113 @@
+{
+    "id": "c42f96b0-80f1-48ff-bf51-9f2ad5bbad6d",
+    "creationDate": "2020-05-20T19:23:48.241336Z",
+    "modificationDate": "2020-05-27T08:42:48.938402Z",
+    "creator": {
+        "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+        "name": "Test Admin"
+    },
+    "modifier": {
+        "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+        "name": "Test Admin"
+    },
+    "versionNumber": 1,
+    "state": "PUBLIC",
+    "publicationDate": null,
+    "metadata": {
+        "title": "drag 4",
+        "authors": [
+            {
+                "givenName": "Markus",
+                "familyName": "Haarländer",
+                "nameIdentifier": "https://orcid.org/1234-1234-1234-1234",
+                "affiliations": [
+                    {
+                        "id": null,
+                        "organization": "",
+                        "department": ""
+                    }
+                ]
+            }
+        ],
+        "doi": "n(a",
+        "description": "fourth try to create a dataset via drag",
+        "genres": [""],
+        "keywords": [""],
+        "license": "",
+        "language": "",
+        "correspondingPapers": [
+            {
+                "title": "",
+                "url": null,
+                "type": null,
+                "identifier": null,
+                "identifierType": null
+            }
+        ]
+    },
+    "files": [
+        {
+            "id": "ff8d7958-a678-4a39-87c3-cc0cecb6c606",
+            "creationDate": "2020-05-26T11:41:16.882085Z",
+            "modificationDate": "2020-05-26T11:41:16.882085Z",
+            "creator": {
+                "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+                "name": "Test Admin"
+            },
+            "modifier": {
+                "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+                "name": "Test Admin"
+            },
+            "state": "COMPLETE",
+            "stateInfo": {
+                "currentChecksum": null,
+                "chunks": [],
+                "expectedNumberOfChunks": 0
+            },
+            "filename": "theme-115.epf",
+            "storageLocation": null,
+            "checksum": "7725d44795cea5f1f44f9c5d7b6f01b9",
+            "format": null,
+            "size": 30156
+        },
+        {
+            "id": "10e29ae0-bfa0-482b-b588-7e560c35cac5",
+            "creationDate": "2020-05-26T11:41:16.969477Z",
+            "modificationDate": "2020-05-26T11:41:16.969477Z",
+            "creator": {
+                "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+                "name": "Test Admin"
+            },
+            "modifier": {
+                "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+                "name": "Test Admin"
+            },
+            "state": "COMPLETE",
+            "stateInfo": {
+                "currentChecksum": null,
+                "chunks": [],
+                "expectedNumberOfChunks": 0
+            },
+            "filename": "theme-1022.epf",
+            "storageLocation": null,
+            "checksum": "74f861ff44fa976a5d84e8f084be5450",
+            "format": null,
+            "size": 30215
+        }
+    ],
+    "parent": {
+        "id": "97d4d9b4-d881-4e5e-881b-4e0bba5a88b5",
+        "creationDate": "2020-05-20T19:23:48.241336Z",
+        "modificationDate": "2020-05-27T08:42:48.938402Z",
+        "creator": {
+            "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+            "name": "Test Admin"
+        },
+        "modifier": {
+            "id": "2d0dd850-eabb-43fe-8b8f-1a1b54018738",
+            "name": "Test Admin"
+        },
+        "state": "PUBLIC",
+        "datamanager": []
+    }
+}

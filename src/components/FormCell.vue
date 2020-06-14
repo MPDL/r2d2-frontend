@@ -77,7 +77,7 @@
                             @input="onFileInput(item)"
                         ></b-form-file>
                     </b-input-group>
-                        <value-cell v-if="item.type === 'value-cell'" :config="item" v-model="item.selected"></value-cell>
+                    <value-cell v-if="item.type === 'value-cell'" :config="item" v-model="item.selected"></value-cell>
                 </b-form-group>
             </div>
         </vue-custom-scrollbar>
@@ -110,6 +110,12 @@ export default {
             tix: null,
             tme: null
         }
+    },
+    created() {
+        console.log('FC:created this.request = ', this.request)
+    },
+    mounted() {
+        console.log('FC:mounted this.request = ', this.request)
     },
     methods: {
         update(updateKey = 'uKey') {
@@ -153,7 +159,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.form-elements{
+.form-elements {
     // TEST ON
     height: 100px;
 }

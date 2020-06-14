@@ -25,15 +25,15 @@
                     <span>api-method: {{ request.api.method }}</span>
                 </div>
                 <div class="scoll-area-edge"></div>
-                <FormCell :request="request"></FormCell>
+                <FormCell :request="request" :key="formKey"></FormCell>
                 <div class="scoll-area-edge"></div>
-                <vue-custom-scrollbar class="scroll-area">
+                <vue-custom-scrollbar class="scroll-area results">
                     <div class="list-pane" :key="rsKey">
                         <div
                             v-for="(item, index) in filteredResult"
                             :key="index"
                             class="info"
-                            :class="{ selected: item.key === config.selected }"
+                            :class="{ selected: listItemIsSelected(item.key) }"
                             @click="onClickListItem(item)"
                         >
                             <div class="description">{{ item.label }}</div>
@@ -87,6 +87,7 @@ export default {
             mousedown: false,
             uKey: 0,
             rsKey: 0,
+            formKey: 0,
             ddSelected: 0,
             tix: null,
             tme: null,
@@ -94,15 +95,24 @@ export default {
         }
     },
     created() {
+        console.log('AC:created this.config.requests = ', this.config.requests)
+        console.log('AC:created  this.config.updateFormEventKey IN = ', this.config.updateFormEventKey)
+
         globals.eventBus.$on('onLoadResults', this.updateResults)
+        if (this.config.updateFormEventKey) {
+            console.log('AC:created this.config.updateFormEventKey SET = ', this.config.updateFormEventKey)
+            globals.eventBus.$on(`${this.config.updateFormEventKey}`, this.updateForm)
+        }
         if (this.config.sendFormEventKey) {
+            console.log('AC:created this.config.sendFormEventKey = ', this.config.sendFormEventKey)
             globals.eventBus.$on(`${this.config.sendFormEventKey}`, this.sendForm)
         }
-        console.log('AC:created this.config.requests = ', this.config.requests)
+        // console.log('AC:created this.config.requests = ', this.config.requests)
     },
     beforeDestroy() {
         globals.eventBus.$off('onLoadResults', this.updateResults)
         globals.eventBus.$off(`${this.config.sendFormEventKey}`, this.sendForm)
+        globals.eventBus.$off(`${this.config.updateFormEventKey}`, this.updateForm)
     },
     mounted() {
         // TODO this is hardcoded to tab 1 currently, make the persist key dynamic!
@@ -112,9 +122,14 @@ export default {
     },
     methods: {
         update(updateKey = 'uKey') {
-            console.log('AC:update updateKey = ', updateKey)
-            console.log('AC:update this.config = ', this.config)
+            console.log('AC:update:XX updateKey = ', updateKey)
+            console.log('AC:update:XX this.config = ', this.config)
+            console.log('AC:update:XX this.config.id = ', this.config.id)
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
+        },
+        updateForm(evt) {
+            this.update('formKey')
+            console.log('AC:update:XX formKey = ', this.formKey)
         },
         updateTabActiveState() {
             // TODO unify this (redundant in result and request zone)
@@ -139,7 +154,8 @@ export default {
                 if (data) {
                     this.filteredResult = _.isFunction(this.config.getResult) ? this.config.getResult(data) : data
                 }
-                this.update('rsKey')
+                // this.update('rsKey') // needed to update the own selected state!
+                this.$emit('onUpdateResults', { id: this.config.id, raw: data, filtered: this.filteredResult })
             }
         },
         onClickListItem(item) {
@@ -147,6 +163,7 @@ export default {
             this.$emit('onClickListItem', {
                 item
             })
+            // this.update('rsKey')
         },
         onClickRemove(key) {
             datasource.removeRequestByKey(key)
@@ -185,6 +202,14 @@ export default {
                 }
             }
             reader.readAsDataURL(item.meta)
+        },
+        listItemIsSelected(key) {
+            console.log('AC:isSelected ++++++  this.config.id = ', this.config.id)
+            console.log('AC:isSelected key = ', key)
+            console.log('AC:isSelected this.config.selected = ', this.config.selected)
+            console.log('AC:isSelected this.config = ', this.config)
+            console.log('AC:isSelected key === this.config.selected = ', key === this.config.selected)
+            return key === this.config.selected
         }
     },
     computed: {

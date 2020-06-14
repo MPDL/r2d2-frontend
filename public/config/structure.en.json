@@ -5,7 +5,7 @@
         "translations": {
             "en": {}
         },
-        "maxStoreResults" : 10
+        "maxStoreResults": 10
     },
     "router": [
         {
@@ -48,6 +48,43 @@
                                 "username": "testuser@mpdl.mpg.de",
                                 "password": "test"
                             }
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-get-file": {
+            "label": "r2d2-get-file",
+            "description": "Get single, real file",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{bully-id}/files/{file-id}",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "bully-id": {
+                    "type": "dropdown",
+                    "label": "mocky target dataset select",
+                    "options": [
+                        {
+                            "text": "3c8387ec-fa57-409e-82a2-2d9dba63e92b",
+                            "value": "3c8387ec-fa57-409e-82a2-2d9dba63e92b"
+                        }
+                    ],
+                    "selected": 0
+                },
+                "file-id": {
+                    "type": "dropdown",
+                    "label": "mocky target file select",
+                    "options": [
+                        {
+                            "text": "9c36234a-c9bd-4422-8e8b-fda599e6f253",
+                            "value": "9c36234a-c9bd-4422-8e8b-fda599e6f253"
                         }
                     ],
                     "selected": 0
@@ -348,6 +385,31 @@
                         }
                     ],
                     "selected": 0
+                }
+            }
+        },
+        "r2d2-pp-change-metadata": {
+            "label": "r2d2-pp-change-metadata",
+            "description": "Changes metadata of a dataset",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{file-id}",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "dataset",
+                    "selected": null
+                },
+                "metadata": {
+                    "type": "value-cell",
+                    "label": "metadata as JSON",
+                    "selected": null
                 }
             }
         }

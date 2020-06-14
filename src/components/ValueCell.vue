@@ -1,5 +1,5 @@
 <template>
-    <div class="value-cell">
+    <div class="value-cell" :class="config.sendKey">
         <div class="text-area">
             <vue-custom-scrollbar class="scroll-area-vc">
                 <vue-json-pretty
@@ -40,6 +40,7 @@ export default {
         if (this.config.updateEventKey) {
             globals.eventBus.$on(`${this.config.updateEventKey}`, this.update)
         }
+        console.log('VC:created this.config = ',this.config)
     },
     beforeDestroy() {
         globals.eventBus.$off(`${this.config.updateEventKey}`, this.update)
