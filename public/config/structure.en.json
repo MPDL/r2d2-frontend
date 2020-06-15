@@ -411,11 +411,12 @@
         },
         "r2d2-pp-change-metadata": {
             "label": "r2d2-pp-change-metadata",
-            "description": "Changes metadata of a dataset",
+            "description": "Changes metadata of a dataset (only title and description for testing)",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}",
-                "method": "get",
+                "method": "put",
                 "schema": {
+                    "data": "send-data",
                     "header-set": {
                         "Authorization": "auth.token"
                     }
@@ -426,6 +427,17 @@
                     "type": "value-cell",
                     "label": "dataset-id",
                     "selected": null
+                },
+                "send-data": {
+                    "type": "value-cell",
+                    "label": "data 2 send as JSON",
+                    "selected": null
+                },
+                "title": {
+                    "type": "input"
+                },
+                "description": {
+                    "type": "textarea"
                 }
             }
         },

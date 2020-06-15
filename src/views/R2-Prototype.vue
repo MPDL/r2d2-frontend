@@ -142,15 +142,17 @@ export default {
                         showSend: true
                     },
                     getResult: (data, me = this.zones.changeMetadata) => {
-                        const key = me.initialRequest ? this.getSelectedFile(key) : null
-                        this.setSelectedFile(key)
-                        me.initialRequest = false
-                        return r2.getFilesOfDataset(data, { as: 'key-list' })
+                        return {}
+                    },
+                    collectData: (data) => {
+                        // TODO make this generic and realtime 
+                        console.log('changeMetadata:CB:collectData data = ', data)
+                        data['send-data'].metadata.title = data.title
+                        data['send-data'].metadata.description = data.description
+                        return data
                     },
                     sendFormEventKey: 'sendform--change-metadata',
-                    updateFormEventKey: 'updateform--change-metadata',
-                    selected: this.getSelectedFile(),
-                    initialRequest: true
+                    updateFormEventKey: 'updateform--change-metadata'
                 },
                 uploadFile: {
                     id: 'r2d2-pp-upload-file',
@@ -196,16 +198,16 @@ export default {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         onClickDatasetListItem(evt) {
+            if (evt.item.key === null) {
+                return (this.viewMode = 'change-metadata')
+            }
             this.setSelectedDataset(evt.item.key)
             const cfg = this.zones.getDataset
             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
         },
         async onClickFileListItem(evt) {
-            console.log('R2P:onClickFileListItem evt = ', evt)
             this.setSelectedFile(evt.item.key)
             this.viewMode = evt.item.key ? 'update-file' : 'upload-file'
-            // globals.eventBus.$emit(cfg.updateFormEventKey)
-            console.log('R2P:onClickFileListItem this.zones.uploadFile = ', this.zones.uploadFile)
         },
         onClickEditMetadata(evt) {
             this.viewMode = 'change-metadata'
@@ -215,23 +217,33 @@ export default {
             let cfg
             //
             cfg = this.zones.getDataset
-            // cfg.selected = null // TEST ON
-            // cfg.requests[cfg.id].form['file-id-select'].selected = null // TEST ON
-            // globals.eventBus.$emit(`update--${cfg.id}`)
             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
         },
         setNavigation(nav) {
             this.navigation = nav
         },
         onZoneUpdateResults(evt) {
+            let cfg
             if (evt.id === 'r2d2-get-dataset') {
                 setTimeout(() => {
-                    const metadata = r2.getMetadataOfDataset(evt.raw)
-                    //
-                    const cfg = this.zones.startChangeMetadata
-                    cfg.requests[cfg.id].form['dataset-id'].selected = this.getSelectedDataset()
-                    cfg.requests[cfg.id].form['metadata'].selected = metadata
-                    globals.eventBus.$emit(cfg.updateFormEventKey)
+                    const data = r2.getDataOfDataset(evt.raw)
+                    if (data) {
+                        //
+                        cfg = this.zones.startChangeMetadata
+                        cfg.requests[cfg.id].form['dataset-id'].selected = this.getSelectedDataset()
+                        cfg.requests[cfg.id].form['metadata'].selected = data.metadata
+                        globals.eventBus.$emit(cfg.updateFormEventKey)
+                        //
+                        cfg = this.zones.changeMetadata
+                        cfg.requests[cfg.id].form['dataset-id'].selected = this.getSelectedDataset()
+                        cfg.requests[cfg.id].form['send-data'].selected = {
+                            modificationDate: data.modificationDate,
+                            metadata: data.metadata
+                        }
+                        cfg.requests[cfg.id].form['title'].selected = data.metadata.title
+                        cfg.requests[cfg.id].form['description'].selected = data.metadata.description
+                        globals.eventBus.$emit(cfg.updateFormEventKey)
+                    }
                 }, 100)
             }
         },

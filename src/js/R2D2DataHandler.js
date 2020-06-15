@@ -3,10 +3,10 @@ const R2D2DataHandler = function() {
     this.getDatasets = (data, options = {}) => {
         console.log('R2:getDatasets data = ', data)
         const res = {
-            // _new: {
-            //     key: null,
-            //     title: '>> create new dataset'
-            // }
+            _new: {
+                key: null,
+                label: '>> create new dataset'
+            }
         }
         if (options.as === 'key-list') {
             _.each(data.hits.hits, (value, index) => {
@@ -43,7 +43,7 @@ const R2D2DataHandler = function() {
         return res
     }
 
-    // this.getMetadataOfDataset = (data, options = {}) => data.metadata || null
+    // this.getDataOfDataset = (data, options = {}) => data.metadata || null
 
     const metadata = {
         title: 'drag 4',
@@ -78,8 +78,8 @@ const R2D2DataHandler = function() {
         ]
     }
 
-    this.getMetadataOfDataset = (data, options = {}) => {
-        return data ? data.metadata || null : null
+    this.getDataOfDataset = (data, options = {}) => {
+        return data || null
     }
 
     // ++++++++++++++++++++++++++

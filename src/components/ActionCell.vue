@@ -173,7 +173,7 @@ export default {
                     res[ky] = item.selected
                 }
             })
-            return res
+            return _.isFunction(this.config.collectData) ? this.config.collectData(res): res
         },
         async sendForm(key) {
             const api = this.getApi(key)
