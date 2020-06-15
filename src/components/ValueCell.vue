@@ -40,7 +40,6 @@ export default {
         if (this.config.updateEventKey) {
             globals.eventBus.$on(`${this.config.updateEventKey}`, this.update)
         }
-        console.log('VC:created this.config = ',this.config)
     },
     beforeDestroy() {
         globals.eventBus.$off(`${this.config.updateEventKey}`, this.update)

@@ -6,12 +6,23 @@
                     v-for="(item, index) in request.form"
                     :key="index"
                     :id="item.key"
-                    :label="item.label"
+                    :label="item.type === 'button' ? null : item.label"
                     :label-for="item.key"
                     :description="item.description"
                 >
                     <b-input-group v-if="item.component === 'r2-chunky'">
                         <r2-chunky :config="item" />
+                    </b-input-group>
+
+                    <b-input-group
+                        v-if="item.type === 'button'"
+                        size="sm"
+                        :prepend="item.prepend"
+                        :append="item.append"
+                    >
+                        <b-button :id="item.key" class="bt-form" size="sm" @click="onClickButton(item.key)">
+                            {{ item.label }}
+                        </b-button>
                     </b-input-group>
 
                     <b-input-group v-if="item.type === 'input'" size="sm" :prepend="item.prepend" :append="item.append">
@@ -111,12 +122,6 @@ export default {
             tme: null
         }
     },
-    created() {
-        console.log('FC:created this.request = ', this.request)
-    },
-    mounted() {
-        console.log('FC:mounted this.request = ', this.request)
-    },
     methods: {
         update(updateKey = 'uKey') {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
@@ -126,6 +131,12 @@ export default {
                 item
             })
         },
+        onClickButton(key) {
+            this.$emit('onClickButton', {
+                key
+            })
+        },
+
         getApi(key) {
             return this.request.api
         },

@@ -2,7 +2,12 @@ const R2D2DataHandler = function() {
     //
     this.getDatasets = (data, options = {}) => {
         console.log('R2:getDatasets data = ', data)
-        const res = {}
+        const res = {
+            // _new: {
+            //     key: null,
+            //     title: '>> create new dataset'
+            // }
+        }
         if (options.as === 'key-list') {
             _.each(data.hits.hits, (value, index) => {
                 const d = {
@@ -18,7 +23,12 @@ const R2D2DataHandler = function() {
     //
     this.getFilesOfDataset = (data, options = {}) => {
         console.log('R2:getFilesOfDataset data = ', data)
-        const res = {}
+        const res = {
+            _new: {
+                key: null,
+                label: '>> upload / create new file'
+            }
+        }
         if (options.as === 'key-list') {
             _.each(data.files, (value, index) => {
                 const d = {
@@ -29,6 +39,7 @@ const R2D2DataHandler = function() {
                 res[value.id] = d
             })
         }
+        console.log('R2:getFilesOfDataset res = ', res)
         return res
     }
 
@@ -67,7 +78,9 @@ const R2D2DataHandler = function() {
         ]
     }
 
-    this.getMetadataOfDataset = (data, options = {}) => metadata
+    this.getMetadataOfDataset = (data, options = {}) => {
+        return data ? data.metadata || null : null
+    }
 
     // ++++++++++++++++++++++++++
     // +++++++ prototype page
@@ -117,22 +130,53 @@ const R2D2DataHandler = function() {
         rq.form['keys'].type = 'value-cell'
         rq.api.schema.data = ''
         rq.description = 'lists all datasets'
+        //
         // get files
         // clone request as its inner data gets mutated !
         id = 'r2d2-get-dataset'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['file-id-select'].label = 'dataset-id:'
         rq.form['file-id-select'].type = 'value-cell'
+        rq.form['file-id-select'].selected = null
         rq.form['file-id-select'].updateEventKey = `update--${id}`
         rq.description = 'lists all files of a dataset'
-        console.log('R2:getPrototypePageRequests requests = ', requests)
+        // start change metadata
+        // clone request as its inner data gets mutated !
+        id = 'r2d2-pp-start-change-metadata'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        rq.form['dataset-id'].updateEventKey = `update--${id}`
+        rq.form['metadata'].updateEventKey = `update--${id}`
+        //
         // change metadata
         // clone request as its inner data gets mutated !
         id = 'r2d2-pp-change-metadata'
         rq = requests[id] = _.cloneDeep(raw[id])
-        rq.form['file-id'].updateEventKey = `update--${id}`
-        rq.form['metadata'].updateEventKey = `update--${id}`
+        rq.form['dataset-id'].updateEventKey = `update--${id}`
+        rq.form['close'] = {
+            type: 'button',
+            key: 'close',
+            label: 'close'
+        }
         //
+        // upload file
+        // clone request as its inner data gets mutated !
+        id = 'r2d2-pp-upload-file'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        rq.form['close'] = {
+            type: 'button',
+            key: 'close',
+            label: 'close'
+        }
+        //
+        // update file
+        // clone request as its inner data gets mutated !
+        id = 'r2d2-pp-update-file'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        rq.form['close'] = {
+            type: 'button',
+            key: 'close',
+            label: 'close'
+        }
         console.log('R2:getPrototypePageRequests requests = ', requests)
         return requests
     }

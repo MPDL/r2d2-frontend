@@ -12,8 +12,9 @@
                 </template>
                 <div class="info">
                     <div class="description">{{ request.description }}</div>
-                    <div class="seperator">::</div>
-                    <div class="send">
+                    <!-- <div class="description">{{ request }}</div> -->
+                    <div v-if="showSend" class="seperator">::</div>
+                    <div v-if="showSend" class="send">
                         <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(request.key)">
                             Send
                         </b-button>
@@ -25,9 +26,13 @@
                     <span>api-method: {{ request.api.method }}</span>
                 </div>
                 <div class="scoll-area-edge"></div>
-                <FormCell :request="request" :key="formKey"></FormCell>
-                <div class="scoll-area-edge"></div>
-                <vue-custom-scrollbar class="scroll-area results">
+                <FormCell
+                    :request="request"
+                    :key="formKey"
+                    @onClickButton="$emit('onClickFormButton', arguments[0])"
+                ></FormCell>
+                <div v-if="showResultList" class="scoll-area-edge"></div>
+                <vue-custom-scrollbar v-if="showResultList" class="scroll-area results">
                     <div class="list-pane" :key="rsKey">
                         <div
                             v-for="(item, index) in filteredResult"
@@ -52,6 +57,7 @@
 <script>
 //
 // TODO make the action cell more dynamic (heights etc.)
+// TODO remove tabs from action cell
 //
 import vueCustomScrollbar from 'vue-custom-scrollbar'
 import R2Chunky from '@/components/R2Chunky.vue'
@@ -95,19 +101,13 @@ export default {
         }
     },
     created() {
-        console.log('AC:created this.config.requests = ', this.config.requests)
-        console.log('AC:created  this.config.updateFormEventKey IN = ', this.config.updateFormEventKey)
-
         globals.eventBus.$on('onLoadResults', this.updateResults)
         if (this.config.updateFormEventKey) {
-            console.log('AC:created this.config.updateFormEventKey SET = ', this.config.updateFormEventKey)
             globals.eventBus.$on(`${this.config.updateFormEventKey}`, this.updateForm)
         }
         if (this.config.sendFormEventKey) {
-            console.log('AC:created this.config.sendFormEventKey = ', this.config.sendFormEventKey)
             globals.eventBus.$on(`${this.config.sendFormEventKey}`, this.sendForm)
         }
-        // console.log('AC:created this.config.requests = ', this.config.requests)
     },
     beforeDestroy() {
         globals.eventBus.$off('onLoadResults', this.updateResults)
@@ -118,18 +118,13 @@ export default {
         // TODO this is hardcoded to tab 1 currently, make the persist key dynamic!
         const key = Object.keys(this.config.requests)[0]
         this.updateResults({ key })
-        console.log('AC:mounted this.config.requests = ', this.config.requests)
     },
     methods: {
         update(updateKey = 'uKey') {
-            console.log('AC:update:XX updateKey = ', updateKey)
-            console.log('AC:update:XX this.config = ', this.config)
-            console.log('AC:update:XX this.config.id = ', this.config.id)
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         updateForm(evt) {
             this.update('formKey')
-            console.log('AC:update:XX formKey = ', this.formKey)
         },
         updateTabActiveState() {
             // TODO unify this (redundant in result and request zone)
@@ -154,16 +149,14 @@ export default {
                 if (data) {
                     this.filteredResult = _.isFunction(this.config.getResult) ? this.config.getResult(data) : data
                 }
-                // this.update('rsKey') // needed to update the own selected state!
+                this.update('rsKey') // needed to update the own selected state!
                 this.$emit('onUpdateResults', { id: this.config.id, raw: data, filtered: this.filteredResult })
             }
         },
         onClickListItem(item) {
-            console.log('AC:onClickListItem item = ', item)
             this.$emit('onClickListItem', {
                 item
             })
-            // this.update('rsKey')
         },
         onClickRemove(key) {
             datasource.removeRequestByKey(key)
@@ -183,7 +176,6 @@ export default {
             return res
         },
         async sendForm(key) {
-            console.log('AC:sendForm key = ', key)
             const api = this.getApi(key)
             await datasource.request(key, api, this.collectData(key, api.schema))
         },
@@ -204,11 +196,6 @@ export default {
             reader.readAsDataURL(item.meta)
         },
         listItemIsSelected(key) {
-            console.log('AC:isSelected ++++++  this.config.id = ', this.config.id)
-            console.log('AC:isSelected key = ', key)
-            console.log('AC:isSelected this.config.selected = ', this.config.selected)
-            console.log('AC:isSelected this.config = ', this.config)
-            console.log('AC:isSelected key === this.config.selected = ', key === this.config.selected)
             return key === this.config.selected
         }
     },
@@ -231,13 +218,13 @@ export default {
         },
         showTabs() {
             return this.config.options.showTabs !== false
-        }
-    },
-    watch: {
-        config(now, prev) {
-            console.log('AC:W:config now, prev = ', now, prev)
         },
-        deep: true
+        showSend() {
+            return this.config.options.showSend !== false
+        },
+        showResultList() {
+            return this.config.options.showResultList !== false
+        }
     }
 }
 </script>

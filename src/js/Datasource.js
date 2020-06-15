@@ -65,8 +65,6 @@ function Datasource() {
     }
 
     const updateConfig = data => {
-        console.log('DS:updateConfig config = ', { ...config })
-        console.log('DS:updateConfig data = ', data)
         config.setup = {...config.setup, ...data.setup}
         config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
     }
@@ -109,33 +107,15 @@ function Datasource() {
 
     this.request = async (key = null, api = null, data = {}) => {
         api = _.isPlainObject(api) ? { ...getApi(api) } : { ...config.defaultApi }
-        console.log('DS:request key = ', key)
-        console.log('DS:request api = ', api)
-        console.log('DS:request api.schema = ', api.schema)
-        console.log('DS:request data = ', data)
-
-        // console.log('DS:request rawData = ', rawData)
-        // let data = rawData
-        // schema '{*}' means the plain data object is send,
-        // without the standard key-data structure
-        // console.log('obj:fc value = ',value)
-        // const schema = _.isString(api.schema) ? api.schema.split(',') : []
         const schema = _.isPlainObject(api.schema) ? api.schema : {}
-
         // TODO extract 'getValueByKey' to global class or someting ...
         const getValueByKey = (key, data, cut = false) => {
-            console.log('DS:getValueByKey ++++++++ key = ', key)
-            console.log('DS:getValueByKey data BF = ', { ...data })
-            console.log('DS:getValueByKey _.isString(data) = ', _.isString(data))
             switch (true) {
                 case _.isString(data):
                     return data
                 case _.isPlainObject(data):
                     const res = _.get(data, key)
-                    console.log('DS:getValueByKey res = ', res)
-                    // const res = _.isUndefined(value) ? key : value
                     cut ? _.unset(data, key) : null
-                    console.log('DS:getValueByKey data AF = ', { ...data })
                     return res
             }
             return undefined
@@ -178,15 +158,12 @@ function Datasource() {
             }
         }
         // +++++++++++++++++ finalize data structure for sending
-        console.log('DS:request parts = ', parts)
         api.target = parts.join('')
-
         const directDataKey = _.get(schema, 'data')
         const directDataValue = getValueByKey(directDataKey, data)
         switch (true) {
             case !_.isUndefined(directDataValue):
                 data = directDataValue
-                console.log('DS:request getValueByKey(directDataKey, data) = ', data)
                 break
             case !_.isUndefined(data.___ROOT):
                 data = { ...data.___ROOT }
@@ -200,7 +177,6 @@ function Datasource() {
 
         return METHODS[api.method](api.target, data, options)
             .then(res => {
-                console.log('DS:post res = ', res)
                 // TODO make this fully generic
                 const fcxGet = {
                     'auth.token': headers => globals.setAdminToken(headers.authorization)
@@ -268,8 +244,6 @@ function Datasource() {
 
             request.api.method = METHODS[request.api.method] ? request.api.method : METHODS.default
             request.description = _.isString(request.description) ? request.description : rqKey
-            console.log('DS:updateRequests request.key = ', request.key)
-            console.log('DS:updateRequests request.form = ', request.form)
             _.each(request.form, (item, itemKey) => {
                 item.sendKey = _.isString(item.sendKey) ? item.sendKey : itemKey
                 item.key = `${rqKey}--${itemKey}`
@@ -287,67 +261,42 @@ function Datasource() {
                         }
                     }
                 }
-                // if (item.type === 'input') {
-                //     if (_.isObject(item.selected)) {
-                //         item.selected = JSON.stringify(item.selected)
-                //     }
-                // }
             })
             ordered.push(request)
         })
         _.each(config.requests, request => ordered.push(request))
         config.requests = {}
         _.each(ordered, request => (config.requests[request.key] = request))
-
-        console.log('DS:updateRequests config.requests = ', config.requests)
     }
 
     const removeRequestByKey = key => {
         delete config.requests[key]
-        console.log('DS:removeRequestByKey key, config.requests = ', config.requests)
     }
     this.removeRequestByKey = removeRequestByKey
 
     const updateResults = (data, key, api) => {
-        // console.log('DS:updateResults key = ', key)
-        // console.log('DS:updateResults data = ', data)
-
         const ts = new Date().getTime()
-        // console.log('updateResults ts.toString() = ', ts.toString())
-
         config.results[ts.toString()] = {
             ts,
             data,
             key,
             api: api || '-'
         }
-
         const keys = Object.keys(config.results).reverse()
         while (keys.length > config.setup.maxStoreResults) {
             delete config.results[keys.pop()]
         }
-
-        console.log('DS:updateResults config.setup = ', config.setup)
-        console.log('DS:updateResults keys = ', keys)
-        // console.log('DS:updateResults config.results = ', config.results)
-
-
-
         // set the latest result directly into the request
         config.requests[key] ? config.requests[key].result = data : null
         return config.results[ts.toString()]
     }
 
     const removeResultByTs = ts => {
-        console.log('DS:removeResultByTs ts = ', ts)
-        console.log('DS:removeResultByTs config.results BF = ', { ...config.results })
         delete config.results[ts]
-        console.log('DS:removeResultByTs config.results AF = ', { ...config.results })
     }
     this.removeResultByTs = removeResultByTs
 
     const getStructure = () => {
-        console.log('DS:getStructure config = ', { ...config })
         if (config.structure) {
             return config.structure
         }

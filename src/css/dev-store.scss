@@ -223,11 +223,9 @@ input:-ms-input-placeholder {
         margin: 10px;
         flex-direction: column;
         height: calc(100vh - 170px - 70px);
-
         input {
             font-size: 14px;
         }
-
         .alert {
             padding: 0.5rem 0.5rem;
             display: inline-block;
@@ -285,6 +283,20 @@ input:-ms-input-placeholder {
             margin-top: 5px;
             color: #686574;
             font-size: 12px;
+        }
+        .bt-form {
+            position: relative;
+            padding: 2px 10px 2px 10px;
+            background-color: #4fa7c1;
+            &:hover {
+                background-color: #3a859b;
+            }
+            // &:active, // ths dont works on tap!!
+            &.click {
+                // use this to get the tap state also
+                background-color: #cde7ef;
+                color: #3a3838;
+            }
         }
     }
 }

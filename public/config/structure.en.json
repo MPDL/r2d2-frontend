@@ -388,11 +388,32 @@
                 }
             }
         },
+        "r2d2-pp-start-change-metadata": {
+            "label": "r2d2-pp-start-change-metadata",
+            "description": "Start change metadata of a dataset from here",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "metadata": {
+                    "type": "value-cell",
+                    "label": "metadata as JSON",
+                    "selected": null
+                },
+                "edit-metadata": {
+                    "type": "button",
+                    "label": "Edit Metadata"
+                }
+            }
+        },
         "r2d2-pp-change-metadata": {
             "label": "r2d2-pp-change-metadata",
             "description": "Changes metadata of a dataset",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{file-id}",
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}",
                 "method": "get",
                 "schema": {
                     "header-set": {
@@ -401,15 +422,75 @@
                 }
             },
             "form": {
-                "file-id": {
+                "dataset-id": {
                     "type": "value-cell",
-                    "label": "dataset",
+                    "label": "dataset-id",
+                    "selected": null
+                }
+            }
+        },
+        "r2d2-pp-upload-file": {
+            "label": "r2d2-pp-upload-file",
+            "description": "Uploads a new file",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
+                "method": "post",
+                "schema": {
+                    "data": "cunky.base64",
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "X-File-Name": "cunky.filename",
+                        "X-File-Total-Size": "cunky.filesize"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
                     "selected": null
                 },
-                "metadata": {
+                "file-id": {
                     "type": "value-cell",
-                    "label": "metadata as JSON",
+                    "label": "file-id",
                     "selected": null
+                },
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "Select file"
+                }
+            }
+        },
+        "r2d2-pp-update-file": {
+            "label": "r2d2-pp-upload-file",
+            "description": "Uploads a file (no/single chunk) to an existing file-id",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "method": "put",
+                "schema": {
+                    "data": "cunky.base64",
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "X-File-Name": "cunky.filename",
+                        "X-File-Total-Size": "cunky.filesize",
+                        "X-File-Chunk-Number": "cunky.chunknumber"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "Select file"
                 }
             }
         }
