@@ -376,7 +376,15 @@
                             "value": {
                                 "query": {
                                     "match_all": {}
-                                }
+                                },
+                                "size": 200,
+                                "sort": [
+                                    {
+                                        "modificationDate": {
+                                            "order": "desc"
+                                        }
+                                    }
+                                ]
                             }
                         },
                         {
@@ -441,6 +449,38 @@
                 }
             }
         },
+        "r2d2-pp-create-dataset": {
+            "label": "r2d2-pp-change-metadata",
+            "description": "Creates a new dataset ( incl. initial metadata )",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/",
+                "method": "post",
+                "schema": {
+                    "data": "send-data",
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "send-data": {
+                    "type": "value-cell",
+                    "label": "data 2 send as JSON",
+                    "selected": null
+                },
+                "title": {
+                    "type": "input"
+                },
+                "description": {
+                    "type": "textarea"
+                }
+            }
+        },
         "r2d2-pp-upload-file": {
             "label": "r2d2-pp-upload-file",
             "description": "Uploads a new file",
@@ -475,7 +515,7 @@
         },
         "r2d2-pp-update-file": {
             "label": "r2d2-pp-upload-file",
-            "description": "Uploads a file (no/single chunk) to an existing file-id",
+            "description": "Uploads a file (single chunk) to an existing file-id",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
                 "method": "put",

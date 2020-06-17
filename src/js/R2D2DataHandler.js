@@ -157,6 +157,16 @@ const R2D2DataHandler = function() {
             key: 'close',
             label: 'close'
         }
+        // create dataset (and set initial metadata)
+        // clone request as its inner data gets mutated !
+        id = 'r2d2-pp-create-dataset'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        rq.form['dataset-id'].updateEventKey = `update--${id}`
+        rq.form['close'] = {
+            type: 'button',
+            key: 'close',
+            label: 'close'
+        }
         //
         // upload file
         // clone request as its inner data gets mutated !

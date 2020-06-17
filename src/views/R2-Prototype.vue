@@ -5,7 +5,15 @@
                 class="view change-metadata edit"
                 :key="mtKey"
                 :config="zones.changeMetadata"
-                @onClickFormButton="onClickFormClose"
+                @onClickFormButton="onClickFormClose('change-metadata')"
+            />
+        </div>
+        <div :class="{ hidden: viewMode !== 'create-dataset' }">
+            <ActionCell
+                class="view change-metadata edit"
+                :key="mtKey"
+                :config="zones.createDataset"
+                @onClickFormButton="onClickFormClose('create-dataset')"
             />
         </div>
         <div :class="{ hidden: viewMode !== 'upload-file' }">
@@ -14,7 +22,7 @@
                 :config="zones.uploadFile"
                 @onClickListItem="onClickFileListItem"
                 @onUpdateResults="onZoneUpdateResults"
-                @onClickFormButton="onClickFormClose"
+                @onClickFormButton="onClickFormClose('upload-file')"
             />
         </div>
         <div :class="{ hidden: viewMode !== 'update-file' }">
@@ -23,7 +31,7 @@
                 :config="zones.updateFile"
                 @onClickListItem="onClickFileListItem"
                 @onUpdateResults="onZoneUpdateResults"
-                @onClickFormButton="onClickFormClose"
+                @onClickFormButton="onClickFormClose('update-file')"
             />
         </div>
         <div :class="{ hidden: viewMode !== 'default' }">
@@ -93,6 +101,7 @@ export default {
                         me.initialRequest = false
                         return r2.getDatasets(data, { as: 'key-list' })
                     },
+                    sendFormEventKey: 'sendform--get-datasets',
                     selected: this.getSelectedDataset(),
                     initialRequest: true
                 },
@@ -139,13 +148,12 @@ export default {
                     options: {
                         showTabs: false,
                         showApiInfo: false,
-                        showSend: true
+                        showSend: true,
+                        showResultList: false,
+                        showResultJson: true
                     },
-                    getResult: (data, me = this.zones.changeMetadata) => {
-                        return {}
-                    },
-                    collectData: (data) => {
-                        // TODO make this generic and realtime 
+                    collectData: data => {
+                        // TODO make this generic and realtime
                         console.log('changeMetadata:CB:collectData data = ', data)
                         data['send-data'].metadata.title = data.title
                         data['send-data'].metadata.description = data.description
@@ -154,16 +162,39 @@ export default {
                     sendFormEventKey: 'sendform--change-metadata',
                     updateFormEventKey: 'updateform--change-metadata'
                 },
+                createDataset: {
+                    id: 'r2d2-pp-create-dataset',
+                    requests: {},
+                    options: {
+                        showTabs: false,
+                        showApiInfo: false,
+                        showSend: true,
+                        showResultList: false,
+                        showResultJson: true
+                    },
+                    collectData: data => {
+                        // TODO make this generic and realtime
+                        console.log('createDataset:CB:collectData data = ', data)
+                        data['send-data'].metadata.title = data.title
+                        data['send-data'].metadata.description = data.description
+                        return data
+                    },
+                    sendFormEventKey: 'sendform--create-dataset',
+                    updateFormEventKey: 'updateform--create-dataset',
+                    initalData: {
+                        metadata: {}
+                    }
+                },
+
                 uploadFile: {
                     id: 'r2d2-pp-upload-file',
                     requests: {},
                     options: {
                         showTabs: false,
                         showApiInfo: false,
-                        showSend: true
-                    },
-                    getResult: (data, me = this.zones.uploadFile) => {
-                        return null
+                        showSend: true,
+                        showResultList: false,
+                        showResultJson: true
                     },
                     sendFormEventKey: 'sendform--upload-file',
                     updateFormEventKey: 'updateform--upload-file',
@@ -175,10 +206,9 @@ export default {
                     options: {
                         showTabs: false,
                         showApiInfo: false,
-                        showSend: true
-                    },
-                    getResult: (data, me = this.zones.updateFile) => {
-                        return null
+                        showSend: true,
+                        showResultList: false,
+                        showResultJson: true
                     },
                     sendFormEventKey: 'sendform--update-file',
                     updateFormEventKey: 'updateform--update-file',
@@ -199,7 +229,7 @@ export default {
         },
         onClickDatasetListItem(evt) {
             if (evt.item.key === null) {
-                return (this.viewMode = 'change-metadata')
+                return (this.viewMode = 'create-dataset')
             }
             this.setSelectedDataset(evt.item.key)
             const cfg = this.zones.getDataset
@@ -212,9 +242,13 @@ export default {
         onClickEditMetadata(evt) {
             this.viewMode = 'change-metadata'
         },
-        onClickFormClose(evt) {
+        onClickFormClose(key) {
             this.viewMode = 'default'
             let cfg
+            if (key === 'create-dataset') {
+                cfg = this.zones.getDatasets
+                return globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
+            }
             //
             cfg = this.zones.getDataset
             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
@@ -277,6 +311,12 @@ export default {
             cfg = this.zones.changeMetadata
             cfg.selected = key
             cfg.requests[cfg.id].form['dataset-id'].selected = key
+            globals.eventBus.$emit(cfg.updateFormEventKey)
+            //
+            cfg = this.zones.createDataset
+            cfg.selected = key
+            cfg.requests[cfg.id].form['dataset-id'].selected = null
+            cfg.requests[cfg.id].form['send-data'].selected = cfg.initalData
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.uploadFile
@@ -401,7 +441,7 @@ export default {
             width: 810px;
             ::v-deep {
                 .form-elements {
-                    height: 600px;
+                    height: 370px;
                     .value-cell.dataset-id {
                         .scroll-area-vc {
                             height: 20px;
@@ -414,6 +454,11 @@ export default {
                         }
                     }
                 }
+                .scroll-area.results {
+                    height: 350px;
+                    min-height: 350px;
+                    max-height: 350px;
+                }
             }
         }
         &.upload-file {
@@ -421,7 +466,7 @@ export default {
             width: 820px;
             ::v-deep {
                 .form-elements {
-                    height: 600px;
+                    height: 370px;
                     .value-cell {
                         &.file-id,
                         &.dataset-id {
@@ -430,6 +475,11 @@ export default {
                             }
                         }
                     }
+                }
+                .scroll-area.results {
+                    height: 350px;
+                    min-height: 350px;
+                    max-height: 350px;
                 }
             }
         }

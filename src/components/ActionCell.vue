@@ -31,7 +31,23 @@
                     :key="formKey"
                     @onClickButton="$emit('onClickFormButton', arguments[0])"
                 ></FormCell>
-                <div v-if="showResultList" class="scoll-area-edge"></div>
+
+                <div v-if="showResultList || showResultJson" class="scoll-area-edge"></div>
+
+                <vue-custom-scrollbar v-if="showResultJson" class="scroll-area results">
+                    <div class="list-pane" :key="rsKey">
+                        <div class="">
+                            <vue-json-pretty
+                                :data="filteredResult"
+                                :show-length="true"
+                                :show-line="true"
+                                :highlight-mouseover-node="true"
+                                :collapsed-on-click-brackets="true"
+                            ></vue-json-pretty>
+                        </div>
+                    </div>
+                </vue-custom-scrollbar>
+
                 <vue-custom-scrollbar v-if="showResultList" class="scroll-area results">
                     <div class="list-pane" :key="rsKey">
                         <div
@@ -173,7 +189,7 @@ export default {
                     res[ky] = item.selected
                 }
             })
-            return _.isFunction(this.config.collectData) ? this.config.collectData(res): res
+            return _.isFunction(this.config.collectData) ? this.config.collectData(res) : res
         },
         async sendForm(key) {
             const api = this.getApi(key)
@@ -224,6 +240,9 @@ export default {
         },
         showResultList() {
             return this.config.options.showResultList !== false
+        },
+        showResultJson() {
+            return this.config.options.showResultJson === true
         }
     }
 }
@@ -249,7 +268,7 @@ export default {
     .list-pane {
         background-color: rgb(248, 255, 250);
         // TODO make the height dynamic
-        height: 380px;
+        // height: 380px;
         .info {
             margin-bottom: 5px;
             margin-left: 5px;
