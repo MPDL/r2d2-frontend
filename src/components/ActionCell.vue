@@ -1,18 +1,9 @@
 <template>
-    <div class="action-cell" :class="{ 'tabs-hidden': !showTabs }">
-        <b-tabs :key="uKey" v-model="tabIndex">
-            <b-tab v-for="(request, index) in requests" :key="index" class="tab hide-scrollbar">
-                <template v-slot:title>
-                    <div class="title">
-                        <div class="tiny-close" @click="onClickRemove(request.key)">
-                            <div class="icon">x</div>
-                        </div>
-                        {{ request.label }}
-                    </div>
-                </template>
+    <div class="action-cell tabs-hidden">
+        <b-tabs id="fake tabs to keep the styling working">
+            <b-tab class="tab hide-scrollbar">
                 <div class="info">
                     <div class="description">{{ request.description }}</div>
-                    <!-- <div class="description">{{ request }}</div> -->
                     <div v-if="showSend" class="seperator">::</div>
                     <div v-if="showSend" class="send">
                         <b-button class="bt-send" :class="{ click: mousedown }" size="sm" @click="onClick(request.key)">
@@ -58,8 +49,6 @@
                             @click="onClickListItem(item)"
                         >
                             <div class="description">{{ item.label }}</div>
-                            <!-- <div class="description">{{ item.key }}</div> -->
-                            <!-- <div class="description">{{ config.selected }}</div> -->
                             <div class="seperator">::</div>
                         </div>
                     </div>
@@ -73,7 +62,6 @@
 <script>
 //
 // TODO make the action cell more dynamic (heights etc.)
-// TODO remove tabs from action cell
 //
 import vueCustomScrollbar from 'vue-custom-scrollbar'
 import R2Chunky from '@/components/R2Chunky.vue'
@@ -131,9 +119,7 @@ export default {
         globals.eventBus.$off(`${this.config.updateFormEventKey}`, this.updateForm)
     },
     mounted() {
-        // TODO this is hardcoded to tab 1 currently, make the persist key dynamic!
-        const key = Object.keys(this.config.requests)[0]
-        this.updateResults({ key })
+        this.updateResults({ key: this.config.id })
     },
     methods: {
         update(updateKey = 'uKey') {
@@ -142,24 +128,8 @@ export default {
         updateForm(evt) {
             this.update('formKey')
         },
-        updateTabActiveState() {
-            // TODO unify this (redundant in result and request zone)
-            let $sel = $('.action-cell .nav-item')
-            $sel.removeClass('active')
-            clearTimeout(this.tme)
-            this.tme = setTimeout(() => {
-                $sel = $('.action-cell .nav-item')
-                $sel.removeClass('active')
-                $($sel[this.tabIndex]).addClass('active')
-            }, 100)
-        },
-        updateRequests() {
-            this.requests = datasource.getRequests()
-            this.update()
-            this.updateTabActiveState()
-        },
         updateResults(evt) {
-            if (this.config.requests[evt.key]) {
+            if (evt.key === this.config.id) {
                 this.filteredResult = {}
                 const data = datasource.getConfig().requests[evt.key].result
                 if (data) {
@@ -173,10 +143,6 @@ export default {
             this.$emit('onClickListItem', {
                 item
             })
-        },
-        onClickRemove(key) {
-            datasource.removeRequestByKey(key)
-            this.updateRequests()
         },
         getApi(key) {
             return this.requests[key].api
@@ -216,33 +182,30 @@ export default {
         }
     },
     computed: {
-        // TODO unify this (redundant in result and request zone)
-        tabIndex: {
-            get() {
-                return this.tix
-            },
-            set(index) {
-                this.tix = index
-                this.updateTabActiveState(index)
-            }
-        },
         requests() {
-            return this.config.requests
+            return this.config.requests || {}
+        },
+        request() {
+            return this.config.requests[this.config.id] || {}
+        },
+        options() {
+            return this.config.options || {}
         },
         showApiInfo() {
-            return this.config.options.showApiInfo !== false
+            return this.options.showApiInfo === true
         },
         showTabs() {
-            return this.config.options.showTabs !== false
+            // 2kill
+            return this.options.showTabs !== false
         },
         showSend() {
-            return this.config.options.showSend !== false
+            return this.options.showSend !== false
         },
         showResultList() {
-            return this.config.options.showResultList !== false
+            return this.options.showResultList !== false
         },
         showResultJson() {
-            return this.config.options.showResultJson === true
+            return this.options.showResultJson === true
         }
     }
 }

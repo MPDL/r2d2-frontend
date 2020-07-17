@@ -21,7 +21,9 @@ export default {
             uKey: 0
         }
     },
-    created() {},
+    created() {
+        // console.log('CKY:created this.config = ', this.config)
+    },
     methods: {
         onFileSelect(event) {
             const input = event.target

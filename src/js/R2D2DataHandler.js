@@ -1,7 +1,6 @@
 const R2D2DataHandler = function() {
     //
     this.getDatasets = (data, options = {}) => {
-        console.log('R2:getDatasets data = ', data)
         const res = {
             _new: {
                 key: null,
@@ -22,7 +21,6 @@ const R2D2DataHandler = function() {
     }
     //
     this.getFilesOfDataset = (data, options = {}) => {
-        console.log('R2:getFilesOfDataset data = ', data)
         const res = {
             _new: {
                 key: null,
@@ -39,7 +37,6 @@ const R2D2DataHandler = function() {
                 res[value.id] = d
             })
         }
-        console.log('R2:getFilesOfDataset res = ', res)
         return res
     }
 
@@ -105,7 +102,6 @@ const R2D2DataHandler = function() {
         // clone request as its inner data gets mutated !
         id = 'r2d2-login'
         rq = requests[id] = _.cloneDeep(raw[id])
-        console.log('R2:getPrototypePageRequests rq = ', rq)
         rq.form = {
             username: {
                 type: 'input',
@@ -187,7 +183,6 @@ const R2D2DataHandler = function() {
             key: 'close',
             label: 'close'
         }
-        console.log('R2:getPrototypePageRequests requests = ', requests)
         return requests
     }
 }

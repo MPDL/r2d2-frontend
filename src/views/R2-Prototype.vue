@@ -1,4 +1,27 @@
 <template>
+    <!-- <div class="r2-prototype" :key="uKey">
+        <div :class="{ hidden: viewMode !== 'default' }">
+            <ActionCell class="view login" :config="zones.login" />
+            <ActionCell
+                class="view get-datasets"
+                :config="zones.getDatasets"
+                @onClickListItem="onClickDatasetListItem"
+            />
+            <ActionCell
+                class="view get-files"
+                :config="zones.getDataset"
+                @onClickListItem="onClickFileListItem"
+                @onUpdateResults="onZoneUpdateResults"
+            />
+            <ActionCell
+                class="view start-change-metadata"
+                :key="mtKey"
+                :config="zones.startChangeMetadata"
+                @onClickFormButton="onClickEditMetadata"
+            />
+        </div>
+    </div> -->
+
     <div class="r2-prototype" :key="uKey">
         <div :class="{ hidden: viewMode !== 'change-metadata' }">
             <ActionCell
@@ -82,19 +105,11 @@ export default {
             zones: {
                 login: {
                     id: 'r2d2-login',
-                    requests: {},
-                    options: {
-                        showTabs: false,
-                        showApiInfo: false
-                    }
+                    requests: r2.ppGetRequests()
                 },
                 getDatasets: {
                     id: 'r2d2-get-datasets',
-                    requests: {},
-                    options: {
-                        showTabs: false,
-                        showApiInfo: false
-                    },
+                    requests: r2.ppGetRequests(),
                     getResult: (data, me = this.zones.getDatasets) => {
                         const key = me.initialRequest ? this.getSelectedDataset(key) : null
                         this.setSelectedDataset(key)
@@ -107,10 +122,8 @@ export default {
                 },
                 getDataset: {
                     id: 'r2d2-get-dataset',
-                    requests: {},
+                    requests: r2.ppGetRequests(),
                     options: {
-                        showTabs: false,
-                        showApiInfo: false,
                         showSend: false
                     },
                     getResult: (data, me = this.zones.getDataset) => {
@@ -125,7 +138,7 @@ export default {
                 },
                 startChangeMetadata: {
                     id: 'r2d2-pp-start-change-metadata',
-                    requests: {},
+                    requests: r2.ppGetRequests(),
                     options: {
                         showTabs: false,
                         showApiInfo: false,
@@ -144,7 +157,7 @@ export default {
                 },
                 changeMetadata: {
                     id: 'r2d2-pp-change-metadata',
-                    requests: {},
+                    requests: r2.ppGetRequests(),
                     options: {
                         showTabs: false,
                         showApiInfo: false,
@@ -164,7 +177,7 @@ export default {
                 },
                 createDataset: {
                     id: 'r2d2-pp-create-dataset',
-                    requests: {},
+                    requests: r2.ppGetRequests(),
                     options: {
                         showTabs: false,
                         showApiInfo: false,
@@ -188,7 +201,7 @@ export default {
 
                 uploadFile: {
                     id: 'r2d2-pp-upload-file',
-                    requests: {},
+                    requests: r2.ppGetRequests(),
                     options: {
                         showTabs: false,
                         showApiInfo: false,
@@ -202,7 +215,7 @@ export default {
                 },
                 updateFile: {
                     id: 'r2d2-pp-update-file',
-                    requests: {},
+                    requests: r2.ppGetRequests(),
                     options: {
                         showTabs: false,
                         showApiInfo: false,
@@ -257,25 +270,27 @@ export default {
             this.navigation = nav
         },
         onZoneUpdateResults(evt) {
-            let cfg
+            let cfg, form
             if (evt.id === 'r2d2-get-dataset') {
                 setTimeout(() => {
                     const data = r2.getDataOfDataset(evt.raw)
                     if (data) {
                         //
                         cfg = this.zones.startChangeMetadata
-                        cfg.requests[cfg.id].form['dataset-id'].selected = this.getSelectedDataset()
-                        cfg.requests[cfg.id].form['metadata'].selected = data.metadata
+                        form = cfg.requests[cfg.id].form
+                        form['dataset-id'].selected = this.getSelectedDataset()
+                        form['metadata'].selected = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                         //
                         cfg = this.zones.changeMetadata
-                        cfg.requests[cfg.id].form['dataset-id'].selected = this.getSelectedDataset()
-                        cfg.requests[cfg.id].form['send-data'].selected = {
+                        form = cfg.requests[cfg.id].form
+                        form['dataset-id'].selected = this.getSelectedDataset()
+                        form['send-data'].selected = {
                             modificationDate: data.modificationDate,
                             metadata: data.metadata
                         }
-                        cfg.requests[cfg.id].form['title'].selected = data.metadata.title
-                        cfg.requests[cfg.id].form['description'].selected = data.metadata.description
+                        form['title'].selected = data.metadata.title
+                        form['description'].selected = data.metadata.description
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)
@@ -288,7 +303,7 @@ export default {
             })
             this.update()
         },
-        // computed prop dont works
+        // computed prop dont works for that
         setSelectedDataset(key) {
             r2.ppSetSelectedDataset(key)
             //
