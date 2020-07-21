@@ -1,5 +1,7 @@
 const queue = [
     './config/setup.js',
+    './lib/crypto-js/3.1.9-1/core.js',
+    './lib/crypto-js/3.1.9-1/md5.js',
     './lib/lodash/lodash.min.js',
     './lib/jquery/jquery.3.4.1.min.js',
     './lib/jquery/jquery-ui.min.js',
