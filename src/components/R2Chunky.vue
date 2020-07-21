@@ -5,42 +5,82 @@
             :drop-placeholder="config.placeholder"
             @change="onFileSelect"
         ></b-form-file>
+        <b-button class="bt-send" size="sm" @click="onClickSend">
+            Start upload
+        </b-button>
     </div>
 </template>
 
 <script>
+//
+const r2 = globals.getDataHandler('r2d2')
+//
 export default {
     name: 'Upload',
     components: {},
     props: {
-        config: Object
+        config: Object,
+        form: Object
     },
     data() {
         return {
             results: {},
-            uKey: 0
+            uKey: 0,
+            fileReference: null
         }
     },
     created() {
-        // console.log('CKY:created this.config = ', this.config)
+        console.log('CKY:created this.config = ', this.config)
+        console.log('CKY:created this.form = ', this.form)
     },
     methods: {
+        onClickSend() {
+            console.log('CKY:onClickSend this.config = ', this.config)
+            console.log('CKY:onClickSend this.config.options = ', this.config.options)
+            console.log('CKY:onClickSend this.form = ', this.form)
+            const options = {
+                'api-initial': this.config.options['api-initial'],
+                'api-follow': this.config.options['api-follow'],
+                'dataset-id': this.form['dataset-id'].selected,
+                'file-id': this.form['file-id'].selected
+            }
+            r2.startChunkedUpload(this.fileReference, options)
+        },
         onFileSelect(event) {
+            this.fileReference = event.target.files[0]
+        },
+        onFileSelectXX(event) {
             const input = event.target
             console.log('CKY:onFileSelect input = ', input)
+            console.log('CKY:onFileSelect input.files = ', input.files)
             if (input.files && input.files[0]) {
                 const reader = new FileReader()
                 reader.onload = e => {
                     this.config.selected = {
                         // base64: e.target.result.substr(0, 20),
+                        // base64: this.getInitialChunk(e.target.result),
                         base64: e.target.result,
                         filename: input.files[0].name,
                         filesize: e.total,
                         chunknumber: 1 // TEST
                     }
+                    console.log('CKY:onFileSelect:onload e.target.result = ', e.target.result)
+                    console.log('CKY:onFileSelect:onload this.config.selected = ', this.config.selected)
                 }
-                reader.readAsDataURL(input.files[0])
+                // reader.readAsDataURL(input.files[0])
+                reader.readAsArrayBuffer(input.files[0])
             }
+        },
+
+        getInitialChunk(base64) {
+            // base64 = '1234567890'
+            console.log('CHK:getInitialChunk base64.length = ', base64.length)
+            const splitIndex = Math.ceil(base64.length / 2)
+            const chk1 = base64.substr(0, splitIndex)
+            const chk2 = base64.substr(splitIndex)
+            console.log('CHK:getInitialChunk chk1 = ', chk1)
+            console.log('CHK:getInitialChunk chk2 = ', chk2)
+            return chk1
         },
 
         //     PUT http://130.183.216.136/r2d2/datasets/<id>/files/<file_id>

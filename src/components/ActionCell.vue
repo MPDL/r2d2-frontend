@@ -64,7 +64,6 @@
 // TODO make the action cell more dynamic (heights etc.)
 //
 import vueCustomScrollbar from 'vue-custom-scrollbar'
-import R2Chunky from '@/components/R2Chunky.vue'
 import FormCell from '@/components/FormCell.vue'
 import VueJsonPretty from '@/lib/vue-json-pretty.1.6.3.js'
 
@@ -72,7 +71,6 @@ export default {
     name: 'ActionCell',
     components: {
         vueCustomScrollbar,
-        R2Chunky,
         VueJsonPretty,
         FormCell
     },

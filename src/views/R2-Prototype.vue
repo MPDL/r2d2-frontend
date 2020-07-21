@@ -1,27 +1,4 @@
 <template>
-    <!-- <div class="r2-prototype" :key="uKey">
-        <div :class="{ hidden: viewMode !== 'default' }">
-            <ActionCell class="view login" :config="zones.login" />
-            <ActionCell
-                class="view get-datasets"
-                :config="zones.getDatasets"
-                @onClickListItem="onClickDatasetListItem"
-            />
-            <ActionCell
-                class="view get-files"
-                :config="zones.getDataset"
-                @onClickListItem="onClickFileListItem"
-                @onUpdateResults="onZoneUpdateResults"
-            />
-            <ActionCell
-                class="view start-change-metadata"
-                :key="mtKey"
-                :config="zones.startChangeMetadata"
-                @onClickFormButton="onClickEditMetadata"
-            />
-        </div>
-    </div> -->
-
     <div class="r2-prototype" :key="uKey">
         <div :class="{ hidden: viewMode !== 'change-metadata' }">
             <ActionCell
@@ -48,7 +25,14 @@
                 @onClickFormButton="onClickFormClose('upload-file')"
             />
         </div>
-        <div :class="{ hidden: viewMode !== 'update-file' }">
+        <div :class="{ hidden: viewMode !== 'inspect-file' }">
+            <ActionCell
+                class="view upload-file"
+                :config="zones.inspectFile"
+                @onClickFormButton="onClickFormClose('inspect-file')"
+            />
+        </div>
+        <!-- <div :class="{ hidden: viewMode !== 'update-file' }">
             <ActionCell
                 class="view upload-file"
                 :config="zones.updateFile"
@@ -56,7 +40,7 @@
                 @onUpdateResults="onZoneUpdateResults"
                 @onClickFormButton="onClickFormClose('update-file')"
             />
-        </div>
+        </div> -->
         <div :class="{ hidden: viewMode !== 'default' }">
             <ActionCell class="view login" :config="zones.login" />
             <ActionCell
@@ -140,8 +124,6 @@ export default {
                     id: 'r2d2-pp-start-change-metadata',
                     requests: r2.ppGetRequests(),
                     options: {
-                        showTabs: false,
-                        showApiInfo: false,
                         showSend: false,
                         showResultList: false
                     },
@@ -159,8 +141,6 @@ export default {
                     id: 'r2d2-pp-change-metadata',
                     requests: r2.ppGetRequests(),
                     options: {
-                        showTabs: false,
-                        showApiInfo: false,
                         showSend: true,
                         showResultList: false,
                         showResultJson: true
@@ -179,8 +159,6 @@ export default {
                     id: 'r2d2-pp-create-dataset',
                     requests: r2.ppGetRequests(),
                     options: {
-                        showTabs: false,
-                        showApiInfo: false,
                         showSend: true,
                         showResultList: false,
                         showResultJson: true
@@ -198,14 +176,11 @@ export default {
                         metadata: {}
                     }
                 },
-
                 uploadFile: {
-                    id: 'r2d2-pp-upload-file',
+                    id: 'r2d2-pp-chunk-upload-file',
                     requests: r2.ppGetRequests(),
                     options: {
-                        showTabs: false,
-                        showApiInfo: false,
-                        showSend: true,
+                        showSend: false,
                         showResultList: false,
                         showResultJson: true
                     },
@@ -213,20 +188,33 @@ export default {
                     updateFormEventKey: 'updateform--upload-file',
                     selected: this.getSelectedFile()
                 },
-                updateFile: {
-                    id: 'r2d2-pp-update-file',
+                inspectFile: {
+                    id: 'r2d2-pp-inspect-file',
                     requests: r2.ppGetRequests(),
                     options: {
-                        showTabs: false,
-                        showApiInfo: false,
-                        showSend: true,
+                        showSend: false,
                         showResultList: false,
                         showResultJson: true
                     },
-                    sendFormEventKey: 'sendform--update-file',
-                    updateFormEventKey: 'updateform--update-file',
+                    sendFormEventKey: 'sendform--upload-file',
+                    updateFormEventKey: 'updateform--upload-file',
                     selected: this.getSelectedFile()
                 }
+
+                // r2d2-pp-get-file
+
+                // updateFile: {
+                //     id: 'r2d2-pp-update-file',
+                //     requests: r2.ppGetRequests(),
+                //     options: {
+                //         showSend: true,
+                //         showResultList: false,
+                //         showResultJson: true
+                //     },
+                //     sendFormEventKey: 'sendform--update-file',
+                //     updateFormEventKey: 'updateform--update-file',
+                //     selected: this.getSelectedFile()
+                // }
             }
         }
     },
@@ -250,7 +238,8 @@ export default {
         },
         async onClickFileListItem(evt) {
             this.setSelectedFile(evt.item.key)
-            this.viewMode = evt.item.key ? 'update-file' : 'upload-file'
+            // this.viewMode = evt.item.key ? 'update-file' : 'upload-file'
+            this.viewMode = 'inspect-file'
         },
         onClickEditMetadata(evt) {
             this.viewMode = 'change-metadata'
@@ -340,11 +329,11 @@ export default {
             cfg.requests[cfg.id].form['file-id'].selected = null
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
-            cfg = this.zones.updateFile
-            cfg.selected = key
-            cfg.requests[cfg.id].form['dataset-id'].selected = key
-            cfg.requests[cfg.id].form['file-id'].selected = null
-            globals.eventBus.$emit(cfg.updateFormEventKey)
+            // cfg = this.zones.updateFile
+            // cfg.selected = key
+            // cfg.requests[cfg.id].form['dataset-id'].selected = key
+            // cfg.requests[cfg.id].form['file-id'].selected = null
+            // globals.eventBus.$emit(cfg.updateFormEventKey)
         },
         getSelectedDataset() {
             return r2.ppGetSelectedDataset()
@@ -356,10 +345,18 @@ export default {
             cfg = this.zones.getDataset
             cfg.selected = key
             //
-            cfg = this.zones.updateFile
-            cfg.selected = key
+            // cfg = this.zones.updateFile
+            // cfg.selected = key
+            // cfg.requests[cfg.id].form['file-id'].selected = key
+            // globals.eventBus.$emit(cfg.updateFormEventKey)
+
+            cfg = this.zones.inspectFile
+            // cfg.selected = null
+            cfg.requests[cfg.id].form['dataset-id'].selected = this.getSelectedDataset()
             cfg.requests[cfg.id].form['file-id'].selected = key
             globals.eventBus.$emit(cfg.updateFormEventKey)
+
+            console.log('R2P:setSelectedFile inspectFile cfg = ',cfg)
         },
         getSelectedFile() {
             return r2.ppGetSelectedFile()

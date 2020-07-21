@@ -80,6 +80,143 @@ const R2D2DataHandler = function() {
     }
 
     // ++++++++++++++++++++++++++
+    // +++++++ upload handler
+    // ++++++++++++++++++++++++++
+
+    const pendingUploads = {}
+
+    const ChunkFileUploadHandler = function(data, options) {
+        const uKey = 'r2d2-chunkload-fcc001'
+        console.log('CFU:ChunkFileUploadHandler data = ', data)
+        console.log('CFU:ChunkFileUploadHandler options = ', options)
+        const arrayBufferToBase64 = buffer => {
+            let binary = ''
+            let bytes = new Uint8Array(buffer)
+            let len = bytes.byteLength
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i])
+            }
+            return window.btoa(binary)
+        }
+
+        const onUploadResult = res => {
+            console.log('CFU:onUploadResult res = ', res)
+            console.log('CFU:onUploadResult res.error = ', res.error)
+        }
+
+        const loading = file => {
+            console.log('CFU:loading: file  = ', file)
+            const reader = new FileReader()
+            reader.onload = evt => {
+                let base64 = arrayBufferToBase64(evt.target.result)
+                base64 = `${data.type}${base64}`
+                let key = options['api-initial']
+                let api = datasource.getRequests()[key].api
+                const sendData = {
+                    'dataset-id': options['dataset-id'],
+                    'file-id': options['file-id'],
+                    chunknumber: 1,
+                    cunky: {
+                        base64,
+                        filename: file.name,
+                        filesize: file.size
+                    }
+                }
+                datasource.request(uKey, api, sendData).then(onUploadResult)
+            }
+            reader.readAsArrayBuffer(file)
+        }
+
+        function loadingXX(file, callbackProgress, callbackFinal) {
+            const chunkSize = 1024 * 1024 // bytes
+            let offset = 0
+            var size = chunkSize
+            var partial
+            var index = 0
+
+            if (file.size === 0) {
+                callbackFinal()
+            }
+
+            console.log('CFU:loading offset = ', offset)
+            console.log('CFU:loading file = ', file)
+            console.log('CFU:loading file.size = ', file.size)
+            while (offset < file.size) {
+                partial = file.slice(offset, offset + size)
+                const reader = new FileReader()
+                reader.size = chunkSize
+                reader.offset = offset
+                reader.index = index
+                reader.onload = function(evt) {
+                    // callbackRead(this, file, evt, callbackProgress, callbackFinal)
+                    console.log('CFU:loading:onload offset = ', offset)
+                    // console.log('CFU:loading:onload evt.target.result = ', evt.target.result)
+
+                    let res = arrayBufferToBase64(evt.target.result)
+                    if (offset === 0) {
+                        res = `${data.type}${res}`
+                        datasource.request(options['api-initial'], res)
+                    }
+
+                    console.log('CFU:loading:onload res.substr(0,50) = ', res.substr(0, 50))
+                }
+                reader.readAsArrayBuffer(partial)
+                // reader2 TEST
+                console.log('CFU:loading data = ', data)
+                console.log('CFU:loading data.type = ', data.type)
+
+                // data:image/jpeg;base64,
+
+                // const reader2 = new FileReader()
+                // reader2.onload = function(evt) {
+                //     console.log('CFU:loading2:onload evt.target.result = ', evt.target.result)
+                // }
+                // reader2.readAsDataURL(file)
+
+                offset += chunkSize
+                index += 1
+            }
+        }
+
+        // var file = data
+        // var SHA256 = CryptoJS.algo.SHA256.create()
+        var counter = 0
+        // var self = this
+        loading(
+            data,
+            function(dta) {
+                // var wordBuffer = CryptoJS.lib.WordArray.create(data)
+                // SHA256.update(wordBuffer)
+                counter += dta.byteLength
+                console.log(((counter / file.size) * 100).toFixed(0) + '%')
+            },
+            function(dta) {
+                // console.log('100%')
+                // var encrypted = SHA256.finalize().toString()
+                // console.log('encrypted: ' + encrypted)
+            }
+        )
+    }
+
+    this.startChunkedUpload = (data, options) => {
+        // const md5 = CryptoJS.MD5(data.base64).toString()
+        // pendingUploads[md5] = {
+        //     md5,
+        //     state: null,
+        //     handler: new ChunkFileUploadHandler(data)
+        // }
+        console.log('R2:startChunkedUpload data, options = ', data, options)
+        new ChunkFileUploadHandler(data, options)
+        // console.log('R2:startChunkedUpload pendingUploads = ', pendingUploads)
+
+        // return data || null
+    }
+
+    const arrow = value => {
+        console.log('obj:arrow value = ', value)
+    }
+
+    // ++++++++++++++++++++++++++
     // +++++++ prototype page
     // ++++++++++++++++++++++++++
 
@@ -166,7 +303,7 @@ const R2D2DataHandler = function() {
         //
         // upload file
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-upload-file'
+        id = 'r2d2-pp-chunk-upload-file'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['close'] = {
             type: 'button',
@@ -176,13 +313,23 @@ const R2D2DataHandler = function() {
         //
         // update file
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-update-file'
+        // id = 'r2d2-pp-update-file'
+        // rq = requests[id] = _.cloneDeep(raw[id])
+        // rq.form['close'] = {
+        //     type: 'button',
+        //     key: 'close',
+        //     label: 'close'
+        // }
+
+        // inspect file
+        id = 'r2d2-pp-inspect-file'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['close'] = {
             type: 'button',
             key: 'close',
             label: 'close'
         }
+
         return requests
     }
 }

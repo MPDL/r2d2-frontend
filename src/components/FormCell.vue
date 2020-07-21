@@ -11,7 +11,7 @@
                     :description="item.description"
                 >
                     <b-input-group v-if="item.component === 'r2-chunky'">
-                        <r2-chunky :config="item" />
+                        <r2-chunky :config="item" :form="request.form" />
                     </b-input-group>
 
                     <b-input-group
@@ -122,6 +122,10 @@ export default {
             tme: null
         }
     },
+    mounted() {
+        // console.log('FC:mounted +++ this.request = ', this.request)
+        // console.log('FC:mounted this.request.form = ', this.request.form)
+    },
     methods: {
         update(updateKey = 'uKey') {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
@@ -136,7 +140,6 @@ export default {
                 key
             })
         },
-
         getApi(key) {
             return this.request.api
         },

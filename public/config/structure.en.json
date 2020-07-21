@@ -545,6 +545,103 @@
                     "label": "Select file"
                 }
             }
+        },
+        "r2d2-pp-chunk-upload-file": {
+            "label": "r2d2-pp-chunk-upload-file",
+            "description": "Uploads a file (multiple chunk)",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "Select file",
+                    "options": {
+                        "api-initial": "r2d2-pp-chunky-initial",
+                        "api-follow": "r2d2-pp-chunky-follow"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-chunky-initial": {
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
+                "method": "post",
+                "schema": {
+                    "data": "cunky.base64",
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "X-File-Name": "cunky.filename",
+                        "X-File-Total-Size": "cunky.filesize",
+                        "X-File-Chunk-Number": "cunky.chunknumber"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-chunky-follow": {
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "method": "put",
+                "schema": {
+                    "data": "cunky.base64",
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "X-File-Name": "cunky.filename",
+                        "X-File-Total-Size": "cunky.filesize",
+                        "X-File-Chunk-Number": "cunky.chunknumber"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-inspect-file": {
+            "label": "r2d2-pp-inspect-file",
+            "description": "Views file properties and update / download options",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                }
+            }
+        },
+        "r2d2-pp-get-file": {
+            "label": "r2d2-pp-get-file",
+            "description": "Get single, real file",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                }
+            }
         }
     },
     "requestsXX": {

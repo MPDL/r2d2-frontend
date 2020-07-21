@@ -65,7 +65,7 @@ function Datasource() {
     }
 
     const updateConfig = data => {
-        config.setup = {...config.setup, ...data.setup}
+        config.setup = { ...config.setup, ...data.setup }
         config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
     }
 
@@ -106,7 +106,13 @@ function Datasource() {
     }
 
     this.request = async (key = null, api = null, data = {}) => {
+        console.log('DS:request key = ', key)
+        console.log('DS:request api BF = ', api)
+        // console.log('DS:request data = ',data)
         api = _.isPlainObject(api) ? { ...getApi(api) } : { ...config.defaultApi }
+
+        console.log('DS:request api AF = ', api)
+
         const schema = _.isPlainObject(api.schema) ? api.schema : {}
         // TODO extract 'getValueByKey' to global class or someting ...
         const getValueByKey = (key, data, cut = false) => {
@@ -187,7 +193,8 @@ function Datasource() {
                 })
                 updateRequests(res.data.requests)
                 updateResults(res.data, key, api)
-                globals.eventBus.$emit('onLoadResults', { error: null, key})
+                globals.eventBus.$emit('onLoadResults', { error: null, key })
+                return { result: res, key, error: false }
             })
             .catch(error => {
                 try {
@@ -197,6 +204,8 @@ function Datasource() {
                 }
                 globals.eventBus.$emit('onLoadResults', { error, key })
                 console.log('DS:getTranslations ERROR error.message = ', error.message)
+                // throw new Error({ error, key })
+                return { error, key }
             })
     }
 
@@ -287,7 +296,7 @@ function Datasource() {
             delete config.results[keys.pop()]
         }
         // set the latest result directly into the request
-        config.requests[key] ? config.requests[key].result = data : null
+        config.requests[key] ? (config.requests[key].result = data) : null
         return config.results[ts.toString()]
     }
 
