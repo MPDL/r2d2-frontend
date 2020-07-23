@@ -1,6 +1,9 @@
 const R2D2DataHandler = function() {
     //
-    this.getDatasets = (data, options = {}) => {
+    this.getDatasets = (data = null, options = {}) => {
+        if (!data) {
+            return {}
+        }
         const res = {
             _new: {
                 key: null,
@@ -20,7 +23,10 @@ const R2D2DataHandler = function() {
         return res
     }
     //
-    this.getFilesOfDataset = (data, options = {}) => {
+    this.getFilesOfDataset = (data = null, options = {}) => {
+        if (!data) {
+            return {}
+        }
         const res = {
             _new: {
                 key: null,
@@ -104,12 +110,37 @@ const R2D2DataHandler = function() {
             console.log('CFU:onUploadResult res.error = ', res.error)
         }
 
+        const loadingTST = file => {
+            console.log('CFU:loading: file  = ', file)
+            const reader = new FileReader()
+            reader.onload = evt => {
+                let base64 = evt.target.result
+                // base64 = `${data.type}${base64}`
+                let key = options['api-initial']
+                let api = datasource.getRequests()[key].api
+                const sendData = {
+                    'dataset-id': options['dataset-id'],
+                    'file-id': options['file-id'],
+                    chunknumber: 1,
+                    cunky: {
+                        base64,
+                        filename: file.name,
+                        filesize: file.size
+                    }
+                }
+                datasource.request(uKey, api, sendData).then(onUploadResult)
+            }
+            // reader.readAsArrayBuffer(file)
+            reader.readAsDataURL(file)
+        }
+
         const loading = file => {
             console.log('CFU:loading: file  = ', file)
             const reader = new FileReader()
             reader.onload = evt => {
                 let base64 = arrayBufferToBase64(evt.target.result)
-                base64 = `${data.type}${base64}`
+
+                base64 = `${data.type};base64,${base64}`
                 let key = options['api-initial']
                 let api = datasource.getRequests()[key].api
                 const sendData = {
@@ -125,6 +156,7 @@ const R2D2DataHandler = function() {
                 datasource.request(uKey, api, sendData).then(onUploadResult)
             }
             reader.readAsArrayBuffer(file)
+            // reader.readAsDataURL(input.files[0])
         }
 
         function loadingXX(file, callbackProgress, callbackFinal) {
@@ -221,14 +253,50 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++
 
     const ppStates = {
-        selectedDataset: null,
-        selectedFile: null
+        selectedDataset: {
+            key: null,
+            data: null
+        },
+        selectedFile: {
+            key: null,
+            data: null
+        }
     }
-    this.ppSetSelectedDataset = (key = null) => (ppStates.selectedDataset = key)
-    this.ppGetSelectedDataset = () => ppStates.selectedDataset
+    this.ppSetSelectedDataset = (key = null, data = null) => {
+        ppStates.selectedDataset.key = key
+        ppStates.selectedDataset.data = data
+    }
+    this.ppGetSelectedDataset = () => ({
+        key: ppStates.selectedDataset.key,
+        data: ppStates.selectedDataset.data
+    })
 
-    this.ppSetSelectedFile = (key = null) => (ppStates.selectedFile = key)
-    this.ppGetSelectedFile = () => ppStates.selectedFile
+    this.ppSetSelectedFile = (key = null, data = null) => {
+        ppStates.selectedFile.key = key
+        ppStates.selectedFile.data = data
+    }
+    this.ppGetSelectedFile = () => ({
+        key: ppStates.selectedFile.key,
+        data: ppStates.selectedFile.data
+    })
+
+    this.ppGetFileProperties = id => {
+        let file = null
+        const d = ppStates.selectedDataset.data
+        if (d && d.files) {
+            file = _.find(d.files, { id }) || null
+        }
+        return file
+        // console.log('R2P:ppGetFileProperties key = ', key)
+        // console.log('R2P:ppGetFileProperties ppStates.selectedDataset.data = ', ppStates.selectedDataset.data)
+        // console.log(
+        //     'R2P:ppGetFileProperties ppStates.selectedDataset.data.files = ',
+        //     ppStates.selectedDataset.data.files
+        // )
+        // const item = _.find(ppStates.selectedDataset.data.files, { id: key })
+        // console.log('R2P:ppGetFileProperties item = ', item)
+        // return item
+    }
 
     this.ppGetRequests = async () => {
         const raw = datasource.getRequests()
@@ -323,6 +391,15 @@ const R2D2DataHandler = function() {
 
         // inspect file
         id = 'r2d2-pp-inspect-file'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        rq.form['close'] = {
+            type: 'button',
+            key: 'close',
+            label: 'close'
+        }
+
+        // download file
+        id = 'r2d2-pp-download-file'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['close'] = {
             type: 'button',

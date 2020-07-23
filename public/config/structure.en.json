@@ -603,7 +603,7 @@
         },
         "r2d2-pp-inspect-file": {
             "label": "r2d2-pp-inspect-file",
-            "description": "Views file properties and update / download options",
+            "description": "View file properties and select update / download file here",
             "api": null,
             "form": {
                 "dataset-id": {
@@ -615,19 +615,34 @@
                     "type": "value-cell",
                     "label": "file-id",
                     "selected": null
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
+                    "selected": null
+                },
+                "download": {
+                    "type": "button",
+                    "label": "Download File"
+                },
+                "update": {
+                    "type": "button",
+                    "label": "Update File"
                 }
             }
         },
-        "r2d2-pp-get-file": {
-            "label": "r2d2-pp-get-file",
-            "description": "Get single, real file",
+        "r2d2-pp-download-file": {
+            "label": "r2d2-pp-download-file",
+            "description": "Get (download) a single, real file",
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
                 "method": "get",
+                "responseType": "blob",
                 "schema": {
                     "header-set": {
                         "Authorization": "auth.token"
-                    }
+                    },
+                    "data": "file-name"
                 }
             },
             "form": {
@@ -639,6 +654,11 @@
                 "file-id": {
                     "type": "value-cell",
                     "label": "file-id",
+                    "selected": null
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
                     "selected": null
                 }
             }
