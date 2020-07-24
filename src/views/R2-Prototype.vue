@@ -69,11 +69,13 @@
 
 <script>
 //
+// TODO: Implement update File
+//
 import ActionCell from '@/components/ActionCell.vue'
 const r2 = globals.getDataHandler('r2d2')
 //
 
-const VM = {
+const VIEWMODE = {
     DEFAULT: 'default',
     INSPECT_FILE: 'inspect-file',
     UPLOAD_FILE: 'upload-file',
@@ -88,7 +90,7 @@ export default {
     data() {
         return {
             r2,
-            VM,
+            VIEWMODE,
             content: {
                 label: 'mock-content',
                 data: null
@@ -100,26 +102,23 @@ export default {
             uKey: 1,
             mtKey: 1,
             upKey: 1,
-            viewMode: VM.DEFAULT,
+            viewMode: VIEWMODE.DEFAULT,
             zones: {
                 login: {
                     id: 'r2d2-login',
                     requests: r2.ppGetRequests()
                 },
                 getDatasets: {
-                    // this.zones.getDatasets.getResult()
                     id: 'r2d2-get-datasets',
                     requests: r2.ppGetRequests(),
                     getResult: (data, me = this.zones.getDatasets) => {
-                        const ds = me.initialRequest ? this.getSelectedDataset() : { key: null, data: null }
-                        // this.setSelectedDataset(ds.key, null)
+                        // this part updates the selection, if it comes back e.g. from request zone
+                        const ds = me.initialRequest ? r2.ppGetSelectedDataset() : { key: null, data: null }
                         me.initialRequest = false
-                        // console.log('R2P:getDatasets:getResult ds = ', ds)
-                        // console.log('R2P:getDatasets:getResult data = ', data)
                         return r2.getDatasets(data, { as: 'key-list' })
                     },
                     sendFormEventKey: 'sendform--get-datasets',
-                    selected: this.getSelectedDataset().key,
+                    selected: r2.ppGetSelectedDataset().key,
                     initialRequest: true
                 },
                 getDataset: {
@@ -129,15 +128,13 @@ export default {
                         showSend: false
                     },
                     getResult: (data, me = this.zones.getDataset) => {
-                        console.log('R2P:getDataset:getResult data = ', data)
-                        this.setSelectedDataset(data.id, data)
-                        // const key = me.initialRequest ? this.getSelectedFile().key : null
-                        // this.setSelectedFile(key, data)
-                        // me.initialRequest = false
+                        // this updates the selected dataset id with data after async loaded.
+                        this.setSelectedDataset(null, data)
+                        //
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
                     },
                     sendFormEventKey: 'sendform--get-dataset',
-                    selected: this.getSelectedFile().key,
+                    selected: r2.ppGetSelectedFile().key,
                     initialRequest: true
                 },
                 startChangeMetadata: {
@@ -148,13 +145,12 @@ export default {
                         showResultList: false
                     },
                     getResult: (data, me = this.zones.getDataset) => {
-                        const key = me.initialRequest ? this.getSelectedFile(key) : null
-                        // this.setSelectedFile(key)
+                        const key = me.initialRequest ? r2.ppGetSelectedFile(key) : null
                         me.initialRequest = false
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
                     },
                     updateFormEventKey: 'updateform--start-change-metadata',
-                    selected: this.getSelectedFile().key,
+                    selected: r2.ppGetSelectedFile().key,
                     initialRequest: true
                 },
                 changeMetadata: {
@@ -167,7 +163,6 @@ export default {
                     },
                     collectData: data => {
                         // TODO make this generic and realtime
-                        console.log('changeMetadata:CB:collectData data = ', data)
                         data['send-data'].metadata.title = data.title
                         data['send-data'].metadata.description = data.description
                         return data
@@ -185,7 +180,6 @@ export default {
                     },
                     collectData: data => {
                         // TODO make this generic and realtime
-                        console.log('createDataset:CB:collectData data = ', data)
                         data['send-data'].metadata.title = data.title
                         data['send-data'].metadata.description = data.description
                         return data
@@ -206,7 +200,7 @@ export default {
                     },
                     sendFormEventKey: 'sendform--upload-file',
                     updateFormEventKey: 'updateform--upload-file',
-                    selected: this.getSelectedFile().key
+                    selected: r2.ppGetSelectedFile().key
                 },
                 inspectFile: {
                     id: 'r2d2-pp-inspect-file',
@@ -218,11 +212,10 @@ export default {
                     },
                     sendFormEventKey: 'sendform--upload-file',
                     updateFormEventKey: 'updateform--upload-file',
-                    selected: this.getSelectedFile().key
+                    selected: r2.ppGetSelectedFile().key
                 },
 
                 // r2d2-pp-get-file
-
                 updateFile: {
                     id: 'r2d2-pp-update-file',
                     requests: r2.ppGetRequests(),
@@ -233,7 +226,7 @@ export default {
                     },
                     sendFormEventKey: 'sendform--update-file',
                     updateFormEventKey: 'updateform--update-file',
-                    selected: this.getSelectedFile().key
+                    selected: r2.ppGetSelectedFile().key
                 },
                 downloadFile: {
                     id: 'r2d2-pp-download-file',
@@ -245,7 +238,7 @@ export default {
                     },
                     sendFormEventKey: 'sendform--download-file',
                     updateFormEventKey: 'updateform--download-file',
-                    selected: this.getSelectedFile().key
+                    selected: r2.ppGetSelectedFile().key
                 }
             }
         }
@@ -260,14 +253,12 @@ export default {
         update(updateKey = 'uKey') {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
-        setViewMode(viewKey = VM.DEFAULT) {
-            console.log('R2P:setViewMode viewKey = ', viewKey)
+        setViewMode(viewKey = VIEWMODE.DEFAULT) {
             this.viewMode = viewKey
         },
         onClickDatasetListItem(evt) {
-            console.log('R2P:onClickDatasetListItem evt = ', evt)
             if (evt.item.key === null) {
-                return this.setViewMode(VM.CREATE_DATASET)
+                return this.setViewMode(VIEWMODE.CREATE_DATASET)
             }
             this.setSelectedDataset(evt.item.key, null)
             const cfg = this.zones.getDataset
@@ -275,27 +266,25 @@ export default {
         },
         async onClickFileListItem(evt) {
             this.setSelectedFile(evt.item.key)
-            this.setViewMode(evt.item.key ? VM.INSPECT_FILE : VM.UPLOAD_FILE)
+            this.setViewMode(evt.item.key ? VIEWMODE.INSPECT_FILE : VIEWMODE.UPLOAD_FILE)
         },
         onClickEditMetadata(evt) {
-            this.setViewMode(VM.CHANGE_METADATA)
+            this.setViewMode(VIEWMODE.CHANGE_METADATA)
         },
         onClickFormButton(evt) {
-            console.log('R2P:onClickFormButton evt.key = ', evt.key)
             let cfg
             switch (evt.key) {
                 case 'create-dataset':
                     cfg = this.zones.getDatasets
                     return globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
                 case 'r2d2-pp-inspect-file--update':
-                    return this.setViewMode(VM.UPLOAD_FILE)
+                    return this.setViewMode(VIEWMODE.UPLOAD_FILE)
                 case 'r2d2-pp-inspect-file--download':
-                    return this.setViewMode(VM.DOWNLOAD_FILE)
+                    return this.setViewMode(VIEWMODE.DOWNLOAD_FILE)
             }
-            this.setViewMode(VM.DEFAULT)
+            this.setViewMode(VIEWMODE.DEFAULT)
             cfg = this.zones.getDataset
             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
-            console.log('R2P:onClickFormButton evt.key = ', evt.key)
         },
         setNavigation(nav) {
             this.navigation = nav
@@ -303,20 +292,19 @@ export default {
         onZoneUpdateResults(evt) {
             let cfg, form
             if (evt.id === 'r2d2-get-dataset') {
-                // console.log('R2P:onZoneUpdateResults evt = ', evt)
                 setTimeout(() => {
                     const data = r2.getDataOfDataset(evt.raw)
                     if (data) {
                         //
                         cfg = this.zones.startChangeMetadata
                         form = cfg.requests[cfg.id].form
-                        form['dataset-id'].selected = this.getSelectedDataset().key
+                        form['dataset-id'].selected = r2.ppGetSelectedDataset().key
                         form['metadata'].selected = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                         //
                         cfg = this.zones.changeMetadata
                         form = cfg.requests[cfg.id].form
-                        form['dataset-id'].selected = this.getSelectedDataset().key
+                        form['dataset-id'].selected = r2.ppGetSelectedDataset().key
                         form['send-data'].selected = {
                             modificationDate: data.modificationDate,
                             metadata: data.metadata
@@ -335,76 +323,70 @@ export default {
             })
             this.update()
         },
-        // computed prop dont works for that
         setSelectedDataset(key, data = null) {
             r2.ppSetSelectedDataset(key, data)
+            const ds = r2.ppGetSelectedDataset()
             //
             let cfg
             //
             cfg = this.zones.getDatasets
-            cfg.selected = key
+            cfg.selected = ds.key
             //
             cfg = this.zones.getDataset
-            cfg.selected = key
-            cfg.requests[cfg.id].form['file-id-select'].selected = key
+            cfg.requests[cfg.id].form['file-id-select'].selected = ds.key
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.startChangeMetadata
-            cfg.selected = key
-            cfg.requests[cfg.id].form['dataset-id'].selected = key
+            cfg.selected = ds.key
+            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
             cfg.requests[cfg.id].form['metadata'].selected = null
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.changeMetadata
-            cfg.selected = key
-            cfg.requests[cfg.id].form['dataset-id'].selected = key
+            cfg.selected = ds.key
+            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.createDataset
-            cfg.selected = key
+            cfg.selected = ds.key
             cfg.requests[cfg.id].form['dataset-id'].selected = null
             cfg.requests[cfg.id].form['send-data'].selected = cfg.initalData
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.uploadFile
-            cfg.selected = key
-            cfg.requests[cfg.id].form['dataset-id'].selected = key
+            cfg.selected = ds.key
+            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
             cfg.requests[cfg.id].form['file-id'].selected = null
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             // cfg = this.zones.updateFile
             // cfg.selected = key
-            // cfg.requests[cfg.id].form['dataset-id'].selected = key
+            // cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
             // cfg.requests[cfg.id].form['file-id'].selected = null
             // globals.eventBus.$emit(cfg.updateFormEventKey)
         },
-        getSelectedDataset() {
-            return r2.ppGetSelectedDataset()
-        },
         setSelectedFile(fileKey = null) {
-            // r2.ppSetSelectedFile(fileKey)
-            const ds = this.getSelectedDataset()
-            console.log('R2P:setSelectedFile fileKey = ', fileKey)
-            console.log('R2P:setSelectedFile ds = ', ds)
-            console.log('R2P:setSelectedFile ds.key = ', ds.key)
-            console.log('R2P:setSelectedFile ds.data = ', ds.data)
+            r2.ppSetSelectedFile(fileKey)
+            const ds = r2.ppGetSelectedDataset()
             let cfg
+            // this updates the file selection in the getDataset result list!
+            cfg = this.zones.getDataset
+            cfg.selected = fileKey
+            //
             if (fileKey) {
-                const fProps = r2.ppGetFileProperties(fileKey)
-                console.log('R2P:setSelectedFile fProps = ', fProps)
                 //
+                const fProps = r2.ppGetNativeFileProperties(fileKey)
+                // inspectFile
                 cfg = this.zones.inspectFile
                 cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
                 cfg.requests[cfg.id].form['file-id'].selected = fileKey
                 cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
-                console.log('R2P:setSelectedFile cfg = ', cfg)
                 globals.eventBus.$emit(cfg.updateFormEventKey)
-                //
+                // downloadFile
                 cfg = this.zones.downloadFile
                 cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
                 cfg.requests[cfg.id].form['file-id'].selected = fileKey
                 cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
-
                 globals.eventBus.$emit(cfg.updateFormEventKey)
                 //
             } else {
@@ -413,9 +395,6 @@ export default {
                 cfg.requests[cfg.id].form['file-id'].selected = fileKey
                 globals.eventBus.$emit(cfg.updateFormEventKey)
             }
-        },
-        getSelectedFile() {
-            return r2.ppGetSelectedFile()
         }
     }
 }

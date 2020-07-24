@@ -42,11 +42,7 @@ function Datasource() {
                 : value
 
             apis[key] = value
-
-            console.log('DS:getDevApis value, key = ', value, key)
         })
-        console.log('DS:getDevApis apis = ', apis)
-
         return apis
     }
     getDevApis()
@@ -93,11 +89,6 @@ function Datasource() {
     }
 
     const get = async (api, dta = {}, options = {}) => {
-        console.log('DS:request:GET getPath(api) = ', getPath(api))
-        console.log('DS:request:GET dta = ', dta)
-        console.log('DS:request:GET options = ', options)
-
-        // options.responseType = 'blob' // TEST ON
         return axios.create().get(getPath(api), options)
     }
 
@@ -113,13 +104,7 @@ function Datasource() {
     }
 
     this.request = async (key = null, api = null, data = {}) => {
-        console.log('DS:request key = ', key)
-        console.log('DS:request api BF = ', api)
-        // console.log('DS:request data = ',data)
         api = _.isPlainObject(api) ? { ...getApi(api) } : { ...config.defaultApi }
-
-        console.log('DS:request api AF = ', api)
-
         const schema = _.isPlainObject(api.schema) ? api.schema : {}
         // TODO extract 'getValueByKey' to global class or someting ...
         const getValueByKey = (key, data, cut = false) => {
@@ -188,102 +173,16 @@ function Datasource() {
                 data.token = globals.getAdminToken()
         }
 
-        console.log('DS:request api.method = ', api.method)
-        console.log('DS:request api.target = ', api.target)
-        console.log('DS:request data = ', data)
-        console.log('DS:request options = ', options)
-
         let downloadFileName = null
-
         if (_.isString(api.responseType)) {
             downloadFileName = data
-
-            // const blob = new Blob([jpgTestData], { type: 'image/jpeg' })
-            // console.log('DS:TEST jpgTestData = ', jpgTestData)
-            // const blob = new Blob([jpgTestData])
-            // FileSaver.saveAs(blob, 'uuuk.jpg')
-
-            // const a = document.createElement('a') //Create <a>
-            // a.href = jpgTestData //Image Base64 Goes here
-            // console.log('DS:request: TEST res a.href = ', a.href)
-            // a.download = 'Image.png' //File name Here
-            // a.click() //Downloaded file
-            // return
-        }
-
-        const downloadBlob = (blob, name = 'dnload.jpg') => {
-            // Convert your blob into a Blob URL (a special url that points to an object in the browser's memory)
-            const blobUrl = URL.createObjectURL(blob)
-            // Create a link element
-            const link = document.createElement('a')
-            // Set link's href to point to the Blob URL
-            link.href = blobUrl
-            link.download = name
-            // Append link to the body
-            document.body.appendChild(link)
-            // Dispatch click event on the link
-            // This is necessary as link.click() does not work on the latest firefox
-            link.dispatchEvent(
-                new MouseEvent('click', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                })
-            )
-            // Remove link from body
-            document.body.removeChild(link)
         }
 
         return METHODS[api.method](api.target, data, options)
             .then(res => {
                 if (downloadFileName) {
-                    const a = document.createElement('a') //Create <a>
-                    a.href = res.data.substr(0, 5) === 'data:' ? res.data : `data:${res.data}`
-                    a.href = 'data:' + res.data //Image Base64 Goes here
-                    // a.download = 'TestImage.jpg' //File name Here
-                    a.download = downloadFileName
-                    a.click() //Download file
-                    return
-
-                    // var a = document.createElement('a') //Create <a>
-                    // // a.href = 'data:image/png;base64,' + ImageBase64 //Image Base64 Goes here
-                    // console.log('DS:request:res res.data = ', res.data)
-                    // a.href = 'data:' + res.data.toString() //Image Base64 Goes here
-                    // console.log('DS:request:res a.href = ', a.href)
-                    // a.download = 'Image.png' //File name Here
-                    // a.click() //Downloaded file
-                    // return
-
-                    // console.log('DS:request:res res = ', res)
-                    // console.log('DS:request:res res.data = ', res.data)
-                    // // var blob = new Blob(['Hello, world!'], { type: 'text/plain;charset=utf-8' })
-                    // var blob = new Blob([res.data], { type: 'image/jpeg' })
-                    // // var blob = new Blob(res.data.toString(), { type: 'text/plain;charset=utf-8' })
-                    // FileSaver.saveAs(blob, 'dsghsf.jpg')
-
-                    // return
-
-                    // download request
-                    // const blob = new Blob([res.data], { type: 'application/octet-stream;base64' })
-                    // console.log('DS:request:res blob = ', blob)
-                    // const contentType = 'image/jpeg'
-                    // const linkSource = `data:${contentType};base64,${res.data}`
-                    // const downloadLink = document.createElement('a')
-                    // downloadLink.href = linkSource
-                    // downloadLink.download = 'fileName.jpg'
-                    // downloadLink.click()
-                    // return
-
-                    // const blob = new Blob([res.data], { type: 'application/octet-stream;base64' })
-                    // const blob = new Blob([res.data], { type: 'image/jpeg;base64' })
-                    // downloadBlob(blob)
-                    // // let ref = this.state.ref
-                    // // ref.current.href = URL.createObjectURL(blob)
-                    // // ref.current.download = 'data.csv'
-                    // // ref.current.click()
-                    // return
+                    return downloadFile(res.data, downloadFileName)
                 }
-
                 // TODO make this fully generic
                 const fcxGet = {
                     'auth.token': headers => globals.setAdminToken(headers.authorization)
@@ -308,6 +207,13 @@ function Datasource() {
                 // throw new Error({ error, key })
                 return { error, key }
             })
+    }
+
+    const downloadFile = (data, name) => {
+        const a = document.createElement('a')
+        a.href = data.substr(0, 5) === 'data:' ? data : `data:${data}`
+        a.download = name
+        a.click()
     }
 
     const setTranslationFallbacks = (translations, lng, key, i18n) => {

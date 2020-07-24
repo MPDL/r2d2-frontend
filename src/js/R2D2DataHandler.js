@@ -1,5 +1,42 @@
 const R2D2DataHandler = function() {
     //
+    const ppStates = {
+        selectedDataset: {
+            key: null,
+            data: null
+        },
+        selectedFile: {
+            key: null
+            // data: null
+        }
+    }
+    this.ppSetSelectedDataset = (key = null, data = null) => {
+        key = !key && data ? data.id : key
+        ppStates.selectedDataset.key = key
+        ppStates.selectedDataset.data = data
+    }
+    this.ppGetSelectedDataset = () => ({
+        key: ppStates.selectedDataset.key,
+        data: ppStates.selectedDataset.data
+    })
+    this.ppSetSelectedFile = (key = null, data = null) => {
+        ppStates.selectedFile.key = key
+        // ppStates.selectedFile.data = data
+    }
+    this.ppGetSelectedFile = () => ({
+        key: ppStates.selectedFile.key
+        // data: ppStates.selectedFile.data
+    })
+
+    this.ppGetNativeFileProperties = id => {
+        let file = null
+        const d = ppStates.selectedDataset.data
+        if (d && d.files) {
+            file = _.find(d.files, { id }) || null
+        }
+        return file
+    }
+    //
     this.getDatasets = (data = null, options = {}) => {
         if (!data) {
             return {}
@@ -46,8 +83,6 @@ const R2D2DataHandler = function() {
         return res
     }
 
-    // this.getDataOfDataset = (data, options = {}) => data.metadata || null
-
     const metadata = {
         title: 'drag 4',
         authors: [
@@ -88,6 +123,8 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++
     // +++++++ upload handler
     // ++++++++++++++++++++++++++
+
+    // TODO Cleanup after work in progress
 
     const pendingUploads = {}
 
@@ -251,52 +288,6 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++
     // +++++++ prototype page
     // ++++++++++++++++++++++++++
-
-    const ppStates = {
-        selectedDataset: {
-            key: null,
-            data: null
-        },
-        selectedFile: {
-            key: null,
-            data: null
-        }
-    }
-    this.ppSetSelectedDataset = (key = null, data = null) => {
-        ppStates.selectedDataset.key = key
-        ppStates.selectedDataset.data = data
-    }
-    this.ppGetSelectedDataset = () => ({
-        key: ppStates.selectedDataset.key,
-        data: ppStates.selectedDataset.data
-    })
-
-    this.ppSetSelectedFile = (key = null, data = null) => {
-        ppStates.selectedFile.key = key
-        ppStates.selectedFile.data = data
-    }
-    this.ppGetSelectedFile = () => ({
-        key: ppStates.selectedFile.key,
-        data: ppStates.selectedFile.data
-    })
-
-    this.ppGetFileProperties = id => {
-        let file = null
-        const d = ppStates.selectedDataset.data
-        if (d && d.files) {
-            file = _.find(d.files, { id }) || null
-        }
-        return file
-        // console.log('R2P:ppGetFileProperties key = ', key)
-        // console.log('R2P:ppGetFileProperties ppStates.selectedDataset.data = ', ppStates.selectedDataset.data)
-        // console.log(
-        //     'R2P:ppGetFileProperties ppStates.selectedDataset.data.files = ',
-        //     ppStates.selectedDataset.data.files
-        // )
-        // const item = _.find(ppStates.selectedDataset.data.files, { id: key })
-        // console.log('R2P:ppGetFileProperties item = ', item)
-        // return item
-    }
 
     this.ppGetRequests = async () => {
         const raw = datasource.getRequests()
