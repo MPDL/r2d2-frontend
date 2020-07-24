@@ -581,7 +581,7 @@
                         "Authorization": "auth.token",
                         "X-File-Name": "cunky.filename",
                         "X-File-Total-Size": "cunky.filesize",
-                        "X-File-Chunk-Number": "cunky.chunknumber"
+                        "X-File-Total-Chunks": "cunky.totalchunks"
                     }
                 }
             }
@@ -594,8 +594,7 @@
                     "data": "cunky.base64",
                     "header-set": {
                         "Authorization": "auth.token",
-                        "X-File-Name": "cunky.filename",
-                        "X-File-Total-Size": "cunky.filesize",
+                        "Content-Type": "text/plain",
                         "X-File-Chunk-Number": "cunky.chunknumber"
                     }
                 }

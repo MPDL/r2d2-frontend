@@ -142,59 +142,137 @@ const R2D2DataHandler = function() {
             return window.btoa(binary)
         }
 
-        const onUploadResult = res => {
-            console.log('CFU:onUploadResult res = ', res)
-            console.log('CFU:onUploadResult res.error = ', res.error)
-        }
+        // const loadingTST = file => {
+        //     console.log('CFU:loading: file  = ', file)
+        //     const reader = new FileReader()
+        //     reader.onload = evt => {
+        //         let base64 = evt.target.result
+        //         // base64 = `${data.type}${base64}`
+        //         let key = options['api-initial']
+        //         let api = datasource.getRequests()[key].api
+        //         const sendData = {
+        //             'dataset-id': options['dataset-id'],
+        //             'file-id': options['file-id'],
+        //             chunknumber: 1,
+        //             cunky: {
+        //                 base64,
+        //                 filename: file.name,
+        //                 filesize: file.size
+        //             }
+        //         }
+        //         datasource.request(uKey, api, sendData).then(onUploadResult)
+        //     }
+        //     // reader.readAsArrayBuffer(file)
+        //     reader.readAsDataURL(file)
+        // }
 
-        const loadingTST = file => {
-            console.log('CFU:loading: file  = ', file)
-            const reader = new FileReader()
-            reader.onload = evt => {
-                let base64 = evt.target.result
-                // base64 = `${data.type}${base64}`
-                let key = options['api-initial']
-                let api = datasource.getRequests()[key].api
-                const sendData = {
-                    'dataset-id': options['dataset-id'],
-                    'file-id': options['file-id'],
-                    chunknumber: 1,
-                    cunky: {
-                        base64,
-                        filename: file.name,
-                        filesize: file.size
-                    }
-                }
-                datasource.request(uKey, api, sendData).then(onUploadResult)
-            }
-            // reader.readAsArrayBuffer(file)
-            reader.readAsDataURL(file)
-        }
+        // chunk queue
+        // DOC: When chunks, first body must be empty to initialize, then chunking
+        let fileToSend = null
+        let testFileName = 'chunktest-4.jpg'
+        let base64Complete = null
+        let splitPoint = 0
+        let mockFileId = null
 
-        const loading = file => {
-            console.log('CFU:loading: file  = ', file)
+        const sendChunk1 = file => {
+            fileToSend = file
+            console.log('CFU:sendChunk1: fileToSend  = ', fileToSend)
             const reader = new FileReader()
             reader.onload = evt => {
                 let base64 = arrayBufferToBase64(evt.target.result)
+                base64Complete = `${data.type};base64,${base64}`
+                // console.log('CFU:loading: base64Complete  = ', base64Complete)
+                console.log('CFU:loading: base64Complete.length  = ', base64Complete.length)
 
-                base64 = `${data.type};base64,${base64}`
+                splitPoint = Math.floor(base64Complete.length / 2)
+                base64 = base64Complete.substr(0, splitPoint - 1)
+
                 let key = options['api-initial']
                 let api = datasource.getRequests()[key].api
                 const sendData = {
                     'dataset-id': options['dataset-id'],
-                    'file-id': options['file-id'],
-                    chunknumber: 1,
+                    // 'file-id': options['file-id'],
+                    'file-id': mockFileId,
                     cunky: {
-                        base64,
-                        filename: file.name,
-                        filesize: file.size
+                        base64: null,
+                        //filename: file.name,
+                        filename: testFileName,
+                        filesize: file.size,
+                        totalchunks: 1
+                        // chunknumber: 1
                     }
                 }
                 datasource.request(uKey, api, sendData).then(onUploadResult)
             }
-            reader.readAsArrayBuffer(file)
+            reader.readAsArrayBuffer(fileToSend)
             // reader.readAsDataURL(input.files[0])
         }
+
+        const onUploadResult = res => {
+            mockFileId = res.result.data.id
+            sendChunkN()
+        }
+        // 
+        const firstResponse = { // TEST
+            id: '2b3b504a-a647-4eee-942a-64cf4eef81bd', // id === new file id
+            creationDate: '2020-07-24T08:29:02.807891Z',
+            modificationDate: '2020-07-24T08:29:02.807891Z',
+            creator: {
+                id: '2d0dd850-eabb-43fe-8b8f-1a1b54018738',
+                name: 'Test Admin'
+            },
+            modifier: {
+                id: '2d0dd850-eabb-43fe-8b8f-1a1b54018738',
+                name: 'Test Admin'
+            },
+            state: 'INITIATED',
+            stateInfo: {
+                currentChecksum: null,
+                chunks: [],
+                expectedNumberOfChunks: 1
+            },
+            filename: 'chunktest-2.jpg',
+            storageLocation: null,
+            checksum: null,
+            format: null,
+            size: 4712
+        }
+        const secondResponse = { // TEST
+            number: 1,
+            clientEtag: null,
+            serverEtag: 'd41d8cd98f00b204e9800998ecf8427e',
+            size: 6302
+        }
+
+        const sendChunkN = () => {
+            console.log('CFU:sendChunkN:')
+            const reader = new FileReader()
+            reader.onload = evt => {
+                let key = options['api-follow']
+                let api = datasource.getRequests()[key].api
+                // let base64 = base64Complete.substr(splitPoint)
+                let base64 = base64Complete
+                const sendData = {
+                    'dataset-id': options['dataset-id'],
+                    // 'file-id': options['file-id'],
+                    'file-id': mockFileId,
+                    cunky: {
+                        base64,
+                        chunknumber: 1
+                    }
+                }
+                console.log('CFU:sendChunkN:onload: sendData  = ', sendData)
+
+                datasource.request(uKey, api, sendData)
+            }
+            reader.readAsArrayBuffer(fileToSend)
+            // reader.readAsDataURL(input.files[0])
+        }
+
+        // +++++++++++++++++++++++++
+        // +++++++++++++++++++++++++
+        // +++++++++++++++++++++++++
+        // +++++++++++++++++++++++++
 
         function loadingXX(file, callbackProgress, callbackFinal) {
             const chunkSize = 1024 * 1024 // bytes
@@ -251,7 +329,7 @@ const R2D2DataHandler = function() {
         // var SHA256 = CryptoJS.algo.SHA256.create()
         var counter = 0
         // var self = this
-        loading(
+        sendChunk1(
             data,
             function(dta) {
                 // var wordBuffer = CryptoJS.lib.WordArray.create(data)
