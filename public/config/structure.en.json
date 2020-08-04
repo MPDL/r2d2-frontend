@@ -24,6 +24,37 @@
         }
     },
     "requests": {
+        "r2d2-pp-chunk-upload-file": {
+            "label": "r2d2-pp-chunk-upload-file",
+            "description": "Uploads a file (multiple chunk)",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "num-of-chunks": {
+                    "type": "dropdown",
+                    "label": "num-of-chunks",
+                    "options": [1, 2, 4, 6, 7, 8, 17, 32, 64, 128],
+                    "selected": "2"
+                },
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "Select file",
+                    "options": {
+                        "api-initial": "r2d2-pp-chunky-initial",
+                        "api-follow": "r2d2-pp-chunky-follow"
+                    }
+                }
+            }
+        },
         "r2d2-login": {
             "label": "r2d2-login-post",
             "description": "Heidi calls for a ride with R2  ;-)",
@@ -543,6 +574,98 @@
                 "cunky": {
                     "component": "r2-chunky",
                     "label": "Select file"
+                }
+            }
+        },
+        "r2d2-pp-chunk-upload-file-POS": {},
+        "r2d2-pp-chunky-initial": {
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
+                "method": "post",
+                "schema": {
+                    "data": "cunky.base64",
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "X-File-Name": "cunky.filename",
+                        "X-File-Total-Size": "cunky.filesize",
+                        "X-File-Total-Chunks": "cunky.totalchunks"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-chunky-follow": {
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "method": "put",
+                "schema": {
+                    "data": "cunky.base64",
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "Content-Type": "text/plain",
+                        "X-File-Chunk-Number": "cunky.chunknumber"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-inspect-file": {
+            "label": "r2d2-pp-inspect-file",
+            "description": "View file properties and select update / download file here",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
+                    "selected": null
+                },
+                "download": {
+                    "type": "button",
+                    "label": "Download File"
+                },
+                "update": {
+                    "type": "button",
+                    "label": "Update File"
+                }
+            }
+        },
+        "r2d2-pp-download-file": {
+            "label": "r2d2-pp-download-file",
+            "description": "Get (download) a single, real file",
+            "api": {
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "method": "get",
+                "responseType": "blob",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    },
+                    "data": "file-name"
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
+                    "selected": null
                 }
             }
         }
