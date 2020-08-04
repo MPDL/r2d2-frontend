@@ -129,9 +129,14 @@ export default {
         updateResults(evt) {
             if (evt.key === this.config.id) {
                 this.filteredResult = {}
-                const data = datasource.getConfig().requests[evt.key].result
-                if (data) {
-                    this.filteredResult = _.isFunction(this.config.getResult) ? this.config.getResult(data) : data
+                let data = {}
+                if (evt.filteredResult) {
+                    data = this.filteredResult = evt.filteredResult
+                } else {
+                    data = datasource.getConfig().requests[evt.key].result
+                    if (data) {
+                        this.filteredResult = _.isFunction(this.config.getResult) ? this.config.getResult(data) : data
+                    }
                 }
                 this.update('rsKey') // needed to update the own selected state!
                 this.$emit('onUpdateResults', { id: this.config.id, raw: data, filtered: this.filteredResult })

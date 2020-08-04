@@ -193,7 +193,7 @@ function Datasource() {
                 })
                 updateRequests(res.data.requests)
                 updateResults(res.data, key, api)
-                globals.eventBus.$emit('onLoadResults', { error: null, key })
+                globals.eventBus.$emit('onLoadResults', { error: null, key, result: res })
                 return { result: res, key, error: false }
             })
             .catch(error => {
@@ -210,11 +210,13 @@ function Datasource() {
     }
 
     const downloadFile = (data, name) => {
+        // console.log('DS:downloadFile data = ', data)
         const a = document.createElement('a')
         a.href = data.substr(0, 5) === 'data:' ? data : `data:${data}`
         a.download = name
         a.click()
     }
+    this.downloadFile = downloadFile // TEST
 
     const setTranslationFallbacks = (translations, lng, key, i18n) => {
         let strg = _.get(translations, `${lng}.${i18n}`)

@@ -162,6 +162,7 @@ export default {
                         showResultJson: true
                     },
                     collectData: data => {
+                        // console.log('changeMetadata:collectData data = ', data)
                         // TODO make this generic and realtime
                         data['send-data'].metadata.title = data.title
                         data['send-data'].metadata.description = data.description
@@ -171,6 +172,7 @@ export default {
                     updateFormEventKey: 'updateform--change-metadata'
                 },
                 createDataset: {
+                    // TODO refresh ds-list after creation
                     id: 'r2d2-pp-create-dataset',
                     requests: r2.ppGetRequests(),
                     options: {
@@ -179,6 +181,7 @@ export default {
                         showResultJson: true
                     },
                     collectData: data => {
+                        // console.log('createDataset:collectData data = ', data)
                         // TODO make this generic and realtime
                         data['send-data'].metadata.title = data.title
                         data['send-data'].metadata.description = data.description
@@ -266,7 +269,14 @@ export default {
         },
         async onClickFileListItem(evt) {
             this.setSelectedFile(evt.item.key)
-            this.setViewMode(evt.item.key ? VIEWMODE.INSPECT_FILE : VIEWMODE.UPLOAD_FILE)
+            const viewMode = evt.item.key ? VIEWMODE.INSPECT_FILE : VIEWMODE.UPLOAD_FILE
+            if (viewMode === VIEWMODE.UPLOAD_FILE) {
+                globals.eventBus.$emit('onLoadResults', {
+                    key: 'r2d2-pp-chunk-upload-file',
+                    filteredResult: { result: null }
+                })
+            }
+            this.setViewMode(viewMode)
         },
         onClickEditMetadata(evt) {
             this.setViewMode(VIEWMODE.CHANGE_METADATA)

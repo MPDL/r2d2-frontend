@@ -24,6 +24,37 @@
         }
     },
     "requests": {
+        "r2d2-pp-chunk-upload-file": {
+            "label": "r2d2-pp-chunk-upload-file",
+            "description": "Uploads a file (multiple chunk)",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "num-of-chunks": {
+                    "type": "dropdown",
+                    "label": "num-of-chunks",
+                    "options": [1, 2, 4, 6, 7, 8, 17, 32, 64, 128],
+                    "selected": "2"
+                },
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "Select file",
+                    "options": {
+                        "api-initial": "r2d2-pp-chunky-initial",
+                        "api-follow": "r2d2-pp-chunky-follow"
+                    }
+                }
+            }
+        },
         "r2d2-login": {
             "label": "r2d2-login-post",
             "description": "Heidi calls for a ride with R2  ;-)",
@@ -546,31 +577,7 @@
                 }
             }
         },
-        "r2d2-pp-chunk-upload-file": {
-            "label": "r2d2-pp-chunk-upload-file",
-            "description": "Uploads a file (multiple chunk)",
-            "api": null,
-            "form": {
-                "dataset-id": {
-                    "type": "value-cell",
-                    "label": "dataset-id",
-                    "selected": null
-                },
-                "file-id": {
-                    "type": "value-cell",
-                    "label": "file-id",
-                    "selected": null
-                },
-                "cunky": {
-                    "component": "r2-chunky",
-                    "label": "Select file",
-                    "options": {
-                        "api-initial": "r2d2-pp-chunky-initial",
-                        "api-follow": "r2d2-pp-chunky-follow"
-                    }
-                }
-            }
-        },
+        "r2d2-pp-chunk-upload-file-POS": {},
         "r2d2-pp-chunky-initial": {
             "api": {
                 "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",

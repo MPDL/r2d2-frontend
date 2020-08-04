@@ -36,7 +36,7 @@
                             :description="item.description"
                         >
                             <b-input-group v-if="item.component === 'r2-chunky'">
-                                <r2-chunky :config="item" />
+                                <r2-chunky :config="item" :form="request.form" />
                             </b-input-group>
 
                             <b-input-group
