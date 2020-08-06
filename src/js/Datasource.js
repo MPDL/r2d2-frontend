@@ -103,6 +103,9 @@ function Datasource() {
         default: 'post'
     }
 
+    // Evaluate strange responseURL / second request after sending */logout:
+    // "http://130.183.216.136/r2d2/login?logout"
+    // comes from axios / xhr.js / XMLHttpRequest
     this.request = async (key = null, api = null, data = {}) => {
         api = _.isPlainObject(api) ? { ...getApi(api) } : { ...config.defaultApi }
         const schema = _.isPlainObject(api.schema) ? api.schema : {}
@@ -123,7 +126,7 @@ function Datasource() {
         // TODO extract header handling to global class or someting ...
         const options = {}
         const fcxSet = {
-            'auth.token': () => globals.getAdminToken()
+            'auth.token': () => globals.getUserToken()
         }
         const headerSet = _.get(schema, 'header-set') || {}
         _.each(headerSet, (sourceKey, targetKey) => {
@@ -170,7 +173,7 @@ function Datasource() {
                 break
             default:
                 data = { key, data }
-                data.token = globals.getAdminToken()
+                data.token = globals.getUserToken()
         }
 
         let downloadFileName = null
@@ -185,12 +188,13 @@ function Datasource() {
                 }
                 // TODO make this fully generic
                 const fcxGet = {
-                    'auth.token': headers => globals.setAdminToken(headers.authorization)
+                    'auth.token': headers => globals.setUserToken(headers.authorization)
                 }
                 const headerGet = _.get(schema, 'header-get') || {}
                 _.each(headerGet, sourceKey => {
                     fcxGet[sourceKey] ? fcxGet[sourceKey](res.headers) : null
                 })
+                //
                 updateRequests(res.data.requests)
                 updateResults(res.data, key, api)
                 globals.eventBus.$emit('onLoadResults', { error: null, key, result: res })

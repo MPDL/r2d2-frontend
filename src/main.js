@@ -7,7 +7,7 @@ window.globals.init()
 import Vue from 'vue'
 import App from './App.vue'
 import getRouter from './js/router'
-// import store from './store'
+import store from './js/store'
 
 import axios from 'axios'
 import VueAxios from 'vue-axios'
@@ -41,11 +41,12 @@ const startCreateApp = async () => {
 }
 
 const createApp = data => {
-    new Vue({
-        // store,
+    const app = new Vue({
+        store,
         router: getRouter(data.router),
         i18n,
         render: h => h(App)
     }).$mount('#app')
+    globals.registerStore(app.$store)
 }
 startCreateApp()

@@ -45,7 +45,8 @@
             />
         </div> -->
         <div :class="{ hidden: viewMode !== 'default' }">
-            <ActionCell class="view login" :config="zones.login" />
+            <ActionCell class="view login" :config="zones.logout" v-if="$store.state.userToken" />
+            <ActionCell class="view login" :config="zones.login" v-else />
             <ActionCell
                 class="view get-datasets"
                 :config="zones.getDatasets"
@@ -106,6 +107,13 @@ export default {
             zones: {
                 login: {
                     id: 'r2d2-login',
+                    requests: r2.ppGetRequests(),
+                    getResult: (data, me = this.zones.login) => {
+                        console.log('PT:login getResult  data = ', data)
+                    }
+                },
+                logout: {
+                    id: 'r2d2-logout',
                     requests: r2.ppGetRequests()
                 },
                 getDatasets: {
@@ -164,8 +172,9 @@ export default {
                     collectData: data => {
                         // console.log('changeMetadata:collectData data = ', data)
                         // TODO make this generic and realtime
-                        data['send-data'].metadata.title = data.title
-                        data['send-data'].metadata.description = data.description
+                        // TODO get data from meta component here!
+                        // data['send-data'].metadata.title = data.title
+                        // data['send-data'].metadata.description = data.description
                         return data
                     },
                     sendFormEventKey: 'sendform--change-metadata',
@@ -183,8 +192,9 @@ export default {
                     collectData: data => {
                         // console.log('createDataset:collectData data = ', data)
                         // TODO make this generic and realtime
-                        data['send-data'].metadata.title = data.title
-                        data['send-data'].metadata.description = data.description
+                        // TODO get data from meta component here!
+                        // data['send-data'].metadata.title = data.title
+                        // data['send-data'].metadata.description = data.description
                         return data
                     },
                     sendFormEventKey: 'sendform--create-dataset',
@@ -319,9 +329,10 @@ export default {
                             modificationDate: data.modificationDate,
                             metadata: data.metadata
                         }
-                        form['title'].selected = data.metadata.title
-                        form['description'].selected = data.metadata.description
-                        globals.eventBus.$emit(cfg.updateFormEventKey)
+                        // TODO update meta component here
+                        // form['title'].selected = data.metadata.title
+                        // form['description'].selected = data.metadata.description
+                        // globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)
             }

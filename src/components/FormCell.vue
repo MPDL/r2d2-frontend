@@ -14,6 +14,10 @@
                         <r2-chunky :config="item" :form="request.form" />
                     </b-input-group>
 
+                    <b-input-group v-if="item.component === 'r2-meta'">
+                        <r2-meta :config="item" :form="request.form" />
+                    </b-input-group>
+
                     <b-input-group
                         v-if="item.type === 'button'"
                         size="sm"
@@ -98,6 +102,7 @@
 <script>
 import vueCustomScrollbar from 'vue-custom-scrollbar'
 import R2Chunky from '@/components/R2Chunky.vue'
+import R2Meta from '@/components/R2Meta.vue'
 import ValueCell from '@/components/ValueCell.vue'
 import VueJsonPretty from '@/lib/vue-json-pretty.1.6.3.js'
 
@@ -106,6 +111,7 @@ export default {
     components: {
         vueCustomScrollbar,
         R2Chunky,
+        R2Meta,
         VueJsonPretty,
         ValueCell
     },

@@ -1,13 +1,14 @@
 import Vue from 'vue'
 import R2D2DataHandler from '@/js/R2D2DataHandler'
 
-
 function Globals() {
     console.log('GLB: window.BASE_CONFIG = ', window.BASE_CONFIG)
 
     const DEV_MODE = window.BASE_CONFIG && window.BASE_CONFIG.devmode === true
     this.DEV_MODE = DEV_MODE
 
+    //
+    // vue-router
     //
     let router = null
 
@@ -16,7 +17,19 @@ function Globals() {
     }
     this.registerRouter = registerRouter
     this.getRouter = () => router
+    //
+    // vue-store
+    //
+    let store = null
 
+    const registerStore = $store => {
+        store = $store
+    }
+    this.registerStore = registerStore
+    this.getStore = () => store
+    //
+    // vue-i18n
+    //
     let i18n = null
 
     const registerI18n = $i18n => {
@@ -25,14 +38,28 @@ function Globals() {
     this.registerI18n = registerI18n
     this.getLocale = () => i18n.locale
     this.getI18n = () => i18n
-
+    //
+    // eventbus
     //
     const eventBus = new Vue()
     this.eventBus = eventBus
 
     //
+    // R2D2DataHandler
+    //
     const r2 = new R2D2DataHandler()
     this.getDataHandler = () => r2
+
+    //
+    // token handling
+    //
+    this.getUserToken = () => {
+        return store.state.userToken
+    }
+
+    this.setUserToken = (token = null) => {
+        store.dispatch('setUserToken', token)
+    }
 
     // route handling
 
@@ -100,26 +127,11 @@ function Globals() {
     // ++++++++++++++++++++++++++++++++++++++++
 
     let isCmsEditorActive = false
-    let adminToken = null
     let adminTouched = false // TEST ON
 
     this.isCmsActive = () => isCmsEditorActive || false
 
     this.cmsWrap = str => `<p>${str}</p>`
-
-    this.getAdminToken = () => {
-        // console.log('GLB:getAdminToken adminToken = ', adminToken)
-        return adminToken || null
-        // return 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0dXNlckBtcGRsLm1wZy5kZSIsInVzZXJfaWQiOiIyZDBkZDg1MC1lYWJiLTQzZmUtOGI4Zi0xYTFiNTQwMTg3MzgiLCJleHAiOjE1OTEyNTY3NjZ9._xWPbAMgMB8FZgf-FjWd8aM0UrCZ1CG0J-rIU7vJ49Q5_q8Wzxu1hv_9rwZil2aHeEWgeZSUNEQ6H8WoMIuFCQ'
-    }
-
-    this.setAdminToken = (token = null) => {
-        adminToken = token
-        console.log('GLB:setAdminToken token = ', token)
-        // if (adminToken) {
-        //     loadCms()
-        // }
-    }
 
     const onCmsEvent = (key, data = null) => {
         // console.log('GLB:onCmsEvent key, data = ', key, data)

@@ -265,6 +265,22 @@ const R2D2DataHandler = function() {
     }
 
     // ++++++++++++++++++++++++++
+    // +++++++ metadata edit
+    // ++++++++++++++++++++++++++
+
+    // "metadata" : {
+    //     "title" : "Chunky Test Area :-)",
+    //     "authors" : [ ],
+    //     "doi" : null,
+    //     "description" : "Chunky Test Area :-)",
+    //     "genres" : null,
+    //     "keywords" : null,
+    //     "license" : null,
+    //     "language" : null,
+    //     "correspondingPapers" : [ ]
+    //   },
+
+    // ++++++++++++++++++++++++++
     // +++++++ prototype page
     // ++++++++++++++++++++++++++
 
@@ -293,6 +309,12 @@ const R2D2DataHandler = function() {
         }
         rq.description = 'login'
         rq.api.schema.data = 'ROOT'
+        //
+        // logout
+        // clone request as its inner data gets mutated !
+        id = 'r2d2-logout'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        //
         // get datasets
         // clone request as its inner data gets mutated !
         id = 'r2d2-get-datasets'
