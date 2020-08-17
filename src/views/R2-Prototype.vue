@@ -509,16 +509,19 @@ export default {
             width: 810px;
             ::v-deep {
                 .form-elements {
-                    height: 370px;
-                    .value-cell.dataset-id {
-                        .scroll-area-vc {
-                            height: 20px;
-                        }
+                    height: 500px;
+                    .scroll-area-vc.ps {
+                        height: 20px;
                     }
-                    .value-cell.metadata {
-                        .ps-container.scroll-area-vc.ps {
-                            height: 150px;
-                            min-height: 150px;
+                    .meta-component {
+                        .form-elements {
+                            height: 250px;
+                            .scroll-area-vc.ps {
+                                height: 20px;
+                            }
+                        }
+                        .form-cell.form {
+                            width: 700px;
                         }
                     }
                 }

@@ -272,16 +272,7 @@ function Datasource() {
                 item.description = _.isString(item.description) ? item.description : null
                 item.label = _.isString(item.label) ? item.label : itemKey
                 if (item.type === 'dropdown') {
-                    // selection by value
-                    item.selected = _.isNil(item.selected) ? item.options[0] : item.selected
-                    // selection by index
-                    if (_.isNumber(item.selected)) {
-                        if (_.isPlainObject(item.options[item.selected])) {
-                            item.selected = item.options[item.selected].value
-                        } else {
-                            item.selected = item.options[item.selected]
-                        }
-                    }
+                    item = globals.setupDropdownFormCell(item)
                 }
             })
             ordered.push(request)

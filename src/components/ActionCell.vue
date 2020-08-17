@@ -22,7 +22,6 @@
                     :key="formKey"
                     @onClickButton="$emit('onClickFormButton', arguments[0])"
                 ></FormCell>
-
                 <div v-if="showResultList || showResultJson" class="scoll-area-edge"></div>
 
                 <vue-custom-scrollbar v-if="showResultJson" class="scroll-area results">
@@ -64,15 +63,13 @@
 // TODO make the action cell more dynamic (heights etc.)
 //
 import vueCustomScrollbar from 'vue-custom-scrollbar'
-import FormCell from '@/components/FormCell.vue'
 import VueJsonPretty from '@/lib/vue-json-pretty.1.6.3.js'
 
 export default {
     name: 'ActionCell',
     components: {
         vueCustomScrollbar,
-        VueJsonPretty,
-        FormCell
+        VueJsonPretty
     },
     props: {
         config: {

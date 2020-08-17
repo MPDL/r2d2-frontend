@@ -10,6 +10,7 @@
                     :label-for="item.key"
                     :description="item.description"
                 >
+                    <div v-if="item.type === 'SP'" class="seperator"></div>
                     <b-input-group v-if="item.component === 'r2-chunky'">
                         <r2-chunky :config="item" :form="request.form" />
                     </b-input-group>
@@ -182,5 +183,10 @@ export default {
 .form-elements {
     // TEST ON
     height: 100px;
+    .seperator{
+        width: 200px;
+        border: 1px solid rgb(77, 77, 77);
+        margin: 5px 0 5px 0;
+    }
 }
 </style>

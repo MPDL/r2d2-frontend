@@ -13,7 +13,7 @@
 
 <script>
 //
-const r2 = globals.getDataHandler('r2d2')
+let r2
 //
 export default {
     name: 'Upload',
@@ -30,6 +30,7 @@ export default {
         }
     },
     created() {
+        r2 = globals.getDataHandler('r2d2')
         // console.log('CKY:created this.config = ', this.config)
         // console.log('CKY:created this.form = ', this.form)
     },

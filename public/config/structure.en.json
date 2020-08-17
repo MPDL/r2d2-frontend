@@ -369,7 +369,14 @@
                             }
                         }
                     ],
-                    "selected": 0
+                    "selected": 1
+                },
+                "update2": {
+                    "type": "dropdown",
+                    "label": "mocky update values 2",
+                    "sendKey": "",
+                    "options": ["a","b","c"],
+                    "selected": 2
                 }
             }
         },

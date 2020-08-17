@@ -24,6 +24,9 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 
+import FormCell from '@/components/FormCell.vue'
+Vue.component('FormCell', FormCell)
+
 Vue.config.productionTip = false
 
 let i18n = null

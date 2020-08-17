@@ -401,5 +401,230 @@ const R2D2DataHandler = function() {
 
         return requests
     }
+
+    // ++++++++++++++++++++++++++
+    // +++++++ meta form handler
+    // ++++++++++++++++++++++++++
+
+    const MetaFormHandler = function() {
+        const printout = (lv, key, value, $tree = null) => {
+            let pre = ''
+            while (lv--) {
+                pre += '-'
+            }
+            pre += ' '
+            console.log('SCAN: ---------------  ')
+            console.log('SCAN: pre, tree = ', pre, $tree)
+            console.log('SCAN: pre, key, value = ', pre, key, value)
+        }
+
+        const getFormItem = (tree, value, args) => {
+            const path = tree.reduce((acc, val) => (_.isString(val) ? `${acc}.${val}` : acc))
+            console.log('getFormat: path = ', path)
+            const res = _.get(schema, path)
+            const key = tree.join('--')
+            const defaultItem = {
+                type: 'input',
+                label: tree.join('.')
+            }
+            let item = res && _.isPlainObject(res.__0) ? res.__0 : defaultItem
+            item = _.cloneDeep(item)
+            const add = {
+                __strc: {
+                    level: args.level,
+                    parent: args.parent,
+                    index: args.index
+                },
+                selected: value,
+                key,
+                sendKey: key, // ??
+                label: tree.join('.') // TEST
+            }
+            item = { ...item, ...add }
+            if (item.type === 'dropdown') {
+                item = globals.setupDropdownFormCell(item)
+            }
+            return item
+        }
+
+        // TESTDATA
+        const metadata = {
+            title: 'test metadata',
+            authors: [
+                {
+                    givenName: 'Markus 1',
+                    familyName: 'Haarländer 2',
+                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                    affiliations: [
+                        {
+                            id: null,
+                            organization: '',
+                            department: 'department 1'
+                        }
+                    ]
+                },
+                {
+                    givenName: 'Markus 2',
+                    familyName: 'Haarländer 2',
+                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                    affiliations: [
+                        {
+                            id: null,
+                            organization: '',
+                            department: 'department 2'
+                        },
+                        {
+                            id: 'zzk-22',
+                            organization: 'fzdgduzfg',
+                            department: 'area 51'
+                        }
+                    ]
+                }
+            ],
+            doi: '12345',
+            description: 'fourth try to create a dataset via drag',
+            genres: ['g1', 'g2'],
+            keywords: ['kw1', 'kw2'],
+            license: 'lcs 123',
+            language: ['de', 'ru'],
+            correspondingPapers: [
+                {
+                    title: 'paper 1',
+                    url: null,
+                    type: null,
+                    identifier: null,
+                    identifierType: 'identifierType paper 1'
+                },
+                {
+                    title: 'paper 2',
+                    url: null,
+                    type: null,
+                    identifier: null,
+                    identifierType: 'identifierType paper 2'
+                }
+            ]
+        }
+
+        // TESTDATA // TODO move to structure
+        const schema = {
+            title: {
+                __0: {
+                    // TESTDATA
+                    type: 'input',
+                    label: 'title'
+                }
+            },
+            description: {},
+            language: {},
+            doi: {},
+            license: {},
+            genres: {},
+            keywords: {},
+            authors: {
+                givenName: {},
+                familyName: {},
+                nameIdentifier: {},
+                affiliations: {
+                    department: {
+                        __0: {
+                            // TESTDATA
+                            type: 'dropdown',
+                            label: 'authors.affiliations.department TEST',
+                            sendKey: '',
+                            options: ['a', 'b', 'c']
+                        }
+                    },
+                    organization: {},
+                    id: {}
+                }
+            },
+            correspondingPapers: {
+                title: {},
+                url: {},
+                type: {},
+                identifier: {},
+                identifierType: {}
+            }
+        }
+
+        const sortingTree = []
+        const createSortingTree = (source = {}, target = []) => {
+            _.each(source, (obj, key) => {
+                console.log('CST: key = ', key)
+                if (key !== '__0') {
+                    const node = { key }
+                    if (Object.keys(obj).length <= 1) {
+                        target.push(node)
+                    } else {
+                        node.sub = []
+                        target.push(node)
+                        createSortingTree(obj, node.sub)
+                    }
+                }
+            })
+        }
+
+        let sortedData = []
+        const sortRawDataByTree = (source = {}, target = [], reference = []) => {
+            let node
+            if (_.isArray(source) && _.isPlainObject(source[0])) {
+                _.each(source, (val, key) => {
+                    console.log('SRD: key = ', key)
+                    node = { key, sub: [] }
+                    target[key] = node
+                    sortRawDataByTree(val, target[key].sub, reference)
+                })
+                console.log('SRD: target = ', target)
+            } else {
+                _.each(source, (val, key) => {
+                    const index = _.findIndex(reference, { key: key })
+                    if (_.isArray(val) && _.isPlainObject(val[0])) {
+                        node = { key, sub: [] }
+                        target[index] = node
+                        sortRawDataByTree(val, target[index].sub, reference[index].sub)
+                    } else if (_.isPlainObject(val)) {
+                        node = { key, sub: [] }
+                        target[index] = node
+                        sortRawDataByTree(val, target[index].sub, reference)
+                    } else {
+                        node = { key, value: val }
+                        target[index] = node
+                    }
+                })
+            }
+        }
+
+        // TODO implement a recursive filter for undefined values
+        // happens when raw input data vs. schema keys missing
+
+        let form = {}
+        const scanAndCreateForm = (node, level = 1, tree = []) => {
+            _.each(node, obj => {
+                if (obj) {
+                    while (tree.length > level) {
+                        tree.pop()
+                    }
+                    tree[level - 1] = obj.key
+                    if (obj.sub) {
+                        scanAndCreateForm(obj.sub, level + 1, tree)
+                    } else {
+                        const item = getFormItem(tree, obj.value, {
+                            level
+                        })
+                        const path = tree.reduce((acc, val) => `${acc}.${val.toString()}`)
+                        form[path] = item
+                    }
+                }
+            })
+        }
+
+        createSortingTree(schema, sortingTree)
+        sortRawDataByTree(metadata, sortedData, sortingTree)
+        console.log('SRT: sortedData = ', sortedData)
+        scanAndCreateForm(sortedData)
+        console.log('obj:fc form = ', form)
+        this.getForm = () => form
+    }
+    this.getMetaFormHandler = () => new MetaFormHandler()
 }
 export default R2D2DataHandler
