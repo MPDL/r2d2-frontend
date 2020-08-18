@@ -133,6 +133,10 @@ function Datasource() {
             let value = fcxSet[sourceKey] ? fcxSet[sourceKey]() : getValueByKey(sourceKey, data, true)
             _.set(options, `headers.${targetKey}`, value)
         })
+        if (api.responseType) {
+            options.responseType = api.responseType
+        }
+        
         // +++++++++++++++++
         // TODO extract api-target-parser to global class or someting ...
         let inside = false
@@ -214,11 +218,12 @@ function Datasource() {
     }
 
     const downloadFile = (data, name) => {
-        // console.log('DS:downloadFile data = ', data)
-        const a = document.createElement('a')
-        a.href = data.substr(0, 5) === 'data:' ? data : `data:${data}`
-        a.download = name
-        a.click()
+        const url = window.URL.createObjectURL(new Blob([data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', name); 
+        document.body.appendChild(link);
+        link.click();
     }
     this.downloadFile = downloadFile // TEST
 

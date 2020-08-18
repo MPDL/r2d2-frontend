@@ -375,7 +375,7 @@
                     "type": "dropdown",
                     "label": "mocky update values 2",
                     "sendKey": "",
-                    "options": ["a","b","c"],
+                    "options": ["a", "b", "c"],
                     "selected": 2
                 }
             }
@@ -694,9 +694,10 @@
             "label": "r2d2-pp-download-file",
             "description": "Get (download) a single, real file",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/{version-number}/files/{file-id}",
                 "method": "get",
-                "responseType": "blob",
+                "responseTypeXX": "blob (works also)",
+                "responseType": "arraybuffer",
                 "schema": {
                     "header-set": {
                         "Authorization": "auth.token"
@@ -707,13 +708,16 @@
             "form": {
                 "dataset-id": {
                     "type": "value-cell",
-                    "label": "dataset-id",
                     "selected": null
                 },
                 "file-id": {
                     "type": "value-cell",
-                    "label": "file-id",
                     "selected": null
+                },
+                "version-number": {
+                    "type": "dropdown",
+                    "options": [1, 2, 3, 4],
+                    "selected": 0
                 },
                 "file-name": {
                     "type": "value-cell",
