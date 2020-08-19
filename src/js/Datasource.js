@@ -65,6 +65,7 @@ function Datasource() {
     const updateConfig = data => {
         config.setup = { ...config.setup, ...data.setup }
         config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
+        config.setup.apiRoot = _.isString(data.setup.apiRoot) ? data.setup.apiRoot : ''
     }
 
     const getFilteredConfig = () => {
@@ -81,10 +82,17 @@ function Datasource() {
     const getTranslationsApi = () => config.translatinosApi
 
     const getApi = api => {
-        return globals.DEV_MODE && config.devApis[api.target] ? config.devApis[target] : api
+        api = globals.DEV_MODE && config.devApis[api.target] ? config.devApis[target] : api
+        api.target = api.target.split('{apiRoot}').join(config.setup.apiRoot)
+        return api
     }
 
     const post = async (api, data = {}, options = {}) => {
+        // options.params = {
+        //     test: 123
+        // }
+        console.log('DS:post options = ', options)
+        console.log('DS:post data = ', data)
         return axios.create().post(getPath(api), data, options)
     }
 
@@ -130,13 +138,19 @@ function Datasource() {
         }
         const headerSet = _.get(schema, 'header-set') || {}
         _.each(headerSet, (sourceKey, targetKey) => {
-            let value = fcxSet[sourceKey] ? fcxSet[sourceKey]() : getValueByKey(sourceKey, data, true)
+            const value = fcxSet[sourceKey] ? fcxSet[sourceKey]() : getValueByKey(sourceKey, data, true)
             _.set(options, `headers.${targetKey}`, value)
+        })
+
+        const params = _.get(schema, 'params') || {}
+        _.each(params, (sourceKey, targetKey) => {
+            const value = getValueByKey(sourceKey, data, true)
+            _.set(options, `params.${targetKey}`, value)
         })
         if (api.responseType) {
             options.responseType = api.responseType
         }
-        
+
         // +++++++++++++++++
         // TODO extract api-target-parser to global class or someting ...
         let inside = false
@@ -166,7 +180,14 @@ function Datasource() {
         api.target = parts.join('')
         const directDataKey = _.get(schema, 'data')
         const directDataValue = getValueByKey(directDataKey, data)
+
+        console.log('DS:RQ schema = ',schema)
+        console.log('DS:RQ directDataKey = ',directDataKey)
+        console.log('DS:RQ directDataValue = ',directDataValue)
         switch (true) {
+            case directDataKey === null:
+                data = null
+                break
             case !_.isUndefined(directDataValue):
                 data = directDataValue
                 break
@@ -218,12 +239,12 @@ function Datasource() {
     }
 
     const downloadFile = (data, name) => {
-        const url = window.URL.createObjectURL(new Blob([data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', name); 
-        document.body.appendChild(link);
-        link.click();
+        const url = window.URL.createObjectURL(new Blob([data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', name)
+        document.body.appendChild(link)
+        link.click()
     }
     this.downloadFile = downloadFile // TEST
 

@@ -5,6 +5,7 @@
         "translations": {
             "en": {}
         },
+        "apiRoot": "http://130.183.216.136/r2d2",
         "maxStoreResults": 10
     },
     "router": [
@@ -59,11 +60,86 @@
         }
     },
     "requests": {
+        "r2d2-pp-list-files": {
+            "label": "r2d2-pp-list-files",
+            "description": "Lists my files",
+            "api": {
+                "target": "{apiRoot}/files",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            }
+        },
+        "r2d2-login": {
+            "label": "r2d2-login-post",
+            "description": "Heidi calls for a ride with R2  ;-)",
+            "api": {
+                "target": "{apiRoot}/login",
+                "method": "post",
+                "schema": {
+                    "header-get": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "dd-auth": {
+                    "type": "dropdown",
+                    "label": "mocky login",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "login",
+                            "value": {
+                                "username": "testuser@mpdl.mpg.de",
+                                "password": "test"
+                            }
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-pp-chunk-upload-file": {
+            "label": "r2d2-pp-chunk-upload-file",
+            "description": "Uploads a file (multiple chunk)",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "num-of-chunks": {
+                    "type": "dropdown",
+                    "label": "num-of-chunks",
+                    "options": [1, 2, 4, 6, 7, 8, 17, 32, 64, 128],
+                    "selected": "1"
+                },
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "Select file",
+                    "options": {
+                        "api-upload-initial": "r2d2-pp-chunky-initial",
+                        "api-upload-chunk": "r2d2-pp-chunky-chunk",
+                        "api-upload-finalize": "r2d2-pp-chunky-finalize"
+                    }
+                }
+            }
+        },
         "r2d2-pp-change-metadata": {
             "label": "r2d2-pp-change-metadata",
             "description": "Changes metadata of a dataset (only title and description for testing)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}",
+                "target": "{apiRoot}/datasets/{dataset-id}",
                 "method": "put",
                 "schema": {
                     "data": "send-data",
@@ -89,7 +165,7 @@
                 }
             }
         },
-        "r2d2-pp-chunk-upload-file": {
+        "r2d2-pp-chunk-upload-file-Api1": {
             "label": "r2d2-pp-chunk-upload-file",
             "description": "Uploads a file (multiple chunk)",
             "api": null,
@@ -120,41 +196,11 @@
                 }
             }
         },
-        "r2d2-login": {
-            "label": "r2d2-login-post",
-            "description": "Heidi calls for a ride with R2  ;-)",
-            "api": {
-                "target": "http://130.183.216.136/r2d2/login",
-                "method": "post",
-                "schema": {
-                    "header-get": {
-                        "Authorization": "auth.token"
-                    }
-                }
-            },
-            "form": {
-                "dd-auth": {
-                    "type": "dropdown",
-                    "label": "mocky login",
-                    "sendKey": "",
-                    "options": [
-                        {
-                            "text": "login",
-                            "value": {
-                                "username": "testuser@mpdl.mpg.de",
-                                "password": "test"
-                            }
-                        }
-                    ],
-                    "selected": 0
-                }
-            }
-        },
         "r2d2-logout": {
             "label": "logged-in",
             "description": "logged in, click send to log out",
             "api": {
-                "target": "http://130.183.216.136/r2d2/logout",
+                "target": "{apiRoot}/logout",
                 "method": "get",
                 "schema": {
                     "header-set": {
@@ -167,7 +213,7 @@
             "label": "r2d2-get-file",
             "description": "Get single, real file",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{bully-id}/files/{file-id}",
+                "target": "{apiRoot}/datasets/{bully-id}/files/{file-id}",
                 "method": "get",
                 "schema": {
                     "header-set": {
@@ -204,7 +250,7 @@
             "label": "r2d2-chunkload",
             "description": "Chunk filez and up 'them ;-)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{zatongas-id}/files/{file-id}",
+                "target": "{apiRoot}/datasets/{zatongas-id}/files/{file-id}",
                 "method": "put",
                 "schema": {
                     "data": "cunky.base64",
@@ -247,7 +293,7 @@
             "label": "r2d2-upload",
             "description": "Single file & hau wech ;-)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{zatongas-id}/files",
+                "target": "{apiRoot}/datasets/{zatongas-id}/files",
                 "method": "post",
                 "schema": {
                     "data": "cunky.base64",
@@ -280,7 +326,7 @@
             "label": "r2d2-dataset-create",
             "description": "Creates a dataset",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/",
+                "target": "{apiRoot}/datasets/",
                 "method": "post",
                 "schema": {
                     "header-set": {
@@ -319,7 +365,7 @@
             "label": "r2d2-dataset-update",
             "description": "Updates a dataset (metadata)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}",
+                "target": "{apiRoot}/datasets/{dataset-id}",
                 "method": "put",
                 "schema": {
                     "data-setXX": {
@@ -384,7 +430,7 @@
             "label": "r2d2-empty-file-create",
             "description": "Creates a empty file in dataset (just testing)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
+                "target": "{apiRoot}/datasets/{dataset-id}/files",
                 "method": "post",
                 "schema": {
                     "header-set": {
@@ -433,7 +479,7 @@
             "label": "r2d2-get-dataset",
             "description": "Calls a single dataset",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{file-id}",
+                "target": "{apiRoot}/datasets/{file-id}",
                 "method": "get",
                 "schema": {
                     "header-set": {
@@ -473,7 +519,7 @@
             "label": "r2d2-get-datasets",
             "description": "Calls multiple datasets",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/search",
+                "target": "{apiRoot}/datasets/search",
                 "method": "post",
                 "schema": {
                     "header-set": {
@@ -537,7 +583,7 @@
             "label": "r2d2-pp-change-metadata",
             "description": "Creates a new dataset ( incl. initial metadata )",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/",
+                "target": "{apiRoot}/datasets/",
                 "method": "post",
                 "schema": {
                     "data": "send-data",
@@ -569,7 +615,7 @@
             "label": "r2d2-pp-upload-file",
             "description": "Uploads a new file",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
+                "target": "{apiRoot}/datasets/{dataset-id}/files",
                 "method": "post",
                 "schema": {
                     "data": "cunky.base64",
@@ -601,7 +647,7 @@
             "label": "r2d2-pp-upload-file",
             "description": "Uploads a file (single chunk) to an existing file-id",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
                 "method": "put",
                 "schema": {
                     "data": "cunky.base64",
@@ -633,7 +679,54 @@
         "r2d2-pp-chunk-upload-file-POS": {},
         "r2d2-pp-chunky-initial": {
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files",
+                "target": "{apiRoot}/files/multipart",
+                "targetXX": "http://locahost/files/multipart",
+                "method": "post",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "File-Name": "cunky.filename",
+                        "Content-Type": "cunky.contentType"
+                    },
+                    "data": null
+                }
+            }
+        },
+        "r2d2-pp-chunky-chunk": {
+            "api": {
+                "target": "{apiRoot}/files/multipart/{file-id}",
+                "info": "PUT /files/multipart/{file_id}?part=<number>",
+                "method": "put",
+                "schema": {
+                    "data": "cunky.binary",
+                    "params": {
+                        "part": "cunky.chunknumber"
+                    },                   
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "Content-Type": "cunky.contentType"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-chunky-finalize": {
+            "api": {
+                "target": "{apiRoot}/files/multipart/{file-id}",
+                "method": "post",
+                "schema": {
+                    "data": null,
+                    "params": {
+                        "parts": "cunky.totalchunks"
+                    }, 
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-chunky-initial-v1": {
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}/files",
                 "method": "post",
                 "schema": {
                     "data": "cunky.base64",
@@ -646,9 +739,9 @@
                 }
             }
         },
-        "r2d2-pp-chunky-follow": {
+        "r2d2-pp-chunky-follow-v1": {
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/files/{file-id}",
+                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
                 "method": "put",
                 "schema": {
                     "data": "cunky.base64",
@@ -694,7 +787,7 @@
             "label": "r2d2-pp-download-file",
             "description": "Get (download) a single, real file",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/{dataset-id}/{version-number}/files/{file-id}",
+                "target": "{apiRoot}/datasets/{dataset-id}/{version-number}/files/{file-id}",
                 "method": "get",
                 "responseTypeXX": "blob (works also)",
                 "responseType": "arraybuffer",
@@ -790,7 +883,7 @@
             "label": "r2d2",
             "description": "Heidi rides the R2 machine ;-)",
             "api": {
-                "target": "http://130.183.216.136/r2d2/datasets/"
+                "target": "{apiRoot}/datasets/"
             },
             "form": {
                 "dropdown-1": {

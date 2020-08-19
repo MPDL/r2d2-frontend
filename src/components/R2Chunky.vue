@@ -40,8 +40,13 @@ export default {
             console.log('CKY:onClickSend this.config.options = ', this.config.options)
             console.log('CKY:onClickSend this.form = ', this.form)
             const options = {
-                'api-initial': this.config.options['api-initial'],
-                'api-follow': this.config.options['api-follow'],
+                // api v.1
+                // 'api-initial': this.config.options['api-initial'],
+                // 'api-follow': this.config.options['api-follow'],
+// api v.2
+                'api-upload-initial': this.config.options['api-upload-initial'],
+                'api-upload-chunk': this.config.options['api-upload-chunk'],
+                'api-upload-finalize': this.config.options['api-upload-finalize'],
                 'dataset-id': this.form['dataset-id'].selected,
                 'file-id': this.form['file-id'].selected,
                 'num-of-chunks': this.form['num-of-chunks'].selected,
