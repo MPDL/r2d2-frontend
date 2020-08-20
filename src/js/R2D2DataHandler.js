@@ -15,7 +15,7 @@ const R2D2DataHandler = function() {
             key = data.id
             // check if the version nummer is included, or add one if not
             const num = parseInt(key.split('/')[1])
-            if (isNaN(num) && key !== 'POOL') {
+            if (isNaN(num) && key !== 'STAGE') {
                 const vNum = _.isNumber(data.versionNumber) ? data.versionNumber : 1
                 key = `${key}/${vNum}`
             }
@@ -31,7 +31,7 @@ const R2D2DataHandler = function() {
         return res
     }
 
-    // this converts a simple (e.g. POOL) filelist to a dataset, if needed
+    // this converts a simple (e.g. STAGE) filelist to a dataset, if needed
     this.ppCreateDatasetFromFileList = (key, data = null) => {
         if (data) {
             if (data.id) {
@@ -74,8 +74,8 @@ const R2D2DataHandler = function() {
                 label: '>> create new dataset'
             },
             _pool: {
-                key: 'POOL',
-                label: '>> list pool files'
+                key: 'STAGE',
+                label: '>> list staging files'
             }
         }
         if (options.as === 'key-list') {
@@ -102,8 +102,7 @@ const R2D2DataHandler = function() {
             }
         }
         if (options.as === 'key-list') {
-            console.log('R2:getFilesOfDataset data.files = ',data.files)
-            _.each(data.files, (value) => {
+            _.each(data.files, value => {
                 const d = {
                     key: value.id,
                     title: value.filename

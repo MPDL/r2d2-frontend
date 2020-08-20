@@ -142,7 +142,7 @@ export default {
                     },
                     getApi: (key, me = this.zones.getDataset) => {
                         const dsKey = r2.ppGetSelectedDataset().key
-                        if (dsKey === 'POOL') {
+                        if (dsKey === 'STAGE') {
                             key = 'r2d2-pp-get-files'
                         }
                         return me.requests[key].api
