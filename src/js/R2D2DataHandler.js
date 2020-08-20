@@ -11,14 +11,41 @@ const R2D2DataHandler = function() {
         }
     }
     this.ppSetSelectedDataset = (key = null, data = null) => {
-        key = !key && data ? data.id : key
+        if (!key && data) {
+            key = data.id
+            // check if the version nummer is included, or add one if not
+            const num = parseInt(key.split('/')[1])
+            if (isNaN(num) && key !== 'POOL') {
+                const vNum = _.isNumber(data.versionNumber) ? data.versionNumber : 1
+                key = `${key}/${vNum}`
+            }
+        }
         ppStates.selectedDataset.key = key
         ppStates.selectedDataset.data = data
     }
-    this.ppGetSelectedDataset = () => ({
-        key: ppStates.selectedDataset.key,
-        data: ppStates.selectedDataset.data
-    })
+    this.ppGetSelectedDataset = () => {
+        const res = {
+            key: ppStates.selectedDataset.key,
+            data: ppStates.selectedDataset.data
+        }
+        return res
+    }
+
+    // this converts a simple (e.g. POOL) filelist to a dataset, if needed
+    this.ppCreateDatasetFromFileList = (key, data = null) => {
+        if (data) {
+            if (data.id) {
+                return data
+            } else if (key) {
+                return {
+                    id: key,
+                    files: _.isArray(data) ? data : []
+                }
+            }
+        }
+        return null
+    }
+
     this.ppSetSelectedFile = (key = null, data = null) => {
         ppStates.selectedFile.key = key
         // ppStates.selectedFile.data = data
@@ -45,6 +72,10 @@ const R2D2DataHandler = function() {
             _new: {
                 key: null,
                 label: '>> create new dataset'
+            },
+            _pool: {
+                key: 'POOL',
+                label: '>> list pool files'
             }
         }
         if (options.as === 'key-list') {
@@ -71,7 +102,8 @@ const R2D2DataHandler = function() {
             }
         }
         if (options.as === 'key-list') {
-            _.each(data.files, (value, index) => {
+            console.log('R2:getFilesOfDataset data.files = ',data.files)
+            _.each(data.files, (value) => {
                 const d = {
                     key: value.id,
                     title: value.filename
@@ -222,6 +254,10 @@ const R2D2DataHandler = function() {
             label: 'close'
         }
 
+        // get (pool) files
+        id = 'r2d2-pp-get-files'
+        rq = requests[id] = _.cloneDeep(raw[id])
+
         return requests
     }
 
@@ -236,14 +272,14 @@ const R2D2DataHandler = function() {
                 pre += '-'
             }
             pre += ' '
-            console.log('SCAN: ---------------  ')
-            console.log('SCAN: pre, tree = ', pre, $tree)
-            console.log('SCAN: pre, key, value = ', pre, key, value)
+            // console.log('SCAN: ---------------  ')
+            // console.log('SCAN: pre, tree = ', pre, $tree)
+            // console.log('SCAN: pre, key, value = ', pre, key, value)
         }
 
         const getFormItem = (tree, value, args) => {
             const path = tree.reduce((acc, val) => (_.isString(val) ? `${acc}.${val}` : acc))
-            console.log('getFormat: path = ', path)
+            // console.log('getFormat: path = ', path)
             const res = _.get(schema, path)
             const key = tree.join('--')
             const defaultItem = {
@@ -373,7 +409,7 @@ const R2D2DataHandler = function() {
         const sortingTree = []
         const createSortingTree = (source = {}, target = []) => {
             _.each(source, (obj, key) => {
-                console.log('CST: key = ', key)
+                // console.log('CST: key = ', key)
                 if (key !== '__0') {
                     const node = { key }
                     if (Object.keys(obj).length <= 1) {
@@ -392,12 +428,12 @@ const R2D2DataHandler = function() {
             let node
             if (_.isArray(source) && _.isPlainObject(source[0])) {
                 _.each(source, (val, key) => {
-                    console.log('SRD: key = ', key)
+                    // console.log('SRD: key = ', key)
                     node = { key, sub: [] }
                     target[key] = node
                     sortRawDataByTree(val, target[key].sub, reference)
                 })
-                console.log('SRD: target = ', target)
+                // console.log('SRD: target = ', target)
             } else {
                 _.each(source, (val, key) => {
                     const index = _.findIndex(reference, { key: key })
@@ -443,10 +479,11 @@ const R2D2DataHandler = function() {
 
         createSortingTree(schema, sortingTree)
         sortRawDataByTree(metadata, sortedData, sortingTree)
-        console.log('SRT: sortedData = ', sortedData)
+        // console.log('SRT: sortedData = ', sortedData)
         scanAndCreateForm(sortedData)
-        console.log('obj:fc form = ', form)
-        this.getForm = () => form
+        // console.log('obj:fc form = ', form)
+        // this.getForm = () => form
+        this.getForm = () => {} // TEST ON
     }
     this.getMetaFormHandler = () => new MetaFormHandler()
 
@@ -717,7 +754,6 @@ const R2D2DataHandler = function() {
             const slice = file.slice(sliceStart, sliceEnd)
             reader.readAsDataURL(slice)
         }
-
 
         const sendChunkApiV1 = () => {
             console.log('CFU:sendChunk: chunkCnt = ', chunkCnt)

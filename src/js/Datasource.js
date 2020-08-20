@@ -88,11 +88,6 @@ function Datasource() {
     }
 
     const post = async (api, data = {}, options = {}) => {
-        // options.params = {
-        //     test: 123
-        // }
-        console.log('DS:post options = ', options)
-        console.log('DS:post data = ', data)
         return axios.create().post(getPath(api), data, options)
     }
 
@@ -180,10 +175,6 @@ function Datasource() {
         api.target = parts.join('')
         const directDataKey = _.get(schema, 'data')
         const directDataValue = getValueByKey(directDataKey, data)
-
-        console.log('DS:RQ schema = ',schema)
-        console.log('DS:RQ directDataKey = ',directDataKey)
-        console.log('DS:RQ directDataValue = ',directDataValue)
         switch (true) {
             case directDataKey === null:
                 data = null
@@ -293,12 +284,16 @@ function Datasource() {
             request.api.method = METHODS[request.api.method] ? request.api.method : METHODS.default
             request.description = _.isString(request.description) ? request.description : rqKey
             _.each(request.form, (item, itemKey) => {
-                item.sendKey = _.isString(item.sendKey) ? item.sendKey : itemKey
-                item.key = `${rqKey}--${itemKey}`
-                item.description = _.isString(item.description) ? item.description : null
-                item.label = _.isString(item.label) ? item.label : itemKey
-                if (item.type === 'dropdown') {
-                    item = globals.setupDropdownFormCell(item)
+                if (item.addToForm === false) {
+                    delete request.form[itemKey]
+                } else {
+                    item.sendKey = _.isString(item.sendKey) ? item.sendKey : itemKey
+                    item.key = `${rqKey}--${itemKey}`
+                    item.description = _.isString(item.description) ? item.description : null
+                    item.label = _.isString(item.label) ? item.label : itemKey
+                    if (item.type === 'dropdown') {
+                        item = globals.setupDropdownFormCell(item)
+                    }
                 }
             })
             ordered.push(request)

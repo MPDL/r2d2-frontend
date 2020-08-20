@@ -130,7 +130,11 @@ export default {
                 if (evt.filteredResult) {
                     data = this.filteredResult = evt.filteredResult
                 } else {
-                    data = datasource.getConfig().requests[evt.key].result
+                    data =
+                        evt.result && evt.result.data
+                            ? evt.result.data
+                            : datasource.getConfig().requests[evt.key].result
+
                     if (data) {
                         this.filteredResult = _.isFunction(this.config.getResult) ? this.config.getResult(data) : data
                     }
@@ -145,7 +149,7 @@ export default {
             })
         },
         getApi(key) {
-            return this.requests[key].api
+            return _.isFunction(this.config.getApi) ? this.config.getApi(key) : this.config.requests[key].api
         },
         collectData(key) {
             let res = {}

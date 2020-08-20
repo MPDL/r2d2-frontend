@@ -75,7 +75,6 @@
 import ActionCell from '@/components/ActionCell.vue'
 const r2 = globals.getDataHandler('r2d2')
 //
-
 const VIEWMODE = {
     DEFAULT: 'default',
     INSPECT_FILE: 'inspect-file',
@@ -107,18 +106,18 @@ export default {
             zones: {
                 login: {
                     id: 'r2d2-login',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     getResult: (data, me = this.zones.login) => {
                         console.log('PT:login getResult  data = ', data)
                     }
                 },
                 logout: {
                     id: 'r2d2-logout',
-                    requests: r2.ppGetRequests()
+                    requests: {}
                 },
                 getDatasets: {
                     id: 'r2d2-get-datasets',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     getResult: (data, me = this.zones.getDatasets) => {
                         // this part updates the selection, if it comes back e.g. from request zone
                         const ds = me.initialRequest ? r2.ppGetSelectedDataset() : { key: null, data: null }
@@ -131,15 +130,22 @@ export default {
                 },
                 getDataset: {
                     id: 'r2d2-get-dataset',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: false
                     },
-                    getResult: (data, me = this.zones.getDataset) => {
-                        // this updates the selected dataset id with data after async loaded.
+                    getResult: data => {
+                        const dsKey = r2.ppGetSelectedDataset().key
+                        data = r2.ppCreateDatasetFromFileList(dsKey, data)
                         this.setSelectedDataset(null, data)
-                        //
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
+                    },
+                    getApi: (key, me = this.zones.getDataset) => {
+                        const dsKey = r2.ppGetSelectedDataset().key
+                        if (dsKey === 'POOL') {
+                            key = 'r2d2-pp-get-files'
+                        }
+                        return me.requests[key].api
                     },
                     sendFormEventKey: 'sendform--get-dataset',
                     selected: r2.ppGetSelectedFile().key,
@@ -147,7 +153,7 @@ export default {
                 },
                 startChangeMetadata: {
                     id: 'r2d2-pp-start-change-metadata',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: false,
                         showResultList: false
@@ -163,7 +169,7 @@ export default {
                 },
                 changeMetadata: {
                     id: 'r2d2-pp-change-metadata',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
@@ -183,7 +189,7 @@ export default {
                 createDataset: {
                     // TODO refresh ds-list after creation
                     id: 'r2d2-pp-create-dataset',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
@@ -205,7 +211,7 @@ export default {
                 },
                 uploadFile: {
                     id: 'r2d2-pp-chunk-upload-file',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: false,
                         showResultList: false,
@@ -217,7 +223,7 @@ export default {
                 },
                 inspectFile: {
                     id: 'r2d2-pp-inspect-file',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: false,
                         showResultList: false,
@@ -231,7 +237,7 @@ export default {
                 // r2d2-pp-get-file
                 updateFile: {
                     id: 'r2d2-pp-update-file',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
@@ -243,7 +249,7 @@ export default {
                 },
                 downloadFile: {
                     id: 'r2d2-pp-download-file',
-                    requests: r2.ppGetRequests(),
+                    requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
@@ -340,7 +346,7 @@ export default {
         async loadData() {
             const requests = await r2.ppGetRequests()
             _.each(this.zones, (cfg, key) => {
-                cfg.requests[cfg.id] = requests[cfg.id]
+                cfg.requests = requests
             })
             this.update()
         },

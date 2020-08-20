@@ -60,9 +60,9 @@
         }
     },
     "requests": {
-        "r2d2-pp-list-files": {
-            "label": "r2d2-pp-list-files",
-            "description": "Lists my files",
+        "r2d2-pp-get-files": {
+            "label": "r2d2-pp-get-files",
+            "description": "Lists my (pool) files",
             "api": {
                 "target": "{apiRoot}/files",
                 "method": "get",
@@ -701,7 +701,7 @@
                     "data": "cunky.binary",
                     "params": {
                         "part": "cunky.chunknumber"
-                    },                   
+                    },
                     "header-set": {
                         "Authorization": "auth.token",
                         "Content-Type": "cunky.contentType"
@@ -717,7 +717,7 @@
                     "data": null,
                     "params": {
                         "parts": "cunky.totalchunks"
-                    }, 
+                    },
                     "header-set": {
                         "Authorization": "auth.token"
                     }
@@ -787,7 +787,8 @@
             "label": "r2d2-pp-download-file",
             "description": "Get (download) a single, real file",
             "api": {
-                "target": "{apiRoot}/datasets/{dataset-id}/{version-number}/files/{file-id}",
+                "targetVnumIncluded": "{apiRoot}/datasets/{dataset-id}/{version-number}/files/{file-id}",
+                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
                 "method": "get",
                 "responseTypeXX": "blob (works also)",
                 "responseType": "arraybuffer",
@@ -810,7 +811,8 @@
                 "version-number": {
                     "type": "dropdown",
                     "options": [1, 2, 3, 4],
-                    "selected": 0
+                    "selected": 0,
+                    "addToForm": false
                 },
                 "file-name": {
                     "type": "value-cell",
