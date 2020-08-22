@@ -9,8 +9,13 @@
                     :label="item.type === 'button' ? null : item.label"
                     :label-for="item.key"
                     :description="item.description"
+                    :class="item.__strc ? item.__strc.class : ''"
                 >
-                    <div v-if="item.type === 'SP'" class="seperator"></div>
+                    <div v-if="item.type === 'SP'" class="sp">
+                        <div class="line"></div>
+                        <div class="label">{{item.spLabel}}</div>
+                    </div>
+
                     <b-input-group v-if="item.component === 'r2-chunky'">
                         <r2-chunky :config="item" :form="request.form" />
                     </b-input-group>
@@ -131,7 +136,7 @@ export default {
     },
     mounted() {
         // console.log('FC:mounted +++ this.request = ', this.request)
-        // console.log('FC:mounted this.request.form = ', this.request.form)
+        console.log('FC:mounted this.request.form = ', this.request.form)
     },
     methods: {
         update(updateKey = 'uKey') {
@@ -183,7 +188,7 @@ export default {
 .form-elements {
     // TEST ON
     height: 100px;
-    .seperator{
+    .seperator {
         width: 200px;
         border: 1px solid rgb(77, 77, 77);
         margin: 5px 0 5px 0;

@@ -276,35 +276,6 @@ const R2D2DataHandler = function() {
             // console.log('SCAN: pre, key, value = ', pre, key, value)
         }
 
-        const getFormItem = (tree, value, args) => {
-            const path = tree.reduce((acc, val) => (_.isString(val) ? `${acc}.${val}` : acc))
-            // console.log('getFormat: path = ', path)
-            const res = _.get(schema, path)
-            const key = tree.join('--')
-            const defaultItem = {
-                type: 'input',
-                label: tree.join('.')
-            }
-            let item = res && _.isPlainObject(res.__0) ? res.__0 : defaultItem
-            item = _.cloneDeep(item)
-            const add = {
-                __strc: {
-                    level: args.level,
-                    parent: args.parent,
-                    index: args.index
-                },
-                selected: value,
-                key,
-                sendKey: key, // ??
-                label: tree.join('.') // TEST
-            }
-            item = { ...item, ...add }
-            if (item.type === 'dropdown') {
-                item = globals.setupDropdownFormCell(item)
-            }
-            return item
-        }
-
         // TESTDATA
         const metadata = {
             title: 'test metadata',
@@ -317,7 +288,7 @@ const R2D2DataHandler = function() {
                         {
                             id: null,
                             organization: '',
-                            department: 'department 1'
+                            department: 0 // select by index test
                         }
                     ]
                 },
@@ -408,7 +379,6 @@ const R2D2DataHandler = function() {
         const sortingTree = []
         const createSortingTree = (source = {}, target = []) => {
             _.each(source, (obj, key) => {
-                // console.log('CST: key = ', key)
                 if (key !== '__0') {
                     const node = { key }
                     if (Object.keys(obj).length <= 1) {
@@ -427,12 +397,10 @@ const R2D2DataHandler = function() {
             let node
             if (_.isArray(source) && _.isPlainObject(source[0])) {
                 _.each(source, (val, key) => {
-                    // console.log('SRD: key = ', key)
                     node = { key, sub: [] }
                     target[key] = node
                     sortRawDataByTree(val, target[key].sub, reference)
                 })
-                // console.log('SRD: target = ', target)
             } else {
                 _.each(source, (val, key) => {
                     const index = _.findIndex(reference, { key: key })
@@ -452,8 +420,42 @@ const R2D2DataHandler = function() {
             }
         }
 
+        let sortedDataWithLayoutElements = []
+
+        const addLayoutElements = (source, target) => {
+            _.each(source, (node) => {
+                if (node.sub) {
+                    const start = { layout: 'start', label: 'Start' }
+                    const end = { layout: 'end', label: 'End' }
+                    const add = { layout: 'add', label: 'Add' }
+                    node.sub = [start, ...node.sub, end, add]
+                    const targetNode = { key: node.key, sub: [] }
+                    target.push(targetNode)
+                    addLayoutElements(node.sub, targetNode.sub)
+                } else if (node.layout) {
+                    target.push({ layout: node.layout })
+                } else {
+                    target.push({ key: node.key, value: node.value })
+                }
+            })
+        }
+
         // TODO implement a recursive filter for undefined values
         // happens when raw input data vs. schema keys missing
+
+        const getLayoutItem = (tree, args) => {
+            const item = {
+                type: 'SP',
+                label: '',
+                spLabel: tree.join('.'),
+                __strc: {
+                    level: args.level,
+                    class: `level-${args.level}`,
+                    tree
+                }
+            }
+            return item
+        }
 
         let form = {}
         const scanAndCreateForm = (node, level = 1, tree = []) => {
@@ -466,23 +468,87 @@ const R2D2DataHandler = function() {
                     if (obj.sub) {
                         scanAndCreateForm(obj.sub, level + 1, tree)
                     } else {
-                        const item = getFormItem(tree, obj.value, {
-                            level
-                        })
-                        const path = tree.reduce((acc, val) => `${acc}.${val.toString()}`)
-                        form[path] = item
+                        let item
+                        if (obj.layout) {
+                            tree.pop()
+                            let add = true
+                            item = null
+                            if (_.isNumber(_.last(tree))) {
+                                if (obj.layout === 'add') {
+                                    add = false
+                                }
+                            }
+                            if (add) {
+                                tree.push(obj.layout)
+                                item = getLayoutItem(tree, { level })
+                            }
+                        } else {
+                            item = getFormItem(tree, obj.value, {
+                                level
+                            })
+                        }
+                        if (item) {
+                            const path = tree.reduce((acc, val) => `${acc}.${val.toString()}`)
+                            form[path] = item
+                        }
                     }
                 }
             })
         }
 
+        const getFormItem = (tree, value, args) => {
+            const path = tree.reduce((acc, val) => (_.isString(val) ? `${acc}.${val}` : acc))
+            // console.log('getFormat: path = ', path)
+            const res = _.get(schema, path)
+            const key = tree.join('--')
+            const defaultItem = {
+                type: 'input',
+                label: tree.join('.')
+            }
+            let item = res && _.isPlainObject(res.__0) ? res.__0 : defaultItem
+            item = _.cloneDeep(item)
+            const add = {
+                __strc: {
+                    level: args.level,
+                    // parent: args.parent,
+                    // index: args.index,
+                    class: `level-${args.level}`,
+                    tree
+                },
+                selected: value,
+                key,
+                sendKey: key, // ??
+                label: tree
+                    .join('.')
+                    .split('.')
+                    .pop() // TEST
+            }
+            item = { ...item, ...add }
+
+            if (item.type === 'dropdown') {
+                item = globals.setupDropdownFormCell(item)
+            } else {
+                // MOCK just remove the annoying bootstrap propz error :-((
+                item.selected = _.isArray(item.selected) ? item.selected.join(',') : item.selected
+            }
+            if (['SPACER-S', 'SPACER-E'].includes(_.last(tree))) {
+                const tr = [...tree]
+                tr.pop()
+                item.type = 'SP'
+                item.label = ''
+                item.spLabel = tr.join('.')
+                item.key = item.sendKey = null
+            }
+
+            return item
+        }
+
         createSortingTree(schema, sortingTree)
         sortRawDataByTree(metadata, sortedData, sortingTree)
-        // console.log('SRT: sortedData = ', sortedData)
-        scanAndCreateForm(sortedData)
-        // console.log('obj:fc form = ', form)
-        // this.getForm = () => form
-        this.getForm = () => {} // TEST ON
+        addLayoutElements(sortedData, sortedDataWithLayoutElements)
+        scanAndCreateForm(sortedDataWithLayoutElements)
+        this.getForm = () => form
+        // this.getForm = () => {} // TEST ON
     }
     this.getMetaFormHandler = () => new MetaFormHandler()
 
@@ -862,4 +928,5 @@ const R2D2DataHandler = function() {
         new ChunkFileUploadHandler(file, options)
     }
 }
+
 export default R2D2DataHandler
