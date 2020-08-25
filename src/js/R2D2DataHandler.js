@@ -267,17 +267,6 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++
 
     const MetaFormHandler = function() {
-        const printout = (lv, key, value, $tree = null) => {
-            let pre = ''
-            while (lv--) {
-                pre += '-'
-            }
-            pre += ' '
-            // console.log('SCAN: ---------------  ')
-            // console.log('SCAN: pre, tree = ', pre, $tree)
-            // console.log('SCAN: pre, key, value = ', pre, key, value)
-        }
-
         // TESTDATA
         const metadata = {
             title: 'test metadata',
@@ -421,8 +410,6 @@ const R2D2DataHandler = function() {
                 })
             } else {
                 _.each(source, (val, key) => {
-                    // console.log('SCRX: key = ', key)
-                    //
                     const index = _.findIndex(reference, { key: key })
                     if (_.isArray(val) && _.isPlainObject(val[0])) {
                         node = { key, sub: [] }
@@ -438,6 +425,24 @@ const R2D2DataHandler = function() {
                     }
                 })
             }
+        }
+
+        // this holds the index data of all levels
+        // needed to recursive detect when a list ends
+        let indexTree = {}
+        const createIndexTree = (source, parentTree = null) => {
+            _.each(source, node => {
+                if (node.sub) {
+                    const key = parentTree ? `${parentTree}.${node.key}` : node.key
+                    if (_.isString(node.key)) {
+                        indexTree[key] = {
+                            length: node.sub.length,
+                            index: 0
+                        }
+                    }
+                    createIndexTree(node.sub, key)
+                }
+            })
         }
 
         let sortedDataWithLayoutElements = []
@@ -481,7 +486,6 @@ const R2D2DataHandler = function() {
             }
             return item
         }
-        
 
         const getTree = tree => {
             tree = [...tree]
@@ -500,12 +504,6 @@ const R2D2DataHandler = function() {
 
         let form = {}
         const scanAndCreateForm = (node, level = 1, tree = []) => {
-            // console.log('scanAndCreateForm: ++++ node = ', node)
-            // console.log('scanAndCreateForm: ++++ node.parent = ', node.parent)
-            // console.log('scanAndCreateForm: ++++ node.length = ', node.length)
-            // console.log('scanAndCreateForm: parent = ', parent)
-            // console.log('scanAndCreateForm: tree = ', tree)
-            let strcPath = null
             if (tree.length > 0) {
                 getTree(tree).objectPath
                 strcPath = tree.reduce((acc, val) => (isNaN(val) ? `${acc}.${val}` : acc))
@@ -525,18 +523,22 @@ const R2D2DataHandler = function() {
                             const actionDef = _.get(schema, `${getTree(tree).objectPath}.__0`)
                             const isListElement = _.isNumber(_.last(tree))
                             if (actionDef && actionDef.dynamicList) {
-                                console.log('SCR:fc isListElement = ',isListElement)
-                                console.log('SCR:fc obj.layout = ',obj.layout)
                                 if (isListElement) {
                                     if (obj.layout === 'listStart') {
-                                        // items.push(getLayoutItem(tree, { level, startList: true, removeList: true, treeAdd: '_START' }))
                                         items.push(getLayoutItem(tree, { level, startList: true, treeAdd: '_START' }))
                                         items.push(getLayoutItem(tree, { level, removeList: true, treeAdd: '_REMOVE' }))
                                     }
                                     if (obj.layout === 'listEnd') {
                                         items.push(getLayoutItem(tree, { level, endList: true, treeAdd: '_END' }))
-                                        items.push(getLayoutItem(tree, { level, addList: true, treeAdd: '_ADD' }))
-                                        console.log('SCR:fc items = ',items)
+                                        const idx = getTree(tree).arrayPath0
+                                        indexTree[idx].index++
+                                        // if the indexTree.index condition is set, the add tags only appear 
+                                        // at the end of a list
+                                        // otherwise its set on end of every block
+                                        // TODO check usability!
+                                        if (true || indexTree[idx].index === indexTree[idx].length) {
+                                            items.push(getLayoutItem(tree, { level, addList: true, treeAdd: '_ADD' }))
+                                        }
                                     }
                                 }
                             } else {
@@ -603,20 +605,16 @@ const R2D2DataHandler = function() {
             return item
         }
 
+        // 1. create a sorting tree by schema
         createSortingTree(schema, sortingTree)
+        // 2. move all raw data into correct order by schema
         sortRawDataByTree(metadata, sortedData, sortingTree)
-        console.log('obj:fc sortedData = ', sortedData)
-
+        // 3. create the index-tree for list-length tracking by following recursive functions
+        createIndexTree(sortedData)
+        // 4. add the basic layout tags (list start/end)
         addLayoutElements(sortedData, sortedDataWithLayoutElements)
-        console.log('obj:fc sortedDataWithLayoutElements = ', sortedDataWithLayoutElements)
-
+        // 5. create the final form and add the add/remove tags (uses the index-tree)
         scanAndCreateForm(sortedDataWithLayoutElements)
-        console.log('obj:fc form = ', form)
-
-        _.each(form, (value, key) => {
-            console.log('f:fc key = ', key)
-        })
-
         this.getForm = () => form
         // this.getForm = () => {} // TEST ON
     }
