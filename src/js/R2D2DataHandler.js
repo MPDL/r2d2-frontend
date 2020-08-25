@@ -1,3 +1,5 @@
+import { _ } from 'core-js'
+
 const R2D2DataHandler = function() {
     //
     const ppStates = {
@@ -306,6 +308,11 @@ const R2D2DataHandler = function() {
                             id: 'zzk-22',
                             organization: 'fzdgduzfg',
                             department: 'area 51'
+                        },
+                        {
+                            id: 'msg-5555',
+                            organization: 'tizoiho',
+                            department: '42'
                         }
                     ]
                 }
@@ -350,10 +357,18 @@ const R2D2DataHandler = function() {
             genres: {},
             keywords: {},
             authors: {
+                __0: {
+                    type: 'input',
+                    label: 'title',
+                    dynamicList: true
+                },
                 givenName: {},
                 familyName: {},
                 nameIdentifier: {},
                 affiliations: {
+                    __0: {
+                        dynamicList: true
+                    },
                     department: {
                         __0: {
                             // TESTDATA
@@ -368,6 +383,9 @@ const R2D2DataHandler = function() {
                 }
             },
             correspondingPapers: {
+                __0: {
+                    dynamicList: true
+                },
                 title: {},
                 url: {},
                 type: {},
@@ -403,6 +421,8 @@ const R2D2DataHandler = function() {
                 })
             } else {
                 _.each(source, (val, key) => {
+                    // console.log('SCRX: key = ', key)
+                    //
                     const index = _.findIndex(reference, { key: key })
                     if (_.isArray(val) && _.isPlainObject(val[0])) {
                         node = { key, sub: [] }
@@ -423,12 +443,11 @@ const R2D2DataHandler = function() {
         let sortedDataWithLayoutElements = []
 
         const addLayoutElements = (source, target) => {
-            _.each(source, (node) => {
+            _.each(source, node => {
                 if (node.sub) {
-                    const start = { layout: 'start', label: 'Start' }
-                    const end = { layout: 'end', label: 'End' }
-                    const add = { layout: 'add', label: 'Add' }
-                    node.sub = [start, ...node.sub, end, add]
+                    const start = { layout: 'listStart', label: 'Start' }
+                    const end = { layout: 'listEnd', label: 'End' }
+                    node.sub = [start, ...node.sub, end]
                     const targetNode = { key: node.key, sub: [] }
                     target.push(targetNode)
                     addLayoutElements(node.sub, targetNode.sub)
@@ -444,10 +463,16 @@ const R2D2DataHandler = function() {
         // happens when raw input data vs. schema keys missing
 
         const getLayoutItem = (tree, args) => {
+            tree = args.treeAdd ? [...tree, args.treeAdd] : [...tree]
+
             const item = {
-                type: 'SP',
+                type: 'LY',
                 label: '',
                 spLabel: tree.join('.'),
+                startList: args.startList === true,
+                endList: args.endList === true,
+                addList: args.addList === true,
+                removeList: args.removeList === true,
                 __strc: {
                     level: args.level,
                     class: `level-${args.level}`,
@@ -456,9 +481,35 @@ const R2D2DataHandler = function() {
             }
             return item
         }
+        
+
+        const getTree = tree => {
+            tree = [...tree]
+            const res = {
+                objectPath: tree.reduce((acc, val) => (isNaN(val) ? `${acc}.${val}` : acc)),
+                arrayPath: tree.reduce((acc, val) => `${acc}.${val.toString()}`)
+            }
+            res.arrayPath0 = res.arrayPath
+            if (_.isNumber(_.last(tree))) {
+                tree.pop()
+                res.tree0 = tree
+                res.arrayPath0 = tree.reduce((acc, val) => `${acc}.${val.toString()}`)
+            }
+            return res
+        }
 
         let form = {}
         const scanAndCreateForm = (node, level = 1, tree = []) => {
+            // console.log('scanAndCreateForm: ++++ node = ', node)
+            // console.log('scanAndCreateForm: ++++ node.parent = ', node.parent)
+            // console.log('scanAndCreateForm: ++++ node.length = ', node.length)
+            // console.log('scanAndCreateForm: parent = ', parent)
+            // console.log('scanAndCreateForm: tree = ', tree)
+            let strcPath = null
+            if (tree.length > 0) {
+                getTree(tree).objectPath
+                strcPath = tree.reduce((acc, val) => (isNaN(val) ? `${acc}.${val}` : acc))
+            }
             _.each(node, obj => {
                 if (obj) {
                     while (tree.length > level) {
@@ -466,31 +517,43 @@ const R2D2DataHandler = function() {
                     }
                     tree[level - 1] = obj.key
                     if (obj.sub) {
-                        scanAndCreateForm(obj.sub, level + 1, tree)
+                        scanAndCreateForm(obj.sub, level + 1, tree, obj)
                     } else {
-                        let item
+                        const items = []
                         if (obj.layout) {
                             tree.pop()
-                            let add = true
-                            item = null
-                            if (_.isNumber(_.last(tree))) {
-                                if (obj.layout === 'add') {
-                                    add = false
+                            const actionDef = _.get(schema, `${getTree(tree).objectPath}.__0`)
+                            const isListElement = _.isNumber(_.last(tree))
+                            if (actionDef && actionDef.dynamicList) {
+                                console.log('SCR:fc isListElement = ',isListElement)
+                                console.log('SCR:fc obj.layout = ',obj.layout)
+                                if (isListElement) {
+                                    if (obj.layout === 'listStart') {
+                                        // items.push(getLayoutItem(tree, { level, startList: true, removeList: true, treeAdd: '_START' }))
+                                        items.push(getLayoutItem(tree, { level, startList: true, treeAdd: '_START' }))
+                                        items.push(getLayoutItem(tree, { level, removeList: true, treeAdd: '_REMOVE' }))
+                                    }
+                                    if (obj.layout === 'listEnd') {
+                                        items.push(getLayoutItem(tree, { level, endList: true, treeAdd: '_END' }))
+                                        items.push(getLayoutItem(tree, { level, addList: true, treeAdd: '_ADD' }))
+                                        console.log('SCR:fc items = ',items)
+                                    }
                                 }
+                            } else {
+                                items.push(getLayoutItem(tree, { level }))
                             }
-                            if (add) {
-                                tree.push(obj.layout)
-                                item = getLayoutItem(tree, { level })
-                            }
+                            tree.push(obj.layout)
                         } else {
-                            item = getFormItem(tree, obj.value, {
-                                level
-                            })
+                            items.push(
+                                getFormItem(tree, obj.value, {
+                                    level
+                                })
+                            )
                         }
-                        if (item) {
-                            const path = tree.reduce((acc, val) => `${acc}.${val.toString()}`)
+                        _.each(items, item => {
+                            const path = item.__strc.tree.reduce((acc, val) => `${acc}.${val.toString()}`)
                             form[path] = item
-                        }
+                        })
                     }
                 }
             })
@@ -498,7 +561,6 @@ const R2D2DataHandler = function() {
 
         const getFormItem = (tree, value, args) => {
             const path = tree.reduce((acc, val) => (_.isString(val) ? `${acc}.${val}` : acc))
-            // console.log('getFormat: path = ', path)
             const res = _.get(schema, path)
             const key = tree.join('--')
             const defaultItem = {
@@ -510,8 +572,6 @@ const R2D2DataHandler = function() {
             const add = {
                 __strc: {
                     level: args.level,
-                    // parent: args.parent,
-                    // index: args.index,
                     class: `level-${args.level}`,
                     tree
                 },
@@ -545,8 +605,18 @@ const R2D2DataHandler = function() {
 
         createSortingTree(schema, sortingTree)
         sortRawDataByTree(metadata, sortedData, sortingTree)
+        console.log('obj:fc sortedData = ', sortedData)
+
         addLayoutElements(sortedData, sortedDataWithLayoutElements)
+        console.log('obj:fc sortedDataWithLayoutElements = ', sortedDataWithLayoutElements)
+
         scanAndCreateForm(sortedDataWithLayoutElements)
+        console.log('obj:fc form = ', form)
+
+        _.each(form, (value, key) => {
+            console.log('f:fc key = ', key)
+        })
+
         this.getForm = () => form
         // this.getForm = () => {} // TEST ON
     }

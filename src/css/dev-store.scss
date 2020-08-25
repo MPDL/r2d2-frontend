@@ -213,41 +213,57 @@ input:-ms-input-placeholder {
             .form-group {
                 width: 400px;
                 &.level-1 {
-                    margin-left: calc(#{$dx}  * 0) !important;
+                    margin-left: calc(#{$dx} * 0) !important;
                 }
                 &.level-2 {
-                    margin-left: calc(#{$dx}  * 1) !important;
+                    margin-left: calc(#{$dx} * 1) !important;
                 }
                 &.level-3 {
-                    margin-left: calc(#{$dx}  * 2) !important;
+                    margin-left: calc(#{$dx} * 2) !important;
                 }
                 &.level-4 {
-                    margin-left: calc(#{$dx}  * 3) !important;
+                    margin-left: calc(#{$dx} * 3) !important;
                 }
                 &.level-5 {
-                    margin-left: calc(#{$dx}  * 4) !important;
+                    margin-left: calc(#{$dx} * 4) !important;
                 }
                 &.level-6 {
-                    margin-left: calc(#{$dx}  * 5) !important;
+                    margin-left: calc(#{$dx} * 5) !important;
                 }
             }
-            .sp {
+            .layout {
                 width: 500px;
                 line-height: 20px;
+                display: flex;
                 .line {
                     width: 50px;
-                    border: 1px solid rgb(126, 130, 136);
+                    border: 1px solid #7e8288;
                     border-bottom: none;
-                    margin: 5px 0 5px 0;
-                    float: left;
+                    height: 1px;
                     position: relative;
-                    top: 6px;
+                    margin-right: 10px;
+                    margin-top: 10px;
                 }
                 .label {
-                    position: relative;
-                    left: 10px;
-                    color: #38697b;
+                    margin-right: 10px;
+                    color: #4b9dbc;
                     font-size: 14px;
+                }
+                .action {
+                    height: 20px;
+                    button {
+                        font-size: 10px;
+                        font-weight: 500;
+                        margin-right: 5px;
+                        margin-top: -3px;
+                        padding: 0.2rem 0.4rem;
+                        &.add {
+                            background-color: #6ad45f;
+                        }
+                        &.remove {
+                            background-color: #ff9b9b;
+                        }
+                    }
                 }
             }
         }

@@ -11,9 +11,17 @@
                     :description="item.description"
                     :class="item.__strc ? item.__strc.class : ''"
                 >
-                    <div v-if="item.type === 'SP'" class="sp">
+                    <div v-if="item.type === 'LY'" class="layout">
                         <div class="line"></div>
-                        <div class="label">{{item.spLabel}}</div>
+                        <div class="label">{{ item.spLabel }}</div>
+                        <div class="action">
+                            <b-button v-if="item.addList" class="add" size="sm" @click="onClickActionButton('add')">
+                                (+) Add
+                            </b-button>
+                            <b-button v-if="item.removeList" class="remove" size="sm" @click="onClickActionButton('remove')">
+                                (-) Remove
+                            </b-button>
+                        </div>
                     </div>
 
                     <b-input-group v-if="item.component === 'r2-chunky'">
@@ -152,6 +160,13 @@ export default {
                 key
             })
         },
+        onClickActionButton(key) {
+            console.log('FC:onClickActionButton key = ', key)
+            // this.$emit('onClickButton', {
+            //     key
+            // })
+        },
+
         getApi(key) {
             return this.request.api
         },
