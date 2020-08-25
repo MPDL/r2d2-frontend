@@ -504,10 +504,6 @@ const R2D2DataHandler = function() {
 
         let form = {}
         const scanAndCreateForm = (node, level = 1, tree = []) => {
-            if (tree.length > 0) {
-                getTree(tree).objectPath
-                strcPath = tree.reduce((acc, val) => (isNaN(val) ? `${acc}.${val}` : acc))
-            }
             _.each(node, obj => {
                 if (obj) {
                     while (tree.length > level) {
