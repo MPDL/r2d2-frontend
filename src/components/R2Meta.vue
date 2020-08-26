@@ -1,6 +1,6 @@
 <template>
     <div class="meta-component">
-        <FormCell class="form" :request="metaFormConfig"></FormCell>
+        <FormCell class="form" :key="uKey" :request="metaFormConfig" @onClickFormAction="onFormAction"></FormCell>
     </div>
 </template>
 
@@ -18,18 +18,28 @@ export default {
         return {
             metaFormConfig: {
                 form: {}
-            }
+            },
+            uKey: 0
         }
     },
     created() {
         r2 = globals.getDataHandler('r2d2')
         this.metaFormConfig.form = r2.getMetaFormHandler().getForm()
-
     },
     mounted() {
         this.formKey++
     },
-    methods: {}
+    methods: {
+        update(updateKey = 'uKey') {
+            this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
+        },
+        onFormAction(evt) {
+            console.log('MT:onFormAction evt = ', evt)
+            r2.getMetaFormHandler().modifyForm(evt)
+            this.metaFormConfig.form = r2.getMetaFormHandler().getForm()
+            this.update()
+        }
+    }
 }
 </script>
 

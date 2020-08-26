@@ -15,10 +15,15 @@
                         <div class="line"></div>
                         <div class="label">{{ item.spLabel }}</div>
                         <div class="action">
-                            <b-button v-if="item.addList" class="add" size="sm" @click="onClickActionButton(item)">
+                            <b-button v-if="item.addBlock" class="add" size="sm" @click="onClickActionButton(item)">
                                 (+) Add
                             </b-button>
-                            <b-button v-if="item.removeList" class="remove" size="sm" @click="onClickActionButton(item)">
+                            <b-button
+                                v-if="item.removeBlock"
+                                class="remove"
+                                size="sm"
+                                @click="onClickActionButton(item)"
+                            >
                                 (-) Remove
                             </b-button>
                         </div>
@@ -162,6 +167,18 @@ export default {
         },
         onClickActionButton(item) {
             console.log('FC:onClickActionButton item = ', item)
+            console.log('FC:onClickActionButton item.__strc = ', item.__strc)
+            console.log('FC:onClickActionButton item.__strc.tree = ', item.__strc.tree)
+            console.log('FC:onClickActionButton item.addBlock = ', item.addBlock)
+            console.log('FC:onClickActionButton item.removeBlock = ', item.removeBlock)
+
+            const action = item.addBlock ? 'addBlock' : 'removeBlock'
+
+            this.$emit('onClickFormAction', {
+                action,
+                tree: item.__strc.tree
+            })
+
             // this.$emit('onClickButton', {
             //     key
             // })

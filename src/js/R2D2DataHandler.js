@@ -1,4 +1,5 @@
 import { _ } from 'core-js'
+import { _forEachName } from 'gsap/gsap-core'
 
 const R2D2DataHandler = function() {
     //
@@ -272,8 +273,8 @@ const R2D2DataHandler = function() {
             title: 'test metadata',
             authors: [
                 {
-                    givenName: 'Markus 1',
-                    familyName: 'Haarländer 2',
+                    givenName: 'author 1',
+                    familyName: 'foo 1',
                     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
                     affiliations: [
                         {
@@ -284,8 +285,8 @@ const R2D2DataHandler = function() {
                     ]
                 },
                 {
-                    givenName: 'Markus 2',
-                    familyName: 'Haarländer 2',
+                    givenName: 'author 2',
+                    familyName: 'foo 2',
                     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
                     affiliations: [
                         {
@@ -445,8 +446,6 @@ const R2D2DataHandler = function() {
             })
         }
 
-        let sortedDataWithLayoutElements = []
-
         const addLayoutElements = (source, target) => {
             _.each(source, node => {
                 if (node.sub) {
@@ -474,10 +473,10 @@ const R2D2DataHandler = function() {
                 type: 'LY',
                 label: '',
                 spLabel: tree.join('.'),
-                startList: args.startList === true,
-                endList: args.endList === true,
-                addList: args.addList === true,
-                removeList: args.removeList === true,
+                startBlock: args.startBlock === true,
+                endBlock: args.endBlock === true,
+                addBlock: args.addBlock === true,
+                removeBlock: args.removeBlock === true,
                 __strc: {
                     level: args.level,
                     class: `level-${args.level}`,
@@ -493,16 +492,39 @@ const R2D2DataHandler = function() {
                 objectPath: tree.reduce((acc, val) => (isNaN(val) ? `${acc}.${val}` : acc)),
                 arrayPath: tree.reduce((acc, val) => `${acc}.${val.toString()}`)
             }
-            res.arrayPath0 = res.arrayPath
-            if (_.isNumber(_.last(tree))) {
-                tree.pop()
-                res.tree0 = tree
-                res.arrayPath0 = tree.reduce((acc, val) => `${acc}.${val.toString()}`)
+            //
+            const t0 = [...tree]
+            const val1 = t0.pop()
+            const val2 = t0.pop()
+            res.lastIndex = _.isNumber(val1) ? val1 : val2
+            res.lastKey = _.isString(val1) ? val1 : val2
+            //
+            const t1 = [...tree]
+            res.keyEndingTree = t1
+            res.keyEndingArrayPath = res.arrayPath
+            if (_.isNumber(_.last(t1))) {
+                t1.pop()
+                res.keyEndingTree = t1
+                res.keyEndingArrayPath = ''
+                if (t1.length > 0) {
+                    res.keyEndingArrayPath = t1.reduce((acc, val) => `${acc}.${val.toString()}`)
+                }
+            }
+            //
+            const t2 = [...tree]
+            res.indexEndingTree = t2
+            res.indexEndingArrayPath = res.arrayPath
+            if (_.isString(_.last(t2))) {
+                t2.pop()
+                res.indexEndingTree = t2
+                res.indexEndingArrayPath = ''
+                if (t2.length > 0) {
+                    res.indexEndingArrayPath = t2.reduce((acc, val) => `${acc}.${val.toString()}`)
+                }
             }
             return res
         }
 
-        let form = {}
         const scanAndCreateForm = (node, level = 1, tree = []) => {
             _.each(node, obj => {
                 if (obj) {
@@ -521,19 +543,22 @@ const R2D2DataHandler = function() {
                             if (actionDef && actionDef.dynamicList) {
                                 if (isListElement) {
                                     if (obj.layout === 'listStart') {
-                                        items.push(getLayoutItem(tree, { level, startList: true, treeAdd: '_START' }))
-                                        items.push(getLayoutItem(tree, { level, removeList: true, treeAdd: '_REMOVE' }))
+                                        items.push(getLayoutItem(tree, { level, startBlock: true, treeAdd: '_START' }))
+                                        items.push(
+                                            getLayoutItem(tree, { level, removeBlock: true, treeAdd: '_REMOVE' })
+                                        )
                                     }
                                     if (obj.layout === 'listEnd') {
-                                        items.push(getLayoutItem(tree, { level, endList: true, treeAdd: '_END' }))
-                                        const idx = getTree(tree).arrayPath0
+                                        items.push(getLayoutItem(tree, { level, endBlock: true, treeAdd: '_END' }))
+                                        const t = getTree(tree)
+                                        const idx = t.keyEndingArrayPath
                                         indexTree[idx].index++
-                                        // if the indexTree.index condition is set, the add tags only appear 
+                                        // if the indexTree.index condition is set, the add tags only appear
                                         // at the end of a list
                                         // otherwise its set on end of every block
                                         // TODO check usability!
                                         if (true || indexTree[idx].index === indexTree[idx].length) {
-                                            items.push(getLayoutItem(tree, { level, addList: true, treeAdd: '_ADD' }))
+                                            items.push(getLayoutItem(tree, { level, addBlock: true, treeAdd: '_ADD' }))
                                         }
                                     }
                                 }
@@ -601,20 +626,88 @@ const R2D2DataHandler = function() {
             return item
         }
 
-        // 1. create a sorting tree by schema
-        createSortingTree(schema, sortingTree)
-        // 2. move all raw data into correct order by schema
-        sortRawDataByTree(metadata, sortedData, sortingTree)
-        // 3. create the index-tree for list-length tracking by following recursive functions
-        createIndexTree(sortedData)
-        // 4. add the basic layout tags (list start/end)
-        addLayoutElements(sortedData, sortedDataWithLayoutElements)
-        // 5. create the final form and add the add/remove tags (uses the index-tree)
-        scanAndCreateForm(sortedDataWithLayoutElements)
+        const initialize = () => {
+            // 1. create a sorting tree by schema
+            createSortingTree(schema, sortingTree)
+            // 2. move all raw data into correct order by schema
+            sortRawDataByTree(metadata, sortedData, sortingTree)
+        }
+
+        let form = null
+        let sortedDataWithLayoutElements = null
+        //
+        const createNewForm = data => {
+            form = {}
+            sortedDataWithLayoutElements = []
+            const d = _.cloneDeep(data)
+            // 3. create the index-tree for list-length tracking by following recursive functions
+            createIndexTree(d)
+            // 4. add the basic layout tags (list start/end)
+            addLayoutElements(d, sortedDataWithLayoutElements)
+            // 5. create the final form and add the add/remove tags (uses the index-tree)
+            scanAndCreateForm(sortedDataWithLayoutElements)
+        }
+
+        initialize()
+        createNewForm(sortedData)
+
         this.getForm = () => form
         // this.getForm = () => {} // TEST ON
+
+        // add and remove form blocks
+        const removeBlock = tree => {
+            let t = [...tree]
+            let deleteIndex = null
+            while (t.length) {
+                deleteIndex = t.pop()
+                if (_.isNumber(deleteIndex)) {
+                    break
+                }
+            }
+            let deletePath = [...t, deleteIndex].reverse() // .join('.')
+            console.log('MT:removeBlock deletePath = ', deletePath)
+            //
+            const scanAndDelete = node => {
+                const key = deletePath.pop()
+
+                _.each(node, obj => {
+                    if (obj.key === key) {
+                        if (obj.sub) {
+                            if (deletePath.length < 2) {
+                                const deleteIndex = deletePath.pop()
+                                obj.sub.splice(deleteIndex, 1)
+                                console.log('MT:scanAndDelete DELETED IN deletePath = ', deletePath)
+                                console.log('MT:scanAndDelete DELETED IN deleteIndex = ', deleteIndex)
+                                console.log('MT:scanAndDelete DELETED IN obj.sub = ', obj.sub)
+                            } else {
+                                scanAndDelete(obj.sub)
+                            }
+                        }
+                    }
+                })
+            }
+            //
+            scanAndDelete(sortedData)
+            createNewForm(sortedData)
+            // TODO Re-Index all non-deleted items !!
+            console.log('MT:scanAndDelete sortedData AF = ', sortedData)
+            console.log('MT:scanAndDelete form AF = ', form)
+        }
+
+        this.modifyForm = args => {
+            if (args.action === 'removeBlock') {
+                removeBlock(args.tree)
+            }
+            console.log('MT:modifyForm args = ', args)
+        }
     }
-    this.getMetaFormHandler = () => new MetaFormHandler()
+    let metaFormHandler = null
+    this.getMetaFormHandler = () => {
+        if (!metaFormHandler) {
+            metaFormHandler = new MetaFormHandler()
+        }
+        return metaFormHandler
+    }
 
     // ++++++++++++++++++++++++++
     // +++++++ upload handler
