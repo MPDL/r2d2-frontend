@@ -1,5 +1,6 @@
 import { _ } from 'core-js'
 import { _forEachName } from 'gsap/gsap-core'
+import { _setDefaults } from 'gsap/gsap-core'
 
 const R2D2DataHandler = function() {
     //
@@ -278,6 +279,18 @@ const R2D2DataHandler = function() {
                     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
                     affiliations: [
                         {
+                            id: 'affy-1',
+                            organization: '',
+                            department: 1 // select by index test
+                        }
+                    ]
+                },
+                {
+                    givenName: 'author 2',
+                    familyName: 'foo 2',
+                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                    affiliationsXX: [
+                        {
                             id: null,
                             organization: '',
                             department: 0 // select by index test
@@ -285,8 +298,8 @@ const R2D2DataHandler = function() {
                     ]
                 },
                 {
-                    givenName: 'author 2',
-                    familyName: 'foo 2',
+                    givenName: 'author 3',
+                    familyName: 'foo 3',
                     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
                     affiliations: [
                         {
@@ -311,9 +324,7 @@ const R2D2DataHandler = function() {
             description: 'fourth try to create a dataset via drag',
             genres: ['g1', 'g2'],
             keywords: ['kw1', 'kw2'],
-            license: 'lcs 123',
-            language: ['de', 'ru'],
-            correspondingPapers: [
+            correspondingPapersVV: [
                 {
                     title: 'paper 1',
                     url: null,
@@ -328,7 +339,9 @@ const R2D2DataHandler = function() {
                     identifier: null,
                     identifierType: 'identifierType paper 2'
                 }
-            ]
+            ],
+            license: 'lcs 123',
+            language: ['de', 'ru']
         }
 
         // TESTDATA // TODO move to structure
@@ -365,18 +378,22 @@ const R2D2DataHandler = function() {
                             type: 'dropdown',
                             label: 'authors.affiliations.department TEST',
                             sendKey: '',
-                            options: ['a', 'b', 'c']
+                            options: ['a', 'b', 'c', 'd'],
+                            default: 2
                         }
                     },
                     organization: {},
-                    id: {}
+                    id: {
+                        __0: {
+                            default: '1234-oo'
+                        }
+                    }
                 }
             },
             correspondingPapers: {
                 __0: {
                     dynamicList: true
                 },
-                title: {},
                 url: {},
                 type: {},
                 identifier: {},
@@ -401,28 +418,60 @@ const R2D2DataHandler = function() {
         }
 
         let sortedData = []
-        const sortRawDataByTree = (source = {}, target = [], reference = []) => {
+        const sortRawDataByTree = (source = {}, target = [], reference = [], tree = []) => {
             let node
             if (_.isArray(source) && _.isPlainObject(source[0])) {
                 _.each(source, (val, key) => {
                     node = { key, sub: [] }
                     target[key] = node
-                    sortRawDataByTree(val, target[key].sub, reference)
+                    sortRawDataByTree(val, target[key].sub, reference, tree)
                 })
             } else {
+                const allNeededKeys = {}
+                let index = -1
+                _.each(reference, obj => {
+                    index++
+                    allNeededKeys[obj.key] = { index }
+                })
+                _.each(source, (val, key) => {
+                    delete allNeededKeys[key]
+                })
+                _.each(allNeededKeys, (obj, key) => {
+                    const path = tree.length > 0 ? `${tree.join('.')}.${key}` : key
+                    const ref = _.get(schema, path)
+                    if (ref && ref.__0 && ref.__0.dynamicList) {
+                        target[obj.index] = { key, sub: [{ key: 0, sub: [] }] }
+                        const tg = target[obj.index].sub[0].sub
+                        _.each(ref, (val2, key2) => {
+                            if (key2 !== '__0') {
+                                let value = null
+                                if (val2.__0 && !_.isNil(val2.__0.default)) {
+                                    value = val2.__0.default
+                                }
+                                tg.push({ key: key2, value })
+                            }
+                        })
+                    }
+                })
                 _.each(source, (val, key) => {
                     const index = _.findIndex(reference, { key: key })
-                    if (_.isArray(val) && _.isPlainObject(val[0])) {
-                        node = { key, sub: [] }
-                        target[index] = node
-                        sortRawDataByTree(val, target[index].sub, reference[index].sub)
-                    } else if (_.isPlainObject(val)) {
-                        node = { key, sub: [] }
-                        target[index] = node
-                        sortRawDataByTree(val, target[index].sub, reference)
-                    } else {
-                        node = { key, value: val }
-                        target[index] = node
+                    if (index > -1) {
+                        if (_.isArray(val) && _.isPlainObject(val[0])) {
+                            node = { key, sub: [] }
+                            target[index] = node
+                            const t1 = [...tree]
+                            t1.push(key)
+                            sortRawDataByTree(val, target[index].sub, reference[index].sub, t1)
+                        } else if (_.isPlainObject(val)) {
+                            node = { key, sub: [] }
+                            target[index] = node
+                            const t2 = [...tree]
+                            t2.push(key)
+                            sortRawDataByTree(val, target[index].sub, reference, t2)
+                        } else {
+                            node = { key, value: val }
+                            target[index] = node
+                        }
                     }
                 })
             }
@@ -543,6 +592,26 @@ const R2D2DataHandler = function() {
                             if (actionDef && actionDef.dynamicList) {
                                 if (isListElement) {
                                     if (obj.layout === 'listStart') {
+                                        const t = getTree(tree)
+                                        const idx = t.keyEndingArrayPath
+                                        if (indexTree[idx].index === 0) {
+                                            const t1 = [...tree]
+                                            t1.pop()
+                                            const lbl1 = getFormItem(t1, null, {
+                                                level: level - 2,
+                                                type: 'label',
+                                                label: t.lastKey
+                                            })
+                                            items.push(lbl1)
+                                        }
+
+                                        const lbl2 = getFormItem(tree, null, {
+                                            level: level - 1,
+                                            type: 'label',
+                                            label: `${t.lastKey}.${indexTree[idx].index}`
+                                        })
+                                        items.push(lbl2)
+
                                         items.push(getLayoutItem(tree, { level, startBlock: true, treeAdd: '_START' }))
                                         items.push(
                                             getLayoutItem(tree, { level, removeBlock: true, treeAdd: '_REMOVE' })
@@ -590,8 +659,9 @@ const R2D2DataHandler = function() {
                 type: 'input',
                 label: tree.join('.')
             }
-            let item = res && _.isPlainObject(res.__0) ? res.__0 : defaultItem
+            let item = res && _.isPlainObject(res.__0) && _.isString(res.__0.type) ? res.__0 : defaultItem
             item = _.cloneDeep(item)
+
             const add = {
                 __strc: {
                     level: args.level,
@@ -608,21 +678,23 @@ const R2D2DataHandler = function() {
             }
             item = { ...item, ...add }
 
+            // overrides
+            if (_.isString(args.type)) {
+                item.type = args.type
+            }
+            if (_.isString(args.label)) {
+                item.label = args.label
+            }
+            //
+            item.label = `${item.label}:` // mock hardcoded, TODO: generate i18n id here!
+            //
             if (item.type === 'dropdown') {
                 item = globals.setupDropdownFormCell(item)
             } else {
                 // MOCK just remove the annoying bootstrap propz error :-((
                 item.selected = _.isArray(item.selected) ? item.selected.join(',') : item.selected
             }
-            if (['SPACER-S', 'SPACER-E'].includes(_.last(tree))) {
-                const tr = [...tree]
-                tr.pop()
-                item.type = 'SP'
-                item.label = ''
-                item.spLabel = tr.join('.')
-                item.key = item.sendKey = null
-            }
-
+            //
             return item
         }
 
