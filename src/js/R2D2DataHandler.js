@@ -536,16 +536,24 @@ const R2D2DataHandler = function() {
         }
 
         const getTree = tree => {
-            tree = [...tree]
+            tree = _.isString(tree) ? tree.split('.') : [...tree]
+            _.each(tree, (val, index) => {
+                tree[index] = isNaN(parseInt(val)) ? val : parseInt(val)
+            })
+
             const res = {
+                tree: [...tree],
                 objectPath: tree.reduce((acc, val) => (isNaN(val) ? `${acc}.${val}` : acc)),
                 arrayPath: tree.reduce((acc, val) => `${acc}.${val.toString()}`)
             }
+
             //
             const t0 = [...tree]
             const val1 = t0.pop()
             const val2 = t0.pop()
-            res.lastIndex = _.isNumber(val1) ? val1 : val2
+            // const num1 = parseInt(val1)
+            // const num2 = parseInt(val2)
+            res.lastIndex = !isNaN(val1) ? val1 : !isNaN(val2) ? val2 : -1
             res.lastKey = _.isString(val1) ? val1 : val2
             //
             const t1 = [...tree]
@@ -571,6 +579,7 @@ const R2D2DataHandler = function() {
                     res.indexEndingArrayPath = t2.reduce((acc, val) => `${acc}.${val.toString()}`)
                 }
             }
+            // res.endsWith = isNaN(parseInt([...tree].pop())) ? 'key' : 'index'
             return res
         }
 
@@ -726,8 +735,173 @@ const R2D2DataHandler = function() {
         this.getForm = () => form
         // this.getForm = () => {} // TEST ON
 
+        const collectData = () => {
+            const res = {}
+            let depth = 0
+            let cnt = 0
+
+            const filteredForm = {}
+            const filter = {
+                _ADD: true,
+                _END: true,
+                _REMOVE: true,
+                _START: true,
+                listStart: true,
+                listEnd: true
+                
+            }
+            _.each(form, (obj, key) => {
+                const t = getTree(key)
+                // if (t.tree[0] === 'authors') {
+                    if (!filter[t.lastKey]) {
+                        filteredForm[key] = obj
+                    }
+                // }
+            })
+
+            // const f1 = {
+            //     'authors.2.affiliations.1.department.2.name': { selected: 'name-1234' },
+            //     'authors.2.affiliations.1.department.2.orgId': { selected: 'org-id-1234' }
+            // }
+
+            console.log('obj:fc filteredForm = ', filteredForm)
+            // return
+
+            _.each(filteredForm, (obj, key) => {
+                // console.log('collectData: each key, obj = ', key, obj)
+                const t = getTree(key).tree.reverse()
+
+                // const writeNode = (node) => {
+                //     console.log('obj:arrow value = ', value)
+                //   }
+
+                // if (key === 'authors.0.givenName') {
+                console.log('collectData:EACH +++++++++ key = ', key)
+                console.log('collectData:EACH obj = ', obj)
+                console.log('collectData:EACH t = ', t)
+                let path = null
+                // let target = res
+                while (t.length) {
+                    const p1 = t.pop()
+                    const p2 = t.pop()
+                    // path = path ? `${path}.${p1}` : p1
+                    path = path ? `${path}.${p1}` : p1
+                    console.log('collectData:WHILE path xxxx IN = ', path)
+                    console.log('collectData:WHILE  p1. p2 = ', p1, p2)
+
+                    let tg = _.get(res, path)
+                    console.log('collectData:WHILE tg BF = ', tg)
+
+                    if (_.isPlainObject(tg) && t.length > 0) {
+                        _.set(res, path, [])
+                        tg = _.get(res, path)
+                    }
+
+                    if (!tg) {
+                        if (t.length > 0) {
+                            _.set(res, path, [])
+                        } else {
+                            _.set(res, path, {})
+                        }
+                        tg = _.get(res, path)
+                    }
+                    console.log('collectData:WHILE tg AF = ', _.cloneDeep(tg))
+                    console.log('collectData:WHILE t.length = ', t.length)
+
+                    if (t.length > 0) {
+                        if (!tg[p2]) {
+                            tg[p2] = {}
+                        }
+                        path = `${path}[${p2}]`
+                    } else {
+                        tg.selected = obj.selected
+                    }
+                    console.log('collectData:WHILE OUT tg = ', _.cloneDeep(tg))
+
+                    // tg[p2] = {}
+
+                    // if (!check) {
+                    //     console.log('collectData:EACH !check t.length = ', t.length)
+                    //     if (t.length > 2) {
+                    //         _.set(res, path, [])
+                    //         const tg = _.get(res, path)
+                    //         tg[p2] = {}
+                    //         path = `${path}[${p2}]`
+                    //     } else {
+                    //         _.set(res, path, { selected: obj.selected })
+                    //         break
+                    //     }
+                    // }
+
+                    // const p = t.pop()
+                    // if (_.isString(p)) {
+                    //     console.log('collectData:WHILE +++ STR p = ', p)
+                    //     path = path ? `${path}.${p}` : p
+                    //     console.log('collectData:WHILE STR path = ', path)
+                    //     const check1 = _.get(res, path)
+                    //     console.log('collectData:WHILE STR check1 = ', check1)
+                    //     if (!check1) {
+                    //         _.set(res, path, {})
+                    //     }
+                    // }
+
+                    // if (_.isNumber(p)) {
+                    //     console.log('collectData:WHILE +++ STR p = ', p)
+
+                    //     console.log('collectData:WHILE STR path = ', path)
+                    //     const check2 = _.get(res, path)
+                    //     console.log('collectData:WHILE STR check2 = ', check2)
+                    //     if (!_.isArray(check2)) {
+                    //         _.set(res, path, [])
+                    //     }
+                    //     const tg = _.get(res, path)
+                    //     tg[p] = {}
+
+                    //     path = `${path}[${p}]`
+
+                    // }
+                }
+                _.set(res, path, { selected: obj.selected })
+                // target.selected = obj.selected
+                console.log('collectData:WHILE END xxxx res = ', _.cloneDeep(res))
+                // }
+
+                // for (let i = 0; i < t.length; i++) {
+
+                // }
+
+                // _.each(t.tree, val => {
+                //     // if (_.isString(val)) {
+                //     //     if (!res[val]) {
+                //     //         res[val] = {}
+                //     //     }
+                //     // }
+                // })
+
+                //                 arrayPath: "correspondingPapers.0._REMOVE"
+                // indexEndingArrayPath: "correspondingPapers.0"
+                // indexEndingTree: (2) ["correspondingPapers", "0"]
+                // keyEndingArrayPath: "correspondingPapers.0._REMOVE"
+                // keyEndingTree: (3) ["correspondingPapers", "0", "_REMOVE"]
+                // lastIndex: 0
+                // lastKey: "_REMOVE"
+                // objectPath: "correspondingPapers._REMOVE"
+
+                // console.log('collectData: each t = ', t)
+                // if (true) {
+                //     // res
+                // }
+            })
+
+            console.log('collectData: res = ', res)
+        }
+
         // add and remove form blocks
         const removeBlock = tree => {
+            const data = collectData()
+        }
+
+        const removeBlockV1 = tree => {
             let t = [...tree]
             let deleteIndex = null
             while (t.length) {
