@@ -1,6 +1,5 @@
-import { _ } from 'core-js'
 import { _forEachName } from 'gsap/gsap-core'
-import { _setDefaults } from 'gsap/gsap-core'
+import { _ } from 'core-js'
 
 const R2D2DataHandler = function() {
     //
@@ -122,25 +121,11 @@ const R2D2DataHandler = function() {
         return file || null
     }
 
-    // ++++++++++++++++++++++++++
-    // +++++++ metadata edit
-    // ++++++++++++++++++++++++++
-
-    // "metadata" : {
-    //     "title" : "Chunky Test Area :-)",
-    //     "authors" : [ ],
-    //     "doi" : null,
-    //     "description" : "Chunky Test Area :-)",
-    //     "genres" : null,
-    //     "keywords" : null,
-    //     "license" : null,
-    //     "language" : null,
-    //     "correspondingPapers" : [ ]
-    //   },
-
-    // ++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // +++++++ prototype page
-    // ++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     this.ppGetRequests = async () => {
         const raw = datasource.getRequests()
@@ -264,9 +249,9 @@ const R2D2DataHandler = function() {
         return requests
     }
 
-    // ++++++++++++++++++++++++++
-    // +++++++ meta form handler
-    // ++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // +++++++ meta form handler (generic)
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     const MetaFormHandler = function() {
         // TESTDATA
@@ -342,6 +327,15 @@ const R2D2DataHandler = function() {
             ],
             license: 'lcs 123',
             language: ['de', 'ru']
+        }
+
+        const LY = {
+            START: '_START',
+            END: '_END',
+            ADD: '_ADD',
+            REMOVE: '_REMOVE',
+            START_OF_LIST: '_START_OF_LIST',
+            END_OF_LIST: '_END_OF_LIST'
         }
 
         // TESTDATA // TODO move to structure
@@ -498,8 +492,10 @@ const R2D2DataHandler = function() {
         const addLayoutElements = (source, target) => {
             _.each(source, node => {
                 if (node.sub) {
-                    const start = { layout: 'listStart', label: 'Start' }
-                    const end = { layout: 'listEnd', label: 'End' }
+                    // const start = { layout: 'listStart', label: 'Start' }
+                    // const end = { layout: 'listEnd', label: 'End' }
+                    const start = { layout: LY.START_OF_LIST, label: 'Start' }
+                    const end = { layout: LY.END_OF_LIST, label: 'End' }
                     node.sub = [start, ...node.sub, end]
                     const targetNode = { key: node.key, sub: [] }
                     target.push(targetNode)
@@ -551,8 +547,6 @@ const R2D2DataHandler = function() {
             const t0 = [...tree]
             const val1 = t0.pop()
             const val2 = t0.pop()
-            // const num1 = parseInt(val1)
-            // const num2 = parseInt(val2)
             res.lastIndex = !isNaN(val1) ? val1 : !isNaN(val2) ? val2 : -1
             res.lastKey = _.isString(val1) ? val1 : val2
             //
@@ -579,7 +573,17 @@ const R2D2DataHandler = function() {
                     res.indexEndingArrayPath = t2.reduce((acc, val) => `${acc}.${val.toString()}`)
                 }
             }
-            // res.endsWith = isNaN(parseInt([...tree].pop())) ? 'key' : 'index'
+            let n = null
+            const t = [...res.indexEndingTree].reverse()
+            while (t.length > 1) {
+                const v = t.pop()
+                if (_.isString(v)) {
+                    n = n ? `${n}.${v}` : v
+                } else {
+                    n = `${n}[${v}]`
+                }
+            }
+            res.nodeGetPath = n
             return res
         }
 
@@ -600,7 +604,7 @@ const R2D2DataHandler = function() {
                             const isListElement = _.isNumber(_.last(tree))
                             if (actionDef && actionDef.dynamicList) {
                                 if (isListElement) {
-                                    if (obj.layout === 'listStart') {
+                                    if (obj.layout === LY.START_OF_LIST) {
                                         const t = getTree(tree)
                                         const idx = t.keyEndingArrayPath
                                         if (indexTree[idx].index === 0) {
@@ -621,13 +625,13 @@ const R2D2DataHandler = function() {
                                         })
                                         items.push(lbl2)
 
-                                        items.push(getLayoutItem(tree, { level, startBlock: true, treeAdd: '_START' }))
+                                        items.push(getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.START }))
                                         items.push(
-                                            getLayoutItem(tree, { level, removeBlock: true, treeAdd: '_REMOVE' })
+                                            getLayoutItem(tree, { level, removeBlock: true, treeAdd: LY.REMOVE })
                                         )
                                     }
-                                    if (obj.layout === 'listEnd') {
-                                        items.push(getLayoutItem(tree, { level, endBlock: true, treeAdd: '_END' }))
+                                    if (obj.layout === LY.END_OF_LIST) {
+                                        items.push(getLayoutItem(tree, { level, endBlock: true, treeAdd: LY.END }))
                                         const t = getTree(tree)
                                         const idx = t.keyEndingArrayPath
                                         indexTree[idx].index++
@@ -636,7 +640,7 @@ const R2D2DataHandler = function() {
                                         // otherwise its set on end of every block
                                         // TODO check usability!
                                         if (true || indexTree[idx].index === indexTree[idx].length) {
-                                            items.push(getLayoutItem(tree, { level, addBlock: true, treeAdd: '_ADD' }))
+                                            items.push(getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD }))
                                         }
                                     }
                                 }
@@ -737,66 +741,27 @@ const R2D2DataHandler = function() {
 
         const collectData = () => {
             const res = {}
-            let depth = 0
-            let cnt = 0
-
             const filteredForm = {}
-            const filter = {
-                _ADD: true,
-                _END: true,
-                _REMOVE: true,
-                _START: true,
-                listStart: true,
-                listEnd: true
-                
-            }
+            //
             _.each(form, (obj, key) => {
                 const t = getTree(key)
-                // if (t.tree[0] === 'authors') {
-                    if (!filter[t.lastKey]) {
-                        filteredForm[key] = obj
-                    }
-                // }
+                const filter = Object.values(LY)
+                if (filter.indexOf(t.lastKey) === -1) {
+                    filteredForm[key] = obj
+                }
             })
-
-            // const f1 = {
-            //     'authors.2.affiliations.1.department.2.name': { selected: 'name-1234' },
-            //     'authors.2.affiliations.1.department.2.orgId': { selected: 'org-id-1234' }
-            // }
-
-            console.log('obj:fc filteredForm = ', filteredForm)
-            // return
-
             _.each(filteredForm, (obj, key) => {
-                // console.log('collectData: each key, obj = ', key, obj)
                 const t = getTree(key).tree.reverse()
-
-                // const writeNode = (node) => {
-                //     console.log('obj:arrow value = ', value)
-                //   }
-
-                // if (key === 'authors.0.givenName') {
-                console.log('collectData:EACH +++++++++ key = ', key)
-                console.log('collectData:EACH obj = ', obj)
-                console.log('collectData:EACH t = ', t)
                 let path = null
-                // let target = res
                 while (t.length) {
                     const p1 = t.pop()
                     const p2 = t.pop()
-                    // path = path ? `${path}.${p1}` : p1
                     path = path ? `${path}.${p1}` : p1
-                    console.log('collectData:WHILE path xxxx IN = ', path)
-                    console.log('collectData:WHILE  p1. p2 = ', p1, p2)
-
                     let tg = _.get(res, path)
-                    console.log('collectData:WHILE tg BF = ', tg)
-
                     if (_.isPlainObject(tg) && t.length > 0) {
                         _.set(res, path, [])
                         tg = _.get(res, path)
                     }
-
                     if (!tg) {
                         if (t.length > 0) {
                             _.set(res, path, [])
@@ -805,9 +770,6 @@ const R2D2DataHandler = function() {
                         }
                         tg = _.get(res, path)
                     }
-                    console.log('collectData:WHILE tg AF = ', _.cloneDeep(tg))
-                    console.log('collectData:WHILE t.length = ', t.length)
-
                     if (t.length > 0) {
                         if (!tg[p2]) {
                             tg[p2] = {}
@@ -816,128 +778,21 @@ const R2D2DataHandler = function() {
                     } else {
                         tg.selected = obj.selected
                     }
-                    console.log('collectData:WHILE OUT tg = ', _.cloneDeep(tg))
-
-                    // tg[p2] = {}
-
-                    // if (!check) {
-                    //     console.log('collectData:EACH !check t.length = ', t.length)
-                    //     if (t.length > 2) {
-                    //         _.set(res, path, [])
-                    //         const tg = _.get(res, path)
-                    //         tg[p2] = {}
-                    //         path = `${path}[${p2}]`
-                    //     } else {
-                    //         _.set(res, path, { selected: obj.selected })
-                    //         break
-                    //     }
-                    // }
-
-                    // const p = t.pop()
-                    // if (_.isString(p)) {
-                    //     console.log('collectData:WHILE +++ STR p = ', p)
-                    //     path = path ? `${path}.${p}` : p
-                    //     console.log('collectData:WHILE STR path = ', path)
-                    //     const check1 = _.get(res, path)
-                    //     console.log('collectData:WHILE STR check1 = ', check1)
-                    //     if (!check1) {
-                    //         _.set(res, path, {})
-                    //     }
-                    // }
-
-                    // if (_.isNumber(p)) {
-                    //     console.log('collectData:WHILE +++ STR p = ', p)
-
-                    //     console.log('collectData:WHILE STR path = ', path)
-                    //     const check2 = _.get(res, path)
-                    //     console.log('collectData:WHILE STR check2 = ', check2)
-                    //     if (!_.isArray(check2)) {
-                    //         _.set(res, path, [])
-                    //     }
-                    //     const tg = _.get(res, path)
-                    //     tg[p] = {}
-
-                    //     path = `${path}[${p}]`
-
-                    // }
                 }
                 _.set(res, path, { selected: obj.selected })
-                // target.selected = obj.selected
-                console.log('collectData:WHILE END xxxx res = ', _.cloneDeep(res))
-                // }
-
-                // for (let i = 0; i < t.length; i++) {
-
-                // }
-
-                // _.each(t.tree, val => {
-                //     // if (_.isString(val)) {
-                //     //     if (!res[val]) {
-                //     //         res[val] = {}
-                //     //     }
-                //     // }
-                // })
-
-                //                 arrayPath: "correspondingPapers.0._REMOVE"
-                // indexEndingArrayPath: "correspondingPapers.0"
-                // indexEndingTree: (2) ["correspondingPapers", "0"]
-                // keyEndingArrayPath: "correspondingPapers.0._REMOVE"
-                // keyEndingTree: (3) ["correspondingPapers", "0", "_REMOVE"]
-                // lastIndex: 0
-                // lastKey: "_REMOVE"
-                // objectPath: "correspondingPapers._REMOVE"
-
-                // console.log('collectData: each t = ', t)
-                // if (true) {
-                //     // res
-                // }
             })
-
-            console.log('collectData: res = ', res)
+            return res
         }
 
         // add and remove form blocks
         const removeBlock = tree => {
             const data = collectData()
-        }
-
-        const removeBlockV1 = tree => {
-            let t = [...tree]
-            let deleteIndex = null
-            while (t.length) {
-                deleteIndex = t.pop()
-                if (_.isNumber(deleteIndex)) {
-                    break
-                }
-            }
-            let deletePath = [...t, deleteIndex].reverse() // .join('.')
-            console.log('MT:removeBlock deletePath = ', deletePath)
-            //
-            const scanAndDelete = node => {
-                const key = deletePath.pop()
-
-                _.each(node, obj => {
-                    if (obj.key === key) {
-                        if (obj.sub) {
-                            if (deletePath.length < 2) {
-                                const deleteIndex = deletePath.pop()
-                                obj.sub.splice(deleteIndex, 1)
-                                console.log('MT:scanAndDelete DELETED IN deletePath = ', deletePath)
-                                console.log('MT:scanAndDelete DELETED IN deleteIndex = ', deleteIndex)
-                                console.log('MT:scanAndDelete DELETED IN obj.sub = ', obj.sub)
-                            } else {
-                                scanAndDelete(obj.sub)
-                            }
-                        }
-                    }
-                })
-            }
-            //
-            scanAndDelete(sortedData)
-            createNewForm(sortedData)
-            // TODO Re-Index all non-deleted items !!
-            console.log('MT:scanAndDelete sortedData AF = ', sortedData)
-            console.log('MT:scanAndDelete form AF = ', form)
+            const t = getTree(tree)
+            const target = _.get(data, t.nodeGetPath)
+            target.splice(t.lastIndex, 1)
+            console.log('MT:removeBlock t = ', t)
+            console.log('MT:removeBlock data = ', data)
+            
         }
 
         this.modifyForm = args => {
