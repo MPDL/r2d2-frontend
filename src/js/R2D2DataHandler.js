@@ -531,9 +531,10 @@ const R2D2DataHandler = function() {
             if (_.isArray(source)) {
                 _.each(source, (node, index) => {
                     if (_.isArray(node)) {
-                        _.each(node, (obj, i) => {
+                        _.each(node, obj => {
                             if (obj.sub) {
-                                key = parentTree ? `${parentTree}.${index}` : index.toString()
+                                const idx = index + 0
+                                key = parentTree ? `${parentTree}.${idx}` : idx.toString()
                                 createIndexTree(obj, key)
                             }
                         })
@@ -592,9 +593,6 @@ const R2D2DataHandler = function() {
             }
         }
 
-        // TODO implement a recursive filter for undefined values
-        // happens when raw input data vs. schema keys missing
-
         const getLayoutItem = (tree, args) => {
             tree = args.treeAdd ? [...tree, args.treeAdd] : [...tree]
             const item = {
@@ -621,8 +619,14 @@ const R2D2DataHandler = function() {
                 tree[index] = isNaN(parseInt(val)) ? val : parseInt(val)
             })
 
+            const schemaTree = []
+            _.each(tree, val => {
+                schemaTree.push(isNaN(val) ? val : 0)
+            })
+
             const res = {
                 tree: [...tree],
+                schemaTree,
                 objectPath: tree.reduce((acc, val) => (isNaN(val) ? `${acc}.${val}` : acc)),
                 arrayPath: tree.reduce((acc, val) => `${acc}.${val.toString()}`)
             }
@@ -656,8 +660,9 @@ const R2D2DataHandler = function() {
                     res.indexEndingArrayPath = t2.reduce((acc, val) => `${acc}.${val.toString()}`)
                 }
             }
+            let t
             let n = null
-            const t = [...res.indexEndingTree].reverse()
+            t = [...res.indexEndingTree].reverse()
             while (t.length > 1) {
                 const v = t.pop()
                 if (_.isString(v)) {
@@ -666,7 +671,19 @@ const R2D2DataHandler = function() {
                     n = `${n}[${v}]`
                 }
             }
+            let e = null
+            t = [...res.tree].reverse()
+            while (t.length > 0) {
+                const v = t.pop()
+                if (_.isString(v)) {
+                    e = e ? `${e}.${v}` : v
+                } else {
+                    e = `${e}[${v}]`
+                }
+            }
+
             res.nodeGetPath = n
+            res.endPointGetPath = e
             return res
         }
 
@@ -674,30 +691,30 @@ const R2D2DataHandler = function() {
         const metaRawData3 = {
             title: 'test metadata',
             authors: [
-                {
-                    givenName: 'author 1',
-                    familyName: 'foo 1',
-                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                    affiliations: [
-                        {
-                            id: 'affy-1',
-                            organization: '',
-                            department: 1 // select by index test
-                        }
-                    ]
-                },
-                {
-                    givenName: 'author 2',
-                    familyName: 'foo 2',
-                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                    affiliationsXX: [
-                        {
-                            id: null,
-                            organization: '',
-                            department: 0 // select by index test
-                        }
-                    ]
-                },
+                // {
+                //     givenName: 'author 1',
+                //     familyName: 'foo 1',
+                //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                //     affiliations: [
+                //         {
+                //             id: 'affy-1',
+                //             organization: '',
+                //             department: 1 // select by index test
+                //         }
+                //     ]
+                // },
+                // {
+                //     givenName: 'author 2',
+                //     familyName: 'foo 2',
+                //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                //     affiliationsXX: [
+                //         {
+                //             id: null,
+                //             organization: '',
+                //             department: 0 // select by index test
+                //         }
+                //     ]
+                // },
                 {
                     givenName: 'author 3',
                     familyName: 'foo 3',
@@ -726,6 +743,9 @@ const R2D2DataHandler = function() {
         // TESTDATA // TODO move to structure
 
         const schema3 = {
+            description: {
+                default: 'default description'
+            },
             authors: [
                 {
                     __0: {
@@ -735,27 +755,29 @@ const R2D2DataHandler = function() {
                     // test2: {},
                     // test3: {},
                     // test4: {},
-                    givenName: {},
-                    familyName: {},
-                    nameIdentifier: {},
+                    // givenName: {},
+                    // familyName: {},
+                    nameIdentifier: {
+                        default: 'default: name-id'
+                    },
                     affiliations: [
                         {
                             __0: {
                                 sublist: true
                             },
-                            department: {
-                                __0: {
-                                    // TESTDATA
-                                    type: 'dropdown',
-                                    label: 'authors.affiliations.department TEST',
-                                    sendKey: '',
-                                    options: ['a', 'b', 'c', 'd']
-                                },
-                                default: 2
-                            },
-                            organization: { default: 'affy-orgaaa' },
+                            // department: {
+                            //     __0: {
+                            //         // TESTDATA
+                            //         type: 'dropdown',
+                            //         label: 'authors.affiliations.department TEST',
+                            //         sendKey: '',
+                            //         options: ['a', 'b', 'c', 'd']
+                            //     },
+                            //     default: 2
+                            // },
+                            // organization: { default: 'affy-orgaaa' },
                             id: {
-                                default: '1234-oo'
+                                default: 'default: affy-id'
                             }
                         }
                     ]
@@ -763,133 +785,71 @@ const R2D2DataHandler = function() {
             ]
         }
 
-        const schema = schema3
-        const metaRawData = metaRawData3
-
         const scanAndCreateForm = (source, target = {}, tree = []) => {
-            // console.log('SCR:IN ++++++++++++ tree, source = ', tree, source)
-            // console.log('SCR:IN source = ', source)
-            // console.log('SCR:IN source.key = ', source.key)
-            // console.log('SCR:IN tree = ', tree)
-            // console.log('SCR:IN form = ', target)
             const getCombinedTree = ($tree, $add = []) => {
-                // console.log('SCR:GCT: $tree = ', $tree)
-                // console.log('SCR:GCT: $key = ', $key)
                 const tr = $tree.length > 0 ? [...$tree, ...$add] : [...$add]
-                // console.log('SCR:GCT: tr = ', tr)
-
                 return getTree(tr)
             }
-            let t
-            if (_.isArray(source)) {
-                let index = 0 // OK
-                _.each(source, node => {
-                    if (_.isArray(node)) {
-                        // OK
-                        index++
-                        t = getCombinedTree(tree, [index])
-                        scanAndCreateForm(node, target, t.tree) // OK
-                    } else if (_.isArray(node.sub)) {
-                        t = getCombinedTree(tree, [node.key])
-                        target[t.arrayPath] = {} // TEST, set main chapter like authors ?
-                        // console.log('SCR:isA: indexL1, t.tree = ', indexL1, t.tree)
-                        scanAndCreateForm(node.sub, target, t.tree)
-                    } else if (node.layout) {
-                        if (node.layout === LY.START_OF_LIST) {
-                            console.log('SCR:START_OF_LIST tree = ', tree)
-                            const ly = getLayoutItem(tree, { level: tree.length, startBlock: true, treeAdd: LY.START })
-                            console.log('SCR: ly = ', ly)
-                            target[ly.__strc.tree.join('.')] = ly
-                        }
-                    } else {
-                        t = getCombinedTree(tree, [node.key])
-                        // console.log('SCR: t = ', t)
-                        target[t.arrayPath] = getFormItem(t.tree, node.value, { level: tree.length })
-                    }
+            const getLabelItem = $t => {
+                return getFormItem($t.tree, null, {
+                    level: $t.tree.length,
+                    type: 'label',
+                    label: $t.arrayPath
                 })
             }
-        }
-        const scanAndCreateFormV1 = (node, level = 1, tree = []) => {
-            _.each(node, obj => {
-                if (obj) {
-                    while (tree.length > level) {
-                        tree.pop()
-                    }
-                    tree[level - 1] = obj.key
-                    if (obj.sub) {
-                        scanAndCreateForm(obj.sub, level + 1, tree, obj)
-                    } else {
-                        const items = []
-                        if (obj.layout) {
-                            tree.pop()
-                            const t1 = getTree(tree)
-                            const actionDef = _.get(schema, `${getTree(tree).objectPath}.__0`)
-                            const isListElement = _.isNumber(_.last(tree))
-                            if (actionDef && actionDef.dynamicList) {
-                                if (isListElement) {
-                                    if (obj.layout === LY.START_OF_LIST) {
-                                        const t = getTree(tree)
-                                        const idx = t.keyEndingArrayPath
-                                        if (indexTree[idx].index === 0) {
-                                            const t1 = [...tree]
-                                            t1.pop()
-                                            const lbl1 = getFormItem(t1, null, {
-                                                level: level - 2,
-                                                type: 'label',
-                                                label: t.lastKey
-                                            })
-                                            items.push(lbl1)
-                                        }
-
-                                        const lbl2 = getFormItem(tree, null, {
-                                            level: level - 1,
-                                            type: 'label',
-                                            label: `${t.lastKey}.${indexTree[idx].index}`
-                                        })
-                                        items.push(lbl2)
-
-                                        items.push(getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.START }))
-                                        items.push(
-                                            getLayoutItem(tree, { level, removeBlock: true, treeAdd: LY.REMOVE })
-                                        )
-                                    }
-                                    if (obj.layout === LY.END_OF_LIST) {
-                                        items.push(getLayoutItem(tree, { level, endBlock: true, treeAdd: LY.END }))
-                                        const t = getTree(tree)
-                                        const idx = t.keyEndingArrayPath
-                                        indexTree[idx].index++
-                                        // if the indexTree.index condition is set, the add tags only appear
-                                        // at the end of a list
-                                        // otherwise its set on end of every block
-                                        // TODO check usability!
-                                        if (true || indexTree[idx].index === indexTree[idx].length) {
-                                            items.push(getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD }))
-                                        }
-                                    }
+            let t = null
+            let index = -1
+            let level = null
+            _.each(source, node => {
+                if (_.isArray(node)) {
+                    index++
+                    t = getCombinedTree(tree, [index])
+                    target[t.arrayPath] = getLabelItem(t)
+                    scanAndCreateForm(node, target, t.tree) // OK
+                } else if (_.isArray(node.sub)) {
+                    t = getCombinedTree(tree, [node.key])
+                    target[t.arrayPath] = getLabelItem(t)
+                    scanAndCreateForm(node.sub, target, t.tree)
+                } else if (node.layout) {
+                    const items = []
+                    let ly = null
+                    level = tree.length
+                    switch (node.layout) {
+                        case LY.START_OF_LIST:
+                            ly = getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.START })
+                            items.push(ly)
+                            ly = getLayoutItem(tree, { level, removeBlock: true, treeAdd: LY.REMOVE })
+                            level > 1 ? items.push(ly) : null
+                            break
+                        case LY.END_OF_LIST:
+                            ly = getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.END })
+                            items.push(ly)
+                            t = getCombinedTree(tree)
+                            const indexInfo = indexTree[t.keyEndingArrayPath]
+                            if (indexInfo) {
+                                indexInfo.index++
+                                // add the 'add' option only on list end
+                                // const setAddOption = indexInfo.index >= indexInfo.length
+                                const setAddOption = true // always add the 'add' option
+                                if (setAddOption) {
+                                    ly = getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD })
+                                    level > 1 ? items.push(ly) : null
                                 }
-                            } else {
-                                items.push(getLayoutItem(tree, { level }))
                             }
-                            tree.push(obj.layout)
-                        } else {
-                            items.push(
-                                getFormItem(tree, obj.value, {
-                                    level
-                                })
-                            )
-                        }
-                        _.each(items, item => {
-                            const path = item.__strc.tree.reduce((acc, val) => `${acc}.${val.toString()}`)
-                            form[path] = item
-                        })
+                            break
                     }
+                    _.each(items, item => {
+                        target[item.__strc.tree.join('.')] = item
+                    })
+                } else {
+                    t = getCombinedTree(tree, [node.key])
+                    target[t.arrayPath] = getFormItem(t.tree, node.value, { level: tree.length })
                 }
             })
         }
 
         const getFormItem = (tree, value, args) => {
-            const path = tree.reduce((acc, val) => (_.isString(val) ? `${acc}.${val}` : acc))
-            const res = _.get(schema, path)
+            const res = _.get(schema, getTree(tree).schemaTree)
             const key = tree.join('--')
             const defaultItem = {
                 type: 'input',
@@ -897,7 +857,6 @@ const R2D2DataHandler = function() {
             }
             let item = res && _.isPlainObject(res.__0) && _.isString(res.__0.type) ? res.__0 : defaultItem
             item = _.cloneDeep(item)
-
             const add = {
                 __strc: {
                     level: args.level,
@@ -942,8 +901,8 @@ const R2D2DataHandler = function() {
         let sortedData = null
         let sortedDataWithLayoutElements = null
         let form = null
-        let form2 = null
         //
+
         const createNewForm = meta => {
             form = {}
             sortedData = []
@@ -954,7 +913,6 @@ const R2D2DataHandler = function() {
             console.log('INIT:createNewForm SBT:E1: sortedData = ', sortedData)
             // debugger
             const d = _.cloneDeep(sortedData)
-            console.log('INIT:createNewForm d = ', d)
             // 3. create the index-tree for list-length tracking by following recursive functions
             createIndexTree(d)
             console.log('INIT:createNewForm indexTree = ', indexTree)
@@ -963,11 +921,12 @@ const R2D2DataHandler = function() {
             console.log('INIT:ALE:createNewForm sortedDataWithLayoutElements = ', sortedDataWithLayoutElements)
             console.log('INIT:ALE:createNewForm sortedData = ', sortedData)
             // 5. create the final form and add the add/remove tags (uses the index-tree)
-            form2 = {}
             scanAndCreateForm(sortedDataWithLayoutElements, form)
             console.log('INIT:SCR: form = ', form)
-            console.log('INIT:SCR: form2 = ', form2)
         }
+
+        const schema = schema1
+        const metaRawData = metaRawData1
 
         initialize()
         createNewForm(metaRawData)
@@ -977,45 +936,51 @@ const R2D2DataHandler = function() {
 
         const collectData = () => {
             const res = {}
-            const filteredForm = {}
-            //
+            const filtered = {}
+            const depthSorted = []
             _.each(form, (obj, key) => {
-                const t = getTree(key)
-                const filter = Object.values(LY)
-                if (filter.indexOf(t.lastKey) === -1) {
-                    filteredForm[key] = obj
+                if (obj.type !== 'LY' && obj.type !== 'label') {
+                    filtered[key] = obj
                 }
             })
-            _.each(filteredForm, (obj, key) => {
-                const t = getTree(key).tree.reverse()
-                let path = null
-                while (t.length) {
-                    const p1 = t.pop()
-                    const p2 = t.pop()
-                    path = path ? `${path}.${p1}` : p1
-                    let tg = _.get(res, path)
-                    if (_.isPlainObject(tg) && t.length > 0) {
-                        _.set(res, path, [])
-                        tg = _.get(res, path)
+            // sort by depth
+            // this takes care that later appearing, less-depth nodes
+            // overwrite already written deeper nodes!
+            const depthSortOnLevel = (source, depth = 1) => {
+                _.each(source, (obj, key) => {
+                    if (key.split('.').length === depth) {
+                        depthSorted.push({ key, obj })
+                        delete source[key]
                     }
-                    if (!tg) {
-                        if (t.length > 0) {
-                            _.set(res, path, [])
-                        } else {
-                            _.set(res, path, {})
-                        }
-                        tg = _.get(res, path)
-                    }
-                    if (t.length > 0) {
-                        if (!tg[p2]) {
-                            tg[p2] = {}
-                        }
-                        path = `${path}[${p2}]`
-                    } else {
-                        tg.selected = obj.selected
+                })
+                if (Object.keys(source).length > 0) {
+                    depthSortOnLevel(source, depth + 1)
+                }
+            }
+            depthSortOnLevel(filtered)
+            //
+            _.each(depthSorted, obj => {
+                const value = form[obj.key]
+                const t = getTree(obj.key)
+                const tree = t.tree.reverse()
+                const sTree = t.schemaTree.reverse()
+                const path = []
+                const sPath = []
+                while (tree.length) {
+                    const p1 = tree.pop()
+                    const p2 = tree.pop()
+                    const sp1 = sTree.pop()
+                    const sp2 = sTree.pop()                   
+                    path.push(p1)
+                    sPath.push(sp1)
+                    if (_.isArray(_.get(schema, sPath))) {
+                        path.push(p2)
+                        sPath.push(sp2)
                     }
                 }
-                _.set(res, path, { selected: obj.selected })
+                // TODO set the collect-format optionally here!
+                // _.set(res, path, { selected: value.selected })
+                _.set(res, path, value.selected)
             })
             return res
         }
@@ -1023,12 +988,20 @@ const R2D2DataHandler = function() {
         // add and remove form blocks
         const removeBlock = tree => {
             const meta = collectData()
-            const t = getTree(tree)
-            const target = _.get(meta, t.nodeGetPath)
-            target.splice(t.lastIndex, 1)
-            console.log('MT:removeBlock t = ', t)
             console.log('MT:removeBlock meta = ', meta)
-            createNewForm({})
+
+            // const meta = sortedDataWithLayoutElements
+            const t = getTree(tree)
+            // t.indexEndingTree.pop()
+            const target = _.get(meta, t.indexEndingTree)
+            console.log('MT:removeBlock target = ', target)
+            t.indexEndingTree.pop()
+            _.remove(meta, t.indexEndingTree)
+            console.log('MT:removeBlock meta AF = ', meta)
+            // target.splice(t.lastIndex, 1)
+            // console.log('MT:removeBlock t = ', t)
+            // console.log('MT:removeBlock meta = ', meta)
+            createNewForm(meta)
         }
 
         this.modifyForm = args => {
