@@ -264,7 +264,7 @@ const R2D2DataHandler = function() {
         }
 
         // TESTDATA
-        const metaRawData = {
+        const metaRawData1 = {
             title: 'test metadata',
             authors: [
                 {
@@ -339,63 +339,8 @@ const R2D2DataHandler = function() {
         }
 
         // TESTDATA // TODO move to structure
-        const schemaV1 = {
-            title: {
-                __0: {
-                    // TESTDATA
-                    type: 'input',
-                    label: 'title'
-                }
-            },
-            description: {},
-            language: {},
-            doi: {},
-            license: {},
-            genres: {},
-            keywords: {},
-            authors: {
-                __0: {
-                    type: 'input',
-                    label: 'title',
-                    dynamicList: true
-                },
-                givenName: {},
-                familyName: {},
-                nameIdentifier: {},
-                affiliations: {
-                    __0: {
-                        dynamicList: true
-                    },
-                    department: {
-                        __0: {
-                            // TESTDATA
-                            type: 'dropdown',
-                            label: 'authors.affiliations.department TEST',
-                            sendKey: '',
-                            options: ['a', 'b', 'c', 'd'],
-                            default: 2
-                        }
-                    },
-                    organization: {},
-                    id: {
-                        __0: {
-                            default: '1234-oo'
-                        }
-                    }
-                }
-            },
-            correspondingPapers: {
-                __0: {
-                    dynamicList: true
-                },
-                url: {},
-                type: {},
-                identifier: {},
-                identifierType: {}
-            }
-        }
 
-        const schema = {
+        const schema1 = {
             title: {
                 __0: {
                     type: 'input',
@@ -457,7 +402,7 @@ const R2D2DataHandler = function() {
 
         // simple structure test
 
-        const metaRawDataXX = {
+        const metaRawData2 = {
             correspondingPapers: [
                 {
                     title: 'paper 1',
@@ -488,7 +433,7 @@ const R2D2DataHandler = function() {
             ]
         }
 
-        const schemaXX = {
+        const schema2 = {
             correspondingPapers: [
                 {
                     __0: {
@@ -510,6 +455,9 @@ const R2D2DataHandler = function() {
                 }
             ]
         }
+
+        // const schema = schema1
+        // const metaRawData = metaRawData1
 
         //
 
@@ -533,23 +481,16 @@ const R2D2DataHandler = function() {
         }
 
         const sortRawDataByTree = (srcNnode, tgNode = [], reference = []) => {
-            // console.log('SBT:E2:IN: +++++++++++ = ')
-            // console.log('SBT:E2:IN: sortedData = ', sortedData)
-            // console.log('SBT:E2:IN: srcNnode = ', srcNnode)
-            // console.log('SBT:E2:IN: tgNode = ', tgNode)
-            // console.log('SBT:E2:IN: reference = ', reference)
             if (_.isArray(srcNnode)) {
                 _.each(srcNnode, (elm, index) => {
                     tgNode[index] = []
-                    // console.log('SBT:E2:isA: tgNode = ', tgNode)
                     sortRawDataByTree(elm, tgNode[index], reference)
                 })
             }
             const missingKeys = {}
             _.each(reference, (rfObj, index) => {
-                const key = rfObj.key // correspondingPapers
+                const key = rfObj.key
                 if (Object.keys(srcNnode).indexOf(key) > -1) {
-                    // console.log('SBT:E2:isO: hasKey key, srcNnode[key] = ', key, srcNnode[key])
                     tgNode[index] = { key }
                     if (rfObj.sub) {
                         tgNode[index].sub = []
@@ -563,159 +504,21 @@ const R2D2DataHandler = function() {
                     }
                 }
             })
-            // console.log('SBT:E2:missing: Object.keys(srcNnode) = ', Object.keys(srcNnode))
-            // console.log('SBT:E2:missing: missingKeys = ', missingKeys)
             _.each(missingKeys, msObj => {
                 // this creates the complete structure below the node!
                 // no need to start ecursion here
                 let cloned = _.cloneDeep(reference[msObj.index])
-                // console.log('SBT:E1:CLO cloned = ', cloned)
-
                 if (cloned.sub) {
                     cloned.sub = [cloned.sub]
-                    // cloned = [cloned]
                 }
-                // console.log('SBT:E1:CLO msObj = ', msObj)
-                // console.log('SBT:E1:CLO cloned = ', cloned)
-                // console.log('SBT:E1:CLO reference = ', reference)
-                // console.log('SBT:E1:CLO reference[msObj.index] = ', reference[msObj.index])
                 tgNode[msObj.index] = cloned
             })
-        }
-
-        const sortRawDataByTreeV1 = (source = {}, target = [], reference = [], tree = []) => {
-            // console.log('createSortingTree: sortingTree ', sortingTree)
-            // debugger
-
-            let node
-            if (_.isArray(source) && _.isPlainObject(source[0])) {
-                _.each(source, (val, key) => {
-                    node = { key, sub: [] }
-                    target[key] = node
-                    sortRawDataByTree(val, target[key].sub, reference, tree)
-                })
-            } else {
-                const allNeededKeys = {}
-                let index = -1
-                _.each(reference, obj => {
-                    index++
-                    allNeededKeys[obj.key] = { index }
-                })
-                console.log('sortRawDataByTree: source = ', source)
-
-                _.each(source, (val, key) => {
-                    delete allNeededKeys[key]
-                })
-                console.log('sortRawDataByTree: allNeededKeys = ', allNeededKeys)
-                _.each(allNeededKeys, (obj, key) => {
-                    console.log('sortRawDataByTree:E1: key = ', key)
-                    console.log('sortRawDataByTree:E1: obj = ', obj)
-                    console.log('sortRawDataByTree:E1: tree = ', tree)
-
-                    const tr = [...tree, key]
-                    const t = getTree(tr)
-                    console.log('sortRawDataByTree:E1: allNeededKeys = ', allNeededKeys)
-                    console.log('sortRawDataByTree:E1: key = ', key)
-                    console.log('sortRawDataByTree:E1: tree = ', tree)
-                    console.log('sortRawDataByTree:E1: tr = ', tr)
-                    console.log('sortRawDataByTree:E1: t = ', t)
-
-                    // key: affiliations
-
-                    // SOURCE: reference.authors[0].affiliations[0]
-                    // TARGET: target.authors[x].affiliations[0]
-
-                    const path = t.nodeGetPath ? `${t.nodeGetPath}.${key}` : key
-
-                    // array path here !!
-
-                    // const path = tree.length > 0 ? `${tree.join('.')}.${key}` : key
-                    console.log('sortRawDataByTree:E1: path = ', path)
-
-                    let ref = _.get(schema, path)
-                    if (_.isArray(ref)) {
-                        ref = ref[0]
-                    }
-
-                    console.log('sortRawDataByTree:E1: ref = ', ref)
-
-                    const stc = ref && ref.__0 ? ref && ref.__0 : {}
-                    stc.sublist = stc.sublist === true
-                    let value = null
-
-                    console.log('sortRawDataByTree:E1: +++++ key = ', key)
-                    console.log('sortRawDataByTree:E1: stc.sublist = ', stc.sublist)
-
-                    if (stc.sublist === true) {
-                        // target[obj.index] = { key, sub: [{ key: 0, sub: [] }] }
-
-                        target[obj.index] = { key, sub: reference[obj.index].sub }
-
-                        // sortRawDataByTree(xxx, target[obj.index].sub, reference[obj.index].sub, t1)
-
-                        // sortRawDataByTree(val, target[index].sub, reference[index].sub, t1)
-
-                        console.log('sortRawDataByTree:E1: obj.index = ', obj.index)
-                        console.log('sortRawDataByTree:E1: source = ', source)
-                        console.log('sortRawDataByTree:E1: target = ', target)
-                        console.log('sortRawDataByTree:E1: reference = ', reference)
-                        console.log('sortRawDataByTree:E1: target[obj.index] = ', target[obj.index])
-
-                        // const tg = target[obj.index].sub[0].sub
-                        // _.each(ref, (val2, key2) => {
-                        //     if (key2 !== '__0') {
-                        //         if (val2.__0 && !_.isNil(val2.__0.default)) {
-                        //             value = val2.__0.default
-                        //         }
-                        //         tg.push({ key: key2, value })
-                        //     }
-                        // })
-                    } else {
-                        console.log('sortRawDataByTree:E1: !isDynamicList reference = ', reference)
-                        value = _.isNil(stc.default) ? null : stc.default
-                        target[obj.index] = { key, value }
-                    }
-                })
-                _.each(source, (val, key) => {
-                    const index = _.findIndex(reference, { key: key })
-                    if (index > -1) {
-                        console.log('sortRawDataByTree:E2: +++++ IN key = ', key)
-                        console.log('sortRawDataByTree:E2: IN val = ', val)
-
-                        if (_.isArray(val) && _.isPlainObject(val[0])) {
-                            node = { key, sub: [] }
-                            target[index] = node
-                            const t1 = [...tree, index, key]
-                            // t1.push(key)
-
-                            console.log('sortRawDataByTree:E2:VVV: +++++++ key = ', key)
-                            console.log('sortRawDataByTree:E2:VVV: index = ', index)
-                            console.log('sortRawDataByTree:E2:VVV: t1 = ', t1)
-                            sortRawDataByTree(val, target[index].sub, reference[index].sub, t1)
-                        } else if (_.isPlainObject(val)) {
-                            node = { key, sub: [] }
-                            target[index] = node
-                            const t2 = [...tree]
-                            t2.push(key)
-                            sortRawDataByTree(val, target[index].sub, reference, t2)
-                            // sortRawDataByTree(val, target[index].sub, reference[index].sub, t2)
-                        } else {
-                            node = { key, value: val }
-                            target[index] = node
-                        }
-                    }
-                })
-            }
         }
 
         // this holds the index data of all levels
         // needed to recursive detect when a list ends
         let indexTree = {}
         const createIndexTree = (source, parentTree = null) => {
-            // console.log('CIT:IN +++++++++')
-            // console.log('CIT:IN source = ', source)
-            // console.log('CIT:IN parentTree = ', parentTree)
-            // console.log('CIT:IN indexTree = ', indexTree)
             let key = null
             const setIndexInfo = (node, key) => {
                 if (_.isString(node.key)) {
@@ -748,118 +551,45 @@ const R2D2DataHandler = function() {
         }
 
         const addLayoutElements = (source, target = []) => {
+            const start = { layout: LY.START_OF_LIST, label: 'Start' }
+            const end = { layout: LY.END_OF_LIST, label: 'End' }
             let node2add
             if (_.isArray(source)) {
-                _.each(source, (node, index) => {
+                target.push(start)
+                _.each(source, node => {
                     if (_.isArray(node)) {
                         const targetL2 = []
-                        target[index] = targetL2
-                        _.each(node, (nodeL2, indexL2) => {
-                            // TODO check if this block could be replaced by a simple recursion,
+                        target.push(targetL2)
+                        targetL2.push(start)
+                        _.each(node, nodeL2 => {
+                            // TODO check if this block could be replaced by a direct recursion,
                             // looks a bit redundant !
                             if (_.isArray(nodeL2)) {
                                 // go deeper
                                 addLayoutElements(nodeL2, targetL2)
                             } else if (nodeL2.sub) {
                                 node2add = { key: nodeL2.key, sub: [] }
-                                targetL2[indexL2] = node2add
+                                targetL2.push(node2add)
                                 // go deeper
-                                addLayoutElements(nodeL2.sub, targetL2[indexL2].sub)
+                                addLayoutElements(nodeL2.sub, node2add.sub)
                             } else {
                                 // finalize recursion here
-                                targetL2[indexL2] = _.cloneDeep(nodeL2)
+                                targetL2.push(_.cloneDeep(nodeL2))
                             }
                         })
+                        targetL2.push(end)
                     } else if (_.isArray(node.sub)) {
                         node2add = { key: node.key, sub: [] }
-                        target[index] = node2add
+                        target.push(node2add)
                         // go deeper
-                        addLayoutElements(node.sub, target[index].sub)
+                        addLayoutElements(node.sub, node2add.sub)
                     } else {
                         // finalize recursion here
-                        target[index] = _.cloneDeep(node)
+                        target.push(_.cloneDeep(node))
                     }
                 })
+                target.push(end)
             }
-        }
-
-        const addLayoutElementsV2 = (source, target = []) => {
-            // console.log('ALE:IN: +++++++ ')
-            // console.log('ALE:IN: source.key = ', source.key)
-            console.log('ALE:IN: source = ', source)
-            console.log('ALE:IN: target = ', target)
-            //
-            const start = { layout: LY.START_OF_LIST, label: 'Start' }
-            const end = { layout: LY.END_OF_LIST, label: 'End' }
-            //
-            if (_.isArray(source)) {
-                console.log('ALE:E: source = ', source)
-                _.each(source, (node, index) => {
-                    if (_.isArray(node)) {
-                        console.log('ALE:E: node = ', node)
-                    }
-
-                    // console.log('ALE:isA node = ', node)
-                    // if (node) {
-                    //     addLayoutElements(node)
-                    // }
-                    // if (_.isArray(node)) {
-                    //     node = [start, ...node, end]
-                    // }
-                })
-                // if (_.isArray(source)) {
-                //     source = [start, ...source, end]
-                // }
-            } else if (source.sub) {
-                addLayoutElements(source.sub)
-            } else {
-                // console.log('ALE:E source.key = ', source.key)
-                // console.log('ALE:E source = ', source)
-                target[source.key] = source
-            }
-
-            // _.each(source, node => {
-            //     console.log('ALE: node = ', node)
-            //     if (node.sub) {
-            //         addLayoutElements(node.sub)
-            //     }
-            // })
-
-            // _.each(source, node => {
-            //     if (node.sub) {
-            //         const start = { layout: LY.START_OF_LIST, label: 'Start' }
-            //         const end = { layout: LY.END_OF_LIST, label: 'End' }
-            //         node.sub = [start, ...node.sub, end]
-            //         const targetNode = { key: node.key, sub: [] }
-            //         target.push(targetNode)
-            //         addLayoutElements(node.sub, targetNode.sub)
-            //     }
-
-            //     else if (node.layout) {
-            //         target.push({ layout: node.layout })
-            //     } else {
-            //         console.log('ALE:3: target = ',target)
-            //         console.log('ALE:3: node = ',node)
-            //         target.push({ key: node.key, value: node.value })
-            //     }
-            // })
-        }
-
-        const addLayoutElementsV1 = (source, target) => {
-            _.each(source, node => {
-                if (node.sub) {
-                    const start = { layout: LY.START_OF_LIST, label: 'Start' }
-                    const end = { layout: LY.END_OF_LIST, label: 'End' }
-                    node.sub = [start, ...node.sub, end]
-                    const targetNode = { key: node.key, sub: [] }
-                    target.push(targetNode)
-                    addLayoutElements(node.sub, targetNode.sub)
-                } else if (node.layout) {
-                    target.push({ layout: node.layout })
-                } else {
-                    target.push({ key: node.key, value: node.value })
-                }
-            })
         }
 
         // TODO implement a recursive filter for undefined values
@@ -867,7 +597,6 @@ const R2D2DataHandler = function() {
 
         const getLayoutItem = (tree, args) => {
             tree = args.treeAdd ? [...tree, args.treeAdd] : [...tree]
-
             const item = {
                 type: 'LY',
                 label: '',
@@ -937,12 +666,150 @@ const R2D2DataHandler = function() {
                     n = `${n}[${v}]`
                 }
             }
-            // n = n ? n : res.lastKey
             res.nodeGetPath = n
             return res
         }
 
-        const scanAndCreateForm = (node, level = 1, tree = []) => {
+        // TESTDATA
+        const metaRawData3 = {
+            title: 'test metadata',
+            authors: [
+                {
+                    givenName: 'author 1',
+                    familyName: 'foo 1',
+                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                    affiliations: [
+                        {
+                            id: 'affy-1',
+                            organization: '',
+                            department: 1 // select by index test
+                        }
+                    ]
+                },
+                {
+                    givenName: 'author 2',
+                    familyName: 'foo 2',
+                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                    affiliationsXX: [
+                        {
+                            id: null,
+                            organization: '',
+                            department: 0 // select by index test
+                        }
+                    ]
+                },
+                {
+                    givenName: 'author 3',
+                    familyName: 'foo 3',
+                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                    affiliations: [
+                        {
+                            id: null,
+                            organization: '',
+                            department: 'department 2'
+                        },
+                        {
+                            id: 'zzk-22',
+                            organization: 'fzdgduzfg',
+                            department: 'area 51'
+                        },
+                        {
+                            id: 'msg-5555',
+                            organization: 'tizoiho',
+                            department: '42'
+                        }
+                    ]
+                }
+            ]
+        }
+
+        // TESTDATA // TODO move to structure
+
+        const schema3 = {
+            authors: [
+                {
+                    __0: {
+                        sublist: true
+                    },
+                    // test1: {},
+                    // test2: {},
+                    // test3: {},
+                    // test4: {},
+                    givenName: {},
+                    familyName: {},
+                    nameIdentifier: {},
+                    affiliations: [
+                        {
+                            __0: {
+                                sublist: true
+                            },
+                            department: {
+                                __0: {
+                                    // TESTDATA
+                                    type: 'dropdown',
+                                    label: 'authors.affiliations.department TEST',
+                                    sendKey: '',
+                                    options: ['a', 'b', 'c', 'd']
+                                },
+                                default: 2
+                            },
+                            organization: { default: 'affy-orgaaa' },
+                            id: {
+                                default: '1234-oo'
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+
+        const schema = schema3
+        const metaRawData = metaRawData3
+
+        const scanAndCreateForm = (source, target = {}, tree = []) => {
+            // console.log('SCR:IN ++++++++++++ tree, source = ', tree, source)
+            // console.log('SCR:IN source = ', source)
+            // console.log('SCR:IN source.key = ', source.key)
+            // console.log('SCR:IN tree = ', tree)
+            // console.log('SCR:IN form = ', target)
+            const getCombinedTree = ($tree, $add = []) => {
+                // console.log('SCR:GCT: $tree = ', $tree)
+                // console.log('SCR:GCT: $key = ', $key)
+                const tr = $tree.length > 0 ? [...$tree, ...$add] : [...$add]
+                // console.log('SCR:GCT: tr = ', tr)
+
+                return getTree(tr)
+            }
+            let t
+            if (_.isArray(source)) {
+                let index = 0 // OK
+                _.each(source, node => {
+                    if (_.isArray(node)) {
+                        // OK
+                        index++
+                        t = getCombinedTree(tree, [index])
+                        scanAndCreateForm(node, target, t.tree) // OK
+                    } else if (_.isArray(node.sub)) {
+                        t = getCombinedTree(tree, [node.key])
+                        target[t.arrayPath] = {} // TEST, set main chapter like authors ?
+                        // console.log('SCR:isA: indexL1, t.tree = ', indexL1, t.tree)
+                        scanAndCreateForm(node.sub, target, t.tree)
+                    } else if (node.layout) {
+                        if (node.layout === LY.START_OF_LIST) {
+                            console.log('SCR:START_OF_LIST tree = ', tree)
+                            const ly = getLayoutItem(tree, { level: tree.length, startBlock: true, treeAdd: LY.START })
+                            console.log('SCR: ly = ', ly)
+                            target[ly.__strc.tree.join('.')] = ly
+                        }
+                    } else {
+                        t = getCombinedTree(tree, [node.key])
+                        // console.log('SCR: t = ', t)
+                        target[t.arrayPath] = getFormItem(t.tree, node.value, { level: tree.length })
+                    }
+                })
+            }
+        }
+        const scanAndCreateFormV1 = (node, level = 1, tree = []) => {
             _.each(node, obj => {
                 if (obj) {
                     while (tree.length > level) {
@@ -956,13 +823,7 @@ const R2D2DataHandler = function() {
                         if (obj.layout) {
                             tree.pop()
                             const t1 = getTree(tree)
-                            // console.log('SCR: t1 = ',t1)
-                            // console.log('SCR: schema = ',schema)
-                            // const tst =  _.get(schema, `${getTree(tree).arrayPath}.__0`)
-                            // console.log('SCR: tst = ',tst)
-
                             const actionDef = _.get(schema, `${getTree(tree).objectPath}.__0`)
-                            console.log('SCR: actionDef = ', actionDef)
                             const isListElement = _.isNumber(_.last(tree))
                             if (actionDef && actionDef.dynamicList) {
                                 if (isListElement) {
@@ -1081,6 +942,7 @@ const R2D2DataHandler = function() {
         let sortedData = null
         let sortedDataWithLayoutElements = null
         let form = null
+        let form2 = null
         //
         const createNewForm = meta => {
             form = {}
@@ -1101,7 +963,10 @@ const R2D2DataHandler = function() {
             console.log('INIT:ALE:createNewForm sortedDataWithLayoutElements = ', sortedDataWithLayoutElements)
             console.log('INIT:ALE:createNewForm sortedData = ', sortedData)
             // 5. create the final form and add the add/remove tags (uses the index-tree)
-            scanAndCreateForm(sortedDataWithLayoutElements)
+            form2 = {}
+            scanAndCreateForm(sortedDataWithLayoutElements, form)
+            console.log('INIT:SCR: form = ', form)
+            console.log('INIT:SCR: form2 = ', form2)
         }
 
         initialize()
