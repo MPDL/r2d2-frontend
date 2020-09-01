@@ -829,25 +829,36 @@ const R2D2DataHandler = function() {
                     level = tree.length
                     switch (node.layout) {
                         case LY.START_OF_LIST:
+                            ly = getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD })
+                            level > 1 ? items.push(ly) : null
+                            //
                             ly = getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.START })
                             items.push(ly)
+                            //
                             ly = getLayoutItem(tree, { level, removeBlock: true, treeAdd: LY.REMOVE })
                             level > 1 ? items.push(ly) : null
                             break
                         case LY.END_OF_LIST:
                             ly = getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.END })
                             items.push(ly)
+                            //
                             t = getCombinedTree(tree)
+
                             const indexInfo = indexTree[t.keyEndingArrayPath]
                             if (indexInfo) {
                                 indexInfo.index++
-                                // add the 'add' option only on list end
-                                // const setAddOption = indexInfo.index >= indexInfo.length
-                                const setAddOption = true // always add the 'add' option
-                                if (setAddOption) {
-                                    ly = getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD })
-                                    level > 1 ? items.push(ly) : null
+                                ly = getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD })
+                                level > 1 ? items.push(ly) : null
+                                // set a additional add (+1) tag ad the end of the list
+                                if (indexInfo.index >= indexInfo.length) {
+                                    console.log('SCR: tree = ', tree)
+                                    const tr = [...tree]
+                                    tr[tr.length - 1]++
+                                    ly = getLayoutItem(tr, { level, addBlock: true, treeAdd: LY.ADD })
+                                    items.push(ly)
+                                    console.log('SCR: ly = ', ly)
                                 }
+                                indexInfo.index >= indexInfo.length
                             }
                             break
                     }
@@ -1016,23 +1027,35 @@ const R2D2DataHandler = function() {
                 case 'remove': // ok
                     isArrayNode ? node.splice(key, 1) : delete node[key]
                     break
+                case 'add': // ok
+                    console.log('NJ:fc isArrayNode = ', isArrayNode)
+                    console.log('NJ:fc tree = ', tree)
+                    console.log('NJ:fc node = ', node)
+                    console.log('NJ:fc key = ', key)
+                    isArrayNode ? node.splice(key, 0, true) : null
+                    break
+
+                // arr.splice(index, 0, item);
             }
             return true
         }
 
-        // add and remove form blocks
-        const removeBlock = tree => {
-            const meta = collectData()
-            console.log('MT:removeBlock tree, meta = ', tree, meta)
-            tree.pop()
-            nodeJob('remove', meta, tree)
-            createNewForm(meta)
-        }
-
         this.modifyForm = args => {
+            const meta = collectData()
+            args.tree.pop()
             if (args.action === 'removeBlock') {
-                removeBlock(args.tree)
+                nodeJob('remove', meta, args.tree)
             }
+
+            switch (args.action) {
+                case 'removeBlock':
+                    nodeJob('remove', meta, args.tree)
+                    break
+                case 'addBlock':
+                    nodeJob('add', meta, args.tree)
+                    break
+            }
+            createNewForm(meta)
             console.log('MT:modifyForm args = ', args)
         }
     }
