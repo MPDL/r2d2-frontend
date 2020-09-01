@@ -480,16 +480,125 @@ const R2D2DataHandler = function() {
             })
         }
 
+        // TESTDATA
+        const metaRawData3 = {
+            title: 'test metadata',
+            authors: [
+                // {
+                //     givenName: 'author 1',
+                //     familyName: 'foo 1',
+                //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                //     affiliations: [
+                //         {
+                //             id: 'affy-1',
+                //             organization: '',
+                //             department: 1 // select by index test
+                //         }
+                //     ]
+                // },
+                // {
+                //     givenName: 'author 2',
+                //     familyName: 'foo 2',
+                //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                //     affiliationsXX: [
+                //         {
+                //             id: null,
+                //             organization: '',
+                //             department: 0 // select by index test
+                //         }
+                //     ]
+                // },
+                {
+                    givenName: 'author 3',
+                    familyName: 'foo 3',
+                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                    affiliations: [
+                        {
+                            id: null,
+                            organization: '',
+                            department: 'department 2'
+                        },
+                        null,
+                        // {
+                        //     id: 'zzk-22',
+                        //     organization: 'fzdgduzfg',
+                        //     department: 'area 51'
+                        // },
+                        {
+                            id: 'msg-5555',
+                            organization: 'tizoiho',
+                            department: '42'
+                        }
+                    ]
+                }
+            ]
+        }
+
+        // TESTDATA // TODO move to structure
+
+        const schema3 = {
+            description: {
+                default: 'default description'
+            },
+            authors: [
+                {
+                    __0: {
+                        sublist: true
+                    },
+                    // test1: {},
+                    // test2: {},
+                    // test3: {},
+                    // test4: {},
+                    // givenName: {},
+                    // familyName: {},
+                    givenName: {
+                        default: 'default: name-id'
+                    },
+                    affiliations: [
+                        {
+                            __0: {
+                                sublist: true
+                            },
+                            // department: {
+                            //     __0: {
+                            //         // TESTDATA
+                            //         type: 'dropdown',
+                            //         label: 'authors.affiliations.department TEST',
+                            //         sendKey: '',
+                            //         options: ['a', 'b', 'c', 'd']
+                            //     },
+                            //     default: 2
+                            // },
+                            // organization: { default: 'affy-orgaaa' },
+                            id: {
+                                default: 'default: affy-id'
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+
         const sortRawDataByTree = (srcNnode, tgNode = [], reference = []) => {
             if (_.isArray(srcNnode)) {
-                _.each(srcNnode, (elm, index) => {
-                    tgNode[index] = []
-                    sortRawDataByTree(elm, tgNode[index], reference)
+                if (srcNnode.length === 0) {
+                    srcNnode[0] = _.cloneDeep(reference)
+                }
+                let index = -1
+                _.each(srcNnode, elm => {
+                    if (!_.isNil(elm)) {
+                        index++
+                        tgNode[index] = []
+                        sortRawDataByTree(elm, tgNode[index], reference)
+                    }
                 })
             }
             const missingKeys = {}
             _.each(reference, (rfObj, index) => {
                 const key = rfObj.key
+                if (_.isNil(srcNnode)) {
+                    srcNnode = {}
+                }
                 if (Object.keys(srcNnode).indexOf(key) > -1) {
                     tgNode[index] = { key }
                     if (rfObj.sub) {
@@ -505,8 +614,8 @@ const R2D2DataHandler = function() {
                 }
             })
             _.each(missingKeys, msObj => {
-                // this creates the complete structure below the node!
-                // no need to start ecursion here
+                // this creates the complete structure below every missing node!
+                // no need to start a recursion here
                 let cloned = _.cloneDeep(reference[msObj.index])
                 if (cloned.sub) {
                     cloned.sub = [cloned.sub]
@@ -687,104 +796,6 @@ const R2D2DataHandler = function() {
             return res
         }
 
-        // TESTDATA
-        const metaRawData3 = {
-            title: 'test metadata',
-            authors: [
-                // {
-                //     givenName: 'author 1',
-                //     familyName: 'foo 1',
-                //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                //     affiliations: [
-                //         {
-                //             id: 'affy-1',
-                //             organization: '',
-                //             department: 1 // select by index test
-                //         }
-                //     ]
-                // },
-                // {
-                //     givenName: 'author 2',
-                //     familyName: 'foo 2',
-                //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                //     affiliationsXX: [
-                //         {
-                //             id: null,
-                //             organization: '',
-                //             department: 0 // select by index test
-                //         }
-                //     ]
-                // },
-                {
-                    givenName: 'author 3',
-                    familyName: 'foo 3',
-                    nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                    affiliations: [
-                        {
-                            id: null,
-                            organization: '',
-                            department: 'department 2'
-                        },
-                        {
-                            id: 'zzk-22',
-                            organization: 'fzdgduzfg',
-                            department: 'area 51'
-                        },
-                        {
-                            id: 'msg-5555',
-                            organization: 'tizoiho',
-                            department: '42'
-                        }
-                    ]
-                }
-            ]
-        }
-
-        // TESTDATA // TODO move to structure
-
-        const schema3 = {
-            description: {
-                default: 'default description'
-            },
-            authors: [
-                {
-                    __0: {
-                        sublist: true
-                    },
-                    // test1: {},
-                    // test2: {},
-                    // test3: {},
-                    // test4: {},
-                    // givenName: {},
-                    // familyName: {},
-                    nameIdentifier: {
-                        default: 'default: name-id'
-                    },
-                    affiliations: [
-                        {
-                            __0: {
-                                sublist: true
-                            },
-                            // department: {
-                            //     __0: {
-                            //         // TESTDATA
-                            //         type: 'dropdown',
-                            //         label: 'authors.affiliations.department TEST',
-                            //         sendKey: '',
-                            //         options: ['a', 'b', 'c', 'd']
-                            //     },
-                            //     default: 2
-                            // },
-                            // organization: { default: 'affy-orgaaa' },
-                            id: {
-                                default: 'default: affy-id'
-                            }
-                        }
-                    ]
-                }
-            ]
-        }
-
         const scanAndCreateForm = (source, target = {}, tree = []) => {
             const getCombinedTree = ($tree, $add = []) => {
                 const tr = $tree.length > 0 ? [...$tree, ...$add] : [...$add]
@@ -925,8 +936,8 @@ const R2D2DataHandler = function() {
             console.log('INIT:SCR: form = ', form)
         }
 
-        const schema = schema1
-        const metaRawData = metaRawData1
+        const schema = schema3
+        const metaRawData = metaRawData3
 
         initialize()
         createNewForm(metaRawData)
@@ -970,7 +981,7 @@ const R2D2DataHandler = function() {
                     const p1 = tree.pop()
                     const p2 = tree.pop()
                     const sp1 = sTree.pop()
-                    const sp2 = sTree.pop()                   
+                    const sp2 = sTree.pop()
                     path.push(p1)
                     sPath.push(sp1)
                     if (_.isArray(_.get(schema, sPath))) {
