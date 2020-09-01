@@ -314,7 +314,7 @@ const R2D2DataHandler = function() {
                     ]
                 }
             ],
-            doi: '12345',
+            // doi: '12345',
             description: 'fourth try to create a dataset via drag',
             genres: ['g1', 'g2'],
             keywords: ['kw1', 'kw2'],
@@ -350,7 +350,9 @@ const R2D2DataHandler = function() {
             },
             description: {},
             language: {},
-            doi: {},
+            doi: {
+                default: 'doiiii-123'
+            },
             license: {},
             genres: {},
             keywords: {},
@@ -514,9 +516,9 @@ const R2D2DataHandler = function() {
                     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
                     affiliations: [
                         {
-                            id: null,
+                            id: 'aff-1-id-set',
                             organization: '',
-                            department: 'department 2'
+                            department: 'aff department 2'
                         },
                         null,
                         // {
@@ -525,9 +527,9 @@ const R2D2DataHandler = function() {
                         //     department: 'area 51'
                         // },
                         {
-                            id: 'msg-5555',
+                            id: 'aff-3-id-set',
                             organization: 'tizoiho',
-                            department: '42'
+                            department: 'aff dp 42'
                         }
                     ]
                 }
@@ -996,22 +998,34 @@ const R2D2DataHandler = function() {
             return res
         }
 
+        const nodeJob = (action, data, tree, args = {}) => {
+            // add at index
+            // shift by index delta
+            const tr = [...tree]
+            const key = tr.pop()
+            let node = data
+            const isArrayNode = !isNaN(key)
+
+            tr.reverse()
+            while (tr.length) {
+                const n = tr.pop()
+                node = node[n]
+            }
+
+            switch (action) {
+                case 'remove': // ok
+                    isArrayNode ? node.splice(key, 1) : delete node[key]
+                    break
+            }
+            return true
+        }
+
         // add and remove form blocks
         const removeBlock = tree => {
             const meta = collectData()
-            console.log('MT:removeBlock meta = ', meta)
-
-            // const meta = sortedDataWithLayoutElements
-            const t = getTree(tree)
-            // t.indexEndingTree.pop()
-            const target = _.get(meta, t.indexEndingTree)
-            console.log('MT:removeBlock target = ', target)
-            t.indexEndingTree.pop()
-            _.remove(meta, t.indexEndingTree)
-            console.log('MT:removeBlock meta AF = ', meta)
-            // target.splice(t.lastIndex, 1)
-            // console.log('MT:removeBlock t = ', t)
-            // console.log('MT:removeBlock meta = ', meta)
+            console.log('MT:removeBlock tree, meta = ', tree, meta)
+            tree.pop()
+            nodeJob('remove', meta, tree)
             createNewForm(meta)
         }
 
