@@ -851,12 +851,14 @@ const R2D2DataHandler = function() {
                                 level > 1 ? items.push(ly) : null
                                 // set a additional add (+1) tag ad the end of the list
                                 if (indexInfo.index >= indexInfo.length) {
-                                    console.log('SCR: tree = ', tree)
                                     const tr = [...tree]
-                                    tr[tr.length - 1]++
-                                    ly = getLayoutItem(tr, { level, addBlock: true, treeAdd: LY.ADD })
-                                    items.push(ly)
-                                    console.log('SCR: ly = ', ly)
+                                    let last = tr.pop()
+                                    last++
+                                    if (!isNaN(last) && level > 1) {
+                                        tr.push(last)
+                                        ly = getLayoutItem(tr, { level, addBlock: true, treeAdd: LY.ADD })
+                                        items.push(ly)                                       
+                                    }
                                 }
                                 indexInfo.index >= indexInfo.length
                             }
