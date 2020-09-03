@@ -259,6 +259,7 @@ const R2D2DataHandler = function() {
             END: '_END',
             ADD: '_ADD',
             REMOVE: '_REMOVE',
+            ACTIONS: '_ACTIONS',
             START_OF_LIST: '_START_OF_LIST',
             END_OF_LIST: '_END_OF_LIST'
         }
@@ -516,18 +517,18 @@ const R2D2DataHandler = function() {
                     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
                     affiliations: [
                         {
-                            id: 'aff-1-id-set',
+                            id: 'aff-0-id-set',
                             organization: '',
                             department: 'aff department 2'
                         },
                         null,
-                        // {
-                        //     id: 'zzk-22',
-                        //     organization: 'fzdgduzfg',
-                        //     department: 'area 51'
-                        // },
                         {
-                            id: 'aff-3-id-set',
+                            id: 'aff-1-id-set',
+                            organization: 'fzdgduzfg',
+                            department: 'area 51'
+                        },
+                        {
+                            id: 'aff-2-id-set',
                             organization: 'tizoiho',
                             department: 'aff dp 42'
                         }
@@ -634,7 +635,7 @@ const R2D2DataHandler = function() {
             const setIndexInfo = (node, key) => {
                 if (_.isString(node.key)) {
                     indexTree[key] = {
-                        length: node.sub.length,
+                        nodeLength: node.sub.length,
                         index: 0
                     }
                 }
@@ -710,16 +711,19 @@ const R2D2DataHandler = function() {
                 type: 'LY',
                 label: '',
                 spLabel: tree.join('.'),
-                startBlock: args.startBlock === true,
-                endBlock: args.endBlock === true,
-                addBlock: args.addBlock === true,
-                removeBlock: args.removeBlock === true,
                 __strc: {
                     level: args.level,
                     class: `level-${args.level}`,
                     tree
                 }
             }
+            const props = 'startNode,endNode,addNode,removeNode,shift2FirstNode,shift1UpNode,shift1DownNode,shift2LastNode'.split(
+                ','
+            )
+            _.each(props, key => {
+                item[key] = args[key] === true
+            })
+
             return item
         }
 
@@ -827,40 +831,53 @@ const R2D2DataHandler = function() {
                     const items = []
                     let ly = null
                     level = tree.length
+                    t = getCombinedTree(tree)
+                    const indexInfo = indexTree[t.keyEndingArrayPath]
                     switch (node.layout) {
                         case LY.START_OF_LIST:
-                            ly = getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD })
+                            ly = getLayoutItem(tree, { level, addNode: true, treeAdd: LY.ADD })
                             level > 1 ? items.push(ly) : null
                             //
-                            ly = getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.START })
+                            ly = getLayoutItem(tree, { level, startNode: true, treeAdd: LY.START })
                             items.push(ly)
+                            let canUp = false
+                            let canDown = false
+                            if (indexInfo && indexInfo.nodeLength > 1) {
+                                canUp = indexInfo.index > 0
+                                canDown = indexInfo.index < indexInfo.nodeLength - 1
+                            }
                             //
-                            ly = getLayoutItem(tree, { level, removeBlock: true, treeAdd: LY.REMOVE })
+                            ly = getLayoutItem(tree, {
+                                level,
+                                removeNode: true,
+                                shift1UpNode: canUp,
+                                shift2FirstNode: canUp,
+                                shift1DownNode: canDown,
+                                shift2LastNode: canDown,
+                                treeAdd: LY.ACTIONS
+                            })
                             level > 1 ? items.push(ly) : null
                             break
                         case LY.END_OF_LIST:
-                            ly = getLayoutItem(tree, { level, startBlock: true, treeAdd: LY.END })
+                            ly = getLayoutItem(tree, { level, startNode: true, treeAdd: LY.END })
                             items.push(ly)
                             //
-                            t = getCombinedTree(tree)
-
-                            const indexInfo = indexTree[t.keyEndingArrayPath]
                             if (indexInfo) {
                                 indexInfo.index++
-                                ly = getLayoutItem(tree, { level, addBlock: true, treeAdd: LY.ADD })
+                                ly = getLayoutItem(tree, { level, addNode: true, treeAdd: LY.ADD })
                                 level > 1 ? items.push(ly) : null
                                 // set a additional add (+1) tag ad the end of the list
-                                if (indexInfo.index >= indexInfo.length) {
+                                if (indexInfo.index >= indexInfo.nodeLength) {
                                     const tr = [...tree]
                                     let last = tr.pop()
                                     last++
                                     if (!isNaN(last) && level > 1) {
                                         tr.push(last)
-                                        ly = getLayoutItem(tr, { level, addBlock: true, treeAdd: LY.ADD })
-                                        items.push(ly)                                       
+                                        ly = getLayoutItem(tr, { level, addNode: true, treeAdd: LY.ADD })
+                                        items.push(ly)
                                     }
                                 }
-                                indexInfo.index >= indexInfo.length
+                                indexInfo.index >= indexInfo.nodeLength
                             }
                             break
                     }
@@ -1004,7 +1021,7 @@ const R2D2DataHandler = function() {
                         sPath.push(sp2)
                     }
                 }
-                // TODO set the collect-format optionally here!
+                // TODO set the collect-data-format(schema) optionally here!
                 // _.set(res, path, { selected: value.selected })
                 _.set(res, path, value.selected)
             })
@@ -1030,14 +1047,19 @@ const R2D2DataHandler = function() {
                     isArrayNode ? node.splice(key, 1) : delete node[key]
                     break
                 case 'add': // ok
-                    console.log('NJ:fc isArrayNode = ', isArrayNode)
-                    console.log('NJ:fc tree = ', tree)
-                    console.log('NJ:fc node = ', node)
-                    console.log('NJ:fc key = ', key)
                     isArrayNode ? node.splice(key, 0, true) : null
                     break
-
-                // arr.splice(index, 0, item);
+                case 'shift': // ok
+                    if (isArrayNode) {
+                        let key2 = key + args.delta
+                        key2 = args.delta === '2first' ? 0 : key2
+                        key2 = args.delta === '2last' ? node.length - 1 : key2
+                        key2 = key2 < 0 ? 0 : key2
+                        key2 = key2 > node.length - 1 ? node.length - 1 : key2
+                        const elm = node.splice(key, 1)[0]
+                        node.splice(key2, 0, elm)
+                    }
+                    break
             }
             return true
         }
@@ -1045,20 +1067,32 @@ const R2D2DataHandler = function() {
         this.modifyForm = args => {
             const meta = collectData()
             args.tree.pop()
-            if (args.action === 'removeBlock') {
+            if (args.action === 'removeNode') {
                 nodeJob('remove', meta, args.tree)
             }
 
             switch (args.action) {
-                case 'removeBlock':
+                case 'removeNode':
                     nodeJob('remove', meta, args.tree)
                     break
-                case 'addBlock':
+                case 'addNode':
                     nodeJob('add', meta, args.tree)
+                    break
+                case 'shift1UpNode':
+                    nodeJob('shift', meta, args.tree, { delta: -1 })
+                    break
+                case 'shift1DownNode':
+                    nodeJob('shift', meta, args.tree, { delta: 1 })
+                    break
+                case 'shift2FirstNode':
+                    nodeJob('shift', meta, args.tree, { delta: '2first' })
+                    break
+                case 'shift2LastNode':
+                    nodeJob('shift', meta, args.tree, { delta: '2last' })
                     break
             }
             createNewForm(meta)
-            console.log('MT:modifyForm args = ', args)
+            // console.log('MT:modifyForm args = ', args)
         }
     }
     let metaFormHandler = null

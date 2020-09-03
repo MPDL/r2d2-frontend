@@ -15,14 +15,56 @@
                         <div class="line"></div>
                         <div class="label">{{ item.spLabel }}</div>
                         <div class="action">
-                            <b-button v-if="item.addBlock" class="add" size="sm" @click="onClickActionButton(item)">
+                            <b-button
+                                v-if="item.addNode"
+                                class="add"
+                                size="sm"
+                                @click="onClickActionButton({ item, action: 'addNode' })"
+                            >
                                 (+) Add
                             </b-button>
+
                             <b-button
-                                v-if="item.removeBlock"
+                                v-if="item.shift2FirstNode"
+                                class="shift"
+                                size="sm"
+                                @click="onClickActionButton({ item, action: 'shift2FirstNode' })"
+                            >
+                                &#x25B2;&#x25B2;
+                            </b-button>
+
+                            <b-button
+                                v-if="item.shift1UpNode"
+                                class="shift"
+                                size="sm"
+                                @click="onClickActionButton({ item, action: 'shift1UpNode' })"
+                            >
+                                &#x25B2;
+                            </b-button>
+
+                            <b-button
+                                v-if="item.shift1DownNode"
+                                class="shift"
+                                size="sm"
+                                @click="onClickActionButton({ item, action: 'shift1DownNode' })"
+                            >
+                                &#x25BC;
+                            </b-button>
+
+                            <b-button
+                                v-if="item.shift2LastNode"
+                                class="shift"
+                                size="sm"
+                                @click="onClickActionButton({ item, action: 'shift2LastNode' })"
+                            >
+                                &#x25BC;&#x25BC;
+                            </b-button>
+
+                            <b-button
+                                v-if="item.removeNode"
                                 class="remove"
                                 size="sm"
-                                @click="onClickActionButton(item)"
+                                @click="onClickActionButton({ item, action: 'removeNode' })"
                             >
                                 (-) Remove
                             </b-button>
@@ -119,6 +161,9 @@
 </template>
 
 <script>
+//
+// TODO add tooltips to action buttons
+//
 import vueCustomScrollbar from 'vue-custom-scrollbar'
 import R2Chunky from '@/components/R2Chunky.vue'
 import R2Meta from '@/components/R2Meta.vue'
@@ -165,23 +210,12 @@ export default {
                 key
             })
         },
-        onClickActionButton(item) {
-            console.log('FC:onClickActionButton item = ', item)
-            console.log('FC:onClickActionButton item.__strc = ', item.__strc)
-            console.log('FC:onClickActionButton item.__strc.tree = ', item.__strc.tree)
-            console.log('FC:onClickActionButton item.addBlock = ', item.addBlock)
-            console.log('FC:onClickActionButton item.removeBlock = ', item.removeBlock)
-
-            const action = item.addBlock ? 'addBlock' : 'removeBlock'
-
+        onClickActionButton(evt) {
+            console.log('FC:onClickActionButton evt = ', evt)
             this.$emit('onClickFormAction', {
-                action,
-                tree: item.__strc.tree
+                action: evt.action,
+                tree: evt.item.__strc.tree
             })
-
-            // this.$emit('onClickButton', {
-            //     key
-            // })
         },
 
         getApi(key) {
