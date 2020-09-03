@@ -1,15 +1,8 @@
 import axios from 'axios'
-import { _isString } from 'gsap/gsap-core'
-import { _forEachName } from 'gsap/gsap-core'
-import { _ } from 'core-js'
-import FileSaver from 'file-saver'
+// import FileSaver from 'file-saver'
 
 function Datasource() {
     //
-
-    // -----------------------------------
-    // -----------------------------------
-
     const getPath = path => {
         if (path.substr(0, 1) === '/') {
             // this resolves a relative path on the own server
