@@ -1,4 +1,5 @@
 const DynamicFormHandler = function() {
+    //
     const LY = {
         START: '_START',
         END: '_END',
@@ -8,323 +9,62 @@ const DynamicFormHandler = function() {
         START_OF_LIST: '_START_OF_LIST',
         END_OF_LIST: '_END_OF_LIST'
     }
-
-    // TESTDATA
-    const metaRawData1 = {
-        title: 'test metadata',
-        authors: [
-            {
-                givenName: 'author 1',
-                familyName: 'foo 1',
-                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                affiliations: [
-                    {
-                        id: 'affy-1',
-                        organization: '',
-                        department: 1 // select by index test
-                    }
-                ]
-            },
-            {
-                givenName: 'author 2',
-                familyName: 'foo 2',
-                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                affiliationsXX: [
-                    {
-                        id: null,
-                        organization: '',
-                        department: 0 // select by index test
-                    }
-                ]
-            },
-            {
-                givenName: 'author 3',
-                familyName: 'foo 3',
-                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                affiliations: [
-                    {
-                        id: null,
-                        organization: '',
-                        department: 'department 2'
-                    },
-                    {
-                        id: 'zzk-22',
-                        organization: 'fzdgduzfg',
-                        department: 'area 51'
-                    },
-                    {
-                        id: 'msg-5555',
-                        organization: 'tizoiho',
-                        department: '42'
-                    }
-                ]
-            }
-        ],
-        // doi: '12345',
-        description: 'fourth try to create a dataset via drag',
-        genres: ['g1', 'g2'],
-        keywords: ['kw1', 'kw2'],
-        correspondingPapers: [
-            {
-                title: 'paper 1',
-                url: null,
-                type: null,
-                identifier: null,
-                identifierType: 'identifierType paper 1'
-            },
-            {
-                title: 'paper 2',
-                url: null,
-                type: null,
-                identifier: null,
-                identifierType: 'identifierType paper 2'
-            }
-        ],
-        license: 'lcs 123',
-        language: ['de', 'ru']
-    }
-
-    // TESTDATA // TODO move to structure
-
-    const schema1 = {
-        title: {
-            __0: {
-                type: 'input',
-                label: 'title',
-                default: 'dedault title'
-            }
-        },
-        description: {},
-        language: {},
-        doi: {
-            default: 'doiiii-123'
-        },
-        license: {},
-        genres: {},
-        keywords: {},
-
-        authors: [
-            {
-                __0: {
-                    sublist: true
-                },
-                givenName: {},
-                familyName: {},
-                nameIdentifier: {},
-                affiliations: [
-                    {
-                        __0: {
-                            sublist: true
-                        },
-                        department: {
-                            __0: {
-                                // TESTDATA
-                                type: 'dropdown',
-                                label: 'authors.affiliations.department TEST',
-                                sendKey: '',
-                                options: ['a', 'b', 'c', 'd']
-                            },
-                            default: 2
-                        },
-                        organization: { default: 'affy-orgaaa' },
-                        id: {
-                            default: '1234-oo'
-                        }
-                    }
-                ]
-            }
-        ],
-
-        correspondingPapers: [
-            {
-                __0: {
-                    sublist: true
-                },
-                url: {},
-                type: {},
-                identifier: {},
-                identifierType: {}
-            }
-        ]
-    }
-
-    // simple structure test
-
-    const metaRawData2 = {
-        correspondingPapers: [
-            {
-                title: 'paper 1',
-                url: null,
-                type: null,
-                identifier: null,
-                identifierType: 'identifierType paper 1',
-                sub2test: [
-                    {
-                        val1: '1-123',
-                        val2: '1-456'
-                    }
-                ]
-            },
-            {
-                title: 'paper 2',
-                url: null,
-                type: null,
-                identifier: null,
-                // identifierType: 'identifierType paper 2',
-                sub2test: [
-                    {
-                        val1: '2-123',
-                        val2: '2-456'
-                    }
-                ]
-            }
-        ]
-    }
-
-    const schema2 = {
-        correspondingPapers: [
-            {
-                __0: {
-                    sublist: true
-                },
-                url: { default: '123' },
-                type: {},
-                identifier: {},
-                identifierType: { default: '456' },
-                sub2test: [
-                    {
-                        __0: {
-                            sublist: true
-                        },
-                        val1: {},
-                        val2: {}
-                    }
-                ]
-            }
-        ]
-    }
-
-    // const schema = schema1
-    // const metaRawData = metaRawData1
-
     //
-
-    const sortingTree = [] // OK
+    let sortingTree = null
+    let indexTree = null
+    let sortedData = null
+    let sortedDataWithLayoutElements = null
+    let form = null
+    let schema = {}
+    //
+    const createNewForm = (rawFormData, $schema) => {
+        if (_.isPlainObject($schema)) {
+            schema = $schema
+        }
+        // TEST ON
+        // rawFormData = metaRawData1
+        // rawFormData = {}
+        // schema = schema1
+        //
+        //
+        form = {}
+        sortedData = []
+        sortedDataWithLayoutElements = []
+        sortingTree = []
+        indexTree = {}
+        createSortingTree(schema, sortingTree)
+        // console.log('INIT:CST: sortingTree = ', sortingTree)
+        // console.log('INIT:CST: schema = ', schema)
+        // 2. move all raw data into correct order by schema
+        sortRawDataByTree(rawFormData, sortedData, sortingTree)
+        const d = _.cloneDeep(sortedData) // TODO check if still needed ?
+        // 3. create the index-tree for list-length tracking by following recursive functions
+        createIndexTree(d)
+        // 4. add the basic layout tags (list start/end)
+        addLayoutElements(d, sortedDataWithLayoutElements)
+        // 5. create the final form and add the add/remove tags (uses the index-tree)
+        scanAndCreateForm(sortedDataWithLayoutElements, form)
+        return form
+    }
+    //
+    this.getForm = (data = null, schema = null) => (data ? createNewForm(data, schema) : form)
+    // this.getForm = () => {} // TEST ON
+    //
+    //
     const createSortingTree = (source = {}, target = []) => {
-        // console.log('CST:IN source =  ', source)
-        _.each(source, (obj, key) => {
+        _.each(source, (elm, key) => {
             if (key !== '__0') {
                 let node = null
-                if (_.isArray(obj) && _.isPlainObject(obj[0]) && obj[0].__0 && obj[0].__0.sublist) {
-                    node = { key, sub: [] }
+                if (_.isArray(elm) && _.isPlainObject(elm[0]) && elm[0].__0 && elm[0].__0.sublist) {
+                    node = { key, sub: [[]] }
                     target.push(node)
-                    createSortingTree(obj[0], node.sub)
+                    createSortingTree(elm[0], node.sub[0])
                 } else {
-                    // console.log('CST: obj =  ', obj)
-                    node = { key, value: _.isUndefined(obj.default) ? null : obj.default }
+                    node = { key, value: _.isUndefined(elm.default) ? null : elm.default }
                     target.push(node)
                 }
             }
         })
-    }
-
-    // TESTDATA
-    const metaRawData3 = {
-        title: 'test metadata',
-        authors: [
-            // {
-            //     givenName: 'author 1',
-            //     familyName: 'foo 1',
-            //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-            //     affiliations: [
-            //         {
-            //             id: 'affy-1',
-            //             organization: '',
-            //             department: 1 // select by index test
-            //         }
-            //     ]
-            // },
-            // {
-            //     givenName: 'author 2',
-            //     familyName: 'foo 2',
-            //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-            //     affiliationsXX: [
-            //         {
-            //             id: null,
-            //             organization: '',
-            //             department: 0 // select by index test
-            //         }
-            //     ]
-            // },
-            {
-                givenName: 'author 3',
-                familyName: 'foo 3',
-                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
-                affiliations: [
-                    {
-                        id: 'aff-0-id-set',
-                        organization: '',
-                        department: 'aff department 2'
-                    },
-                    null,
-                    {
-                        id: 'aff-1-id-set',
-                        organization: 'fzdgduzfg',
-                        department: 'area 51'
-                    },
-                    {
-                        id: 'aff-2-id-set',
-                        organization: 'tizoiho',
-                        department: 'aff dp 42'
-                    }
-                ]
-            }
-        ]
-    }
-
-    // TESTDATA // TODO move to structure
-
-    const schema3 = {
-        description: {
-            default: 'default description'
-        },
-        authors: [
-            {
-                __0: {
-                    sublist: true
-                },
-                // test1: {},
-                // test2: {},
-                // test3: {},
-                // test4: {},
-                // givenName: {},
-                // familyName: {},
-                givenName: {
-                    default: 'default: name-id'
-                },
-                affiliations: [
-                    {
-                        __0: {
-                            sublist: true
-                        },
-                        // department: {
-                        //     __0: {
-                        //         // TESTDATA
-                        //         type: 'dropdown',
-                        //         label: 'authors.affiliations.department TEST',
-                        //         sendKey: '',
-                        //         options: ['a', 'b', 'c', 'd']
-                        //     },
-                        //     default: 2
-                        // },
-                        // organization: { default: 'affy-orgaaa' },
-                        id: {
-                            default: 'default: affy-id'
-                        }
-                    }
-                ]
-            }
-        ]
     }
 
     const sortRawDataByTree = (srcNnode, tgNode = [], reference = []) => {
@@ -337,7 +77,7 @@ const DynamicFormHandler = function() {
                 if (!_.isNil(elm)) {
                     index++
                     tgNode[index] = []
-                    sortRawDataByTree(elm, tgNode[index], reference)
+                    sortRawDataByTree(elm, tgNode[index], reference[0])
                 }
             })
         }
@@ -374,7 +114,7 @@ const DynamicFormHandler = function() {
 
     // this holds the index data of all levels
     // needed to recursive detect when a list ends
-    let indexTree = {}
+
     const createIndexTree = (source, parentTree = null) => {
         let key = null
         const setIndexInfo = (node, key) => {
@@ -473,6 +213,7 @@ const DynamicFormHandler = function() {
     }
 
     const getTree = tree => {
+        // TODO cleanup this, contains some not longer used results
         tree = tree.length === 0 ? [''] : tree
         tree = _.isString(tree) ? tree.split('.') : [...tree]
         _.each(tree, (val, index) => {
@@ -675,53 +416,13 @@ const DynamicFormHandler = function() {
             item = globals.setupDropdownFormCell(item)
         } else {
             // MOCK just remove the annoying bootstrap propz error :-((
+            // TODO get this working
             item.selected = _.isArray(item.selected) ? item.selected.join(',') : item.selected
         }
         //
         return item
     }
-
-    const initialize = () => {
-        // 1. create a sorting tree by schema
-        createSortingTree(schema, sortingTree)
-    }
     //
-    let sortedData = null
-    let sortedDataWithLayoutElements = null
-    let form = null
-    //
-
-    const createNewForm = meta => {
-        form = {}
-        sortedData = []
-        sortedDataWithLayoutElements = []
-        // 2. move all raw data into correct order by schema
-        console.log('INIT:createNewForm meta = ', _.cloneDeep(meta))
-        sortRawDataByTree(meta, sortedData, sortingTree)
-        console.log('INIT:createNewForm SBT:E1: sortedData = ', sortedData)
-        // debugger
-        const d = _.cloneDeep(sortedData)
-        // 3. create the index-tree for list-length tracking by following recursive functions
-        createIndexTree(d)
-        console.log('INIT:createNewForm indexTree = ', indexTree)
-        // 4. add the basic layout tags (list start/end)
-        addLayoutElements(d, sortedDataWithLayoutElements)
-        console.log('INIT:ALE:createNewForm sortedDataWithLayoutElements = ', sortedDataWithLayoutElements)
-        console.log('INIT:ALE:createNewForm sortedData = ', sortedData)
-        // 5. create the final form and add the add/remove tags (uses the index-tree)
-        scanAndCreateForm(sortedDataWithLayoutElements, form)
-        console.log('INIT:SCR: form = ', form)
-    }
-
-    const schema = schema3
-    const metaRawData = metaRawData3
-
-    initialize()
-    createNewForm(metaRawData)
-
-    this.getForm = () => form
-    // this.getForm = () => {} // TEST ON
-
     const collectData = () => {
         const res = {}
         const filtered = {}
@@ -733,7 +434,7 @@ const DynamicFormHandler = function() {
         })
         // sort by depth
         // this takes care that later appearing, less-depth nodes
-        // overwrite already written deeper nodes!
+        // DON'T overwrite already written deeper nodes!
         const depthSortOnLevel = (source, depth = 1) => {
             _.each(source, (obj, key) => {
                 if (key.split('.').length === depth) {
@@ -787,6 +488,10 @@ const DynamicFormHandler = function() {
             node = node[n]
         }
 
+        // console.log('NJ: tree = ', tree)
+        // console.log('NJ: key = ', key)
+        // console.log('NJ: node = ', node)
+
         switch (action) {
             case 'remove': // ok
                 isArrayNode ? node.splice(key, 1) : delete node[key]
@@ -815,7 +520,6 @@ const DynamicFormHandler = function() {
         if (args.action === 'removeNode') {
             nodeJob('remove', meta, args.tree)
         }
-
         switch (args.action) {
             case 'removeNode':
                 nodeJob('remove', meta, args.tree)
@@ -836,8 +540,304 @@ const DynamicFormHandler = function() {
                 nodeJob('shift', meta, args.tree, { delta: '2last' })
                 break
         }
+        console.log('MF:END meta = ', meta)
         createNewForm(meta)
-        // console.log('MT:modifyForm args = ', args)
+    }
+
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // +++++++++ TEST & MOCKDATA
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    const metaRawData1 = {
+        title: 'test metadata',
+        authors: [
+            {
+                givenName: 'author 1',
+                familyName: 'foo 1',
+                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                affiliations: [
+                    {
+                        id: 'affy-1',
+                        organization: '',
+                        department: 1 // select by index test
+                    }
+                ]
+            },
+            {
+                givenName: 'author 2',
+                familyName: 'foo 2',
+                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                affiliationsXX: [
+                    {
+                        id: null,
+                        organization: '',
+                        department: 0 // select by index test
+                    }
+                ]
+            },
+            {
+                givenName: 'author 3',
+                familyName: 'foo 3',
+                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                affiliations: [
+                    {
+                        id: null,
+                        organization: '',
+                        department: 'department 2'
+                    },
+                    {
+                        id: 'zzk-22',
+                        organization: 'fzdgduzfg',
+                        department: 'area 51'
+                    },
+                    {
+                        id: 'msg-5555',
+                        organization: 'tizoiho',
+                        department: '42'
+                    }
+                ]
+            }
+        ],
+        // doi: '12345',
+        description: 'fourth try to create a dataset via drag',
+        genres: ['g1', 'g2'],
+        keywords: ['kw1', 'kw2'],
+        correspondingPapers: [
+            {
+                title: 'paper 1',
+                url: null,
+                type: null,
+                identifier: null,
+                identifierType: 'identifierType paper 1'
+            },
+            {
+                title: 'paper 2',
+                url: null,
+                type: null,
+                identifier: null,
+                identifierType: 'identifierType paper 2'
+            }
+        ],
+        license: 'lcs 123',
+        language: ['de', 'ru']
+    }
+
+    const schema1 = {
+        title: {
+            __0: {
+                type: 'input',
+                label: 'title',
+                default: 'dedault title'
+            }
+        },
+        description: {},
+        language: {},
+        doi: {
+            default: 'doiiii-123'
+        },
+        license: {},
+        genres: {},
+        keywords: {},
+
+        authors: [
+            {
+                __0: {
+                    sublist: true
+                },
+                givenName: {},
+                familyName: {},
+                nameIdentifier: {},
+                affiliations: [
+                    {
+                        __0: {
+                            sublist: true
+                        },
+                        department: {
+                            __0: {
+                                // TESTDATA
+                                type: 'dropdown',
+                                label: 'authors.affiliations.department TEST',
+                                sendKey: '',
+                                options: ['a', 'b', 'c', 'd']
+                            },
+                            default: 2
+                        },
+                        organization: { default: 'affy-orgaaa' },
+                        id: {
+                            default: '1234-oo'
+                        }
+                    }
+                ]
+            }
+        ],
+
+        correspondingPapers: [
+            {
+                __0: {
+                    sublist: true
+                },
+                url: {},
+                type: {},
+                identifier: {},
+                identifierType: {}
+            }
+        ]
+    }
+
+    // simple structure test
+
+    const metaRawData2 = {
+        correspondingPapers: [
+            {
+                title: 'paper 1',
+                url: null,
+                type: null,
+                identifier: null,
+                identifierType: 'identifierType paper 1',
+                sub2test: [
+                    {
+                        val1: '1-123',
+                        val2: '1-456'
+                    }
+                ]
+            },
+            {
+                title: 'paper 2',
+                url: null,
+                type: null,
+                identifier: null,
+                // identifierType: 'identifierType paper 2',
+                sub2test: [
+                    {
+                        val1: '2-123',
+                        val2: '2-456'
+                    }
+                ]
+            }
+        ]
+    }
+
+    const schema2 = {
+        correspondingPapers: [
+            {
+                __0: {
+                    sublist: true
+                },
+                url: { default: '123' },
+                type: {},
+                identifier: {},
+                identifierType: { default: '456' },
+                sub2test: [
+                    {
+                        __0: {
+                            sublist: true
+                        },
+                        val1: {},
+                        val2: {}
+                    }
+                ]
+            }
+        ]
+    }
+
+    //
+
+    const metaRawData3 = {
+        title: 'test metadata',
+        authors: [
+            // {
+            //     givenName: 'author 1',
+            //     familyName: 'foo 1',
+            //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+            //     affiliations: [
+            //         {
+            //             id: 'affy-1',
+            //             organization: '',
+            //             department: 1 // select by index test
+            //         }
+            //     ]
+            // },
+            // {
+            //     givenName: 'author 2',
+            //     familyName: 'foo 2',
+            //     nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+            //     affiliationsXX: [
+            //         {
+            //             id: null,
+            //             organization: '',
+            //             department: 0 // select by index test
+            //         }
+            //     ]
+            // },
+            {
+                givenName: 'author 3',
+                familyName: 'foo 3',
+                nameIdentifier: 'https://orcid.org/1234-1234-1234-1234',
+                affiliations: [
+                    {
+                        id: 'aff-0-id-set',
+                        organization: '',
+                        department: 'aff department 2'
+                    },
+                    null,
+                    {
+                        id: 'aff-1-id-set',
+                        organization: 'fzdgduzfg',
+                        department: 'area 51'
+                    },
+                    {
+                        id: 'aff-2-id-set',
+                        organization: 'tizoiho',
+                        department: 'aff dp 42'
+                    }
+                ]
+            }
+        ]
+    }
+
+    const schema3 = {
+        description: {
+            default: 'default description'
+        },
+        authors: [
+            {
+                __0: {
+                    sublist: true
+                },
+                // test1: {},
+                // test2: {},
+                // test3: {},
+                // test4: {},
+                // givenName: {},
+                // familyName: {},
+                givenName: {
+                    default: 'default: name-id'
+                },
+                affiliations: [
+                    {
+                        __0: {
+                            sublist: true
+                        },
+                        // department: {
+                        //     __0: {
+                        //         // TESTDATA
+                        //         type: 'dropdown',
+                        //         label: 'authors.affiliations.department TEST',
+                        //         sendKey: '',
+                        //         options: ['a', 'b', 'c', 'd']
+                        //     },
+                        //     default: 2
+                        // },
+                        // organization: { default: 'affy-orgaaa' },
+                        id: {
+                            default: 'default: affy-id'
+                        }
+                    }
+                ]
+            }
+        ]
     }
 }
 

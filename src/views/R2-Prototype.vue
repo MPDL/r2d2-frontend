@@ -176,7 +176,7 @@ export default {
                         showResultJson: true
                     },
                     collectData: data => {
-                        // console.log('changeMetadata:collectData data = ', data)
+                        console.log('changeMetadata:collectData data = ', data)
                         // TODO make this generic and realtime
                         // TODO get data from meta component here!
                         // data['send-data'].metadata.title = data.title
@@ -331,14 +331,8 @@ export default {
                         cfg = this.zones.changeMetadata
                         form = cfg.requests[cfg.id].form
                         form['dataset-id'].selected = r2.ppGetSelectedDataset().key
-                        form['send-data'].selected = {
-                            modificationDate: data.modificationDate,
-                            metadata: data.metadata
-                        }
-                        // TODO update meta component here
-                        // form['title'].selected = data.metadata.title
-                        // form['description'].selected = data.metadata.description
-                        // globals.eventBus.$emit(cfg.updateFormEventKey)
+                        form['metadata'].selected = data.metadata
+                        globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)
             }
@@ -521,7 +515,7 @@ export default {
                     }
                     .meta-component {
                         .form-elements {
-                            height: 250px;
+                            height: 350px;
                             .scroll-area-vc.ps {
                                 height: 20px;
                             }

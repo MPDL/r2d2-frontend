@@ -24,39 +24,64 @@
             "component": "R2-Prototype"
         }
     },
-    "components": {
+    "definitions": {
         "metadata": {
-            "form": {
-                "title": {
-                    "type": "input"
-                },
-                "description": {
-                    "type": "textarea"
-                },
-                "authors": {
-                    "type": "textarea"
-                },
-                "doi": {
-                    "type": "input"
-                },
-                "genres": {
-                    "type": "textarea"
-                },
-                "keywords": {
-                    "type": "textarea"
-                },
-                "license": {
-                    "type": "textarea"
-                },
-                "language": {
-                    "type": "dropdown",
-                    "options": ["en", "de", "ru", "fr", "it", "es", "zh"],
-                    "selected": "en"
-                },
-                "correspondingPapers": {
-                    "type": "textarea"
+            "title": {
+                "__0": {
+                    "type": "input",
+                    "default": "no title set",
+                    "test": "ROOT.title"
                 }
-            }
+            },
+            "description": {},
+            "language": {},
+            "doi": {
+                "default": "no DOI set"
+            },
+            "license": {},
+            "genres": {},
+            "keywords": {},
+            "authors": [
+                {
+                    "__0": {
+                        "sublist": true,
+                        "test": "ROOT.title.authors"
+                    },
+                    "givenName": {},
+                    "familyName": {},
+                    "nameIdentifier": {},
+                    "affiliations": [
+                        {
+                            "__0": {
+                                "sublist": true
+                            },
+                            "department": {
+                                "__0": {
+                                    "type": "dropdown",
+                                    "options": ["Dep. A", "Dep. B", "Dep. C", "Dep. D"],
+                                    "test": "ROOT.title.authors.affiliations.department"
+                                },
+                                "default": 2
+                            },
+                            "organization": { "default": "default organization" },
+                            "id": {
+                                "default": "no id set"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "correspondingPapers": [
+                {
+                    "__0": {
+                        "sublist": true
+                    },
+                    "url": {},
+                    "type": {},
+                    "identifier": {},
+                    "identifierType": {}
+                }
+            ]
         }
     },
     "requests": {
@@ -135,9 +160,30 @@
                 }
             }
         },
+        "r2d2-pp-start-change-metadata": {
+            "label": "r2d2-pp-start-change-metadata",
+            "description": "Start change metadata of a dataset from here",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "metadata": {
+                    "type": "value-cell",
+                    "label": "metadata as JSON",
+                    "selected": 876
+                },
+                "edit-metadata": {
+                    "type": "button",
+                    "label": "Edit Metadata"
+                }
+            }
+        },
         "r2d2-pp-change-metadata": {
             "label": "r2d2-pp-change-metadata",
-            "description": "Changes metadata of a dataset (only title and description for testing)",
+            "description": "Changes metadata of a dataset",
             "api": {
                 "target": "{apiRoot}/datasets/{dataset-id}",
                 "method": "put",
@@ -154,14 +200,17 @@
                     "label": "dataset-id",
                     "selected": null
                 },
-                "send-data": {
+                "send-dataXX": {
+                    "addToForm": false,
                     "type": "value-cell",
                     "label": "data 2 send as JSON",
-                    "selected": null
+                    "selected": 456
                 },
-                "meta": {
+                "metadata": {
                     "component": "r2-meta",
-                    "label": "Metadata:"
+                    "label": "Metadata:",
+                    "selected": 123,
+                    "schema": "{definitions.metadata}"
                 }
             }
         },
@@ -558,27 +607,7 @@
                 }
             }
         },
-        "r2d2-pp-start-change-metadata": {
-            "label": "r2d2-pp-start-change-metadata",
-            "description": "Start change metadata of a dataset from here",
-            "api": null,
-            "form": {
-                "dataset-id": {
-                    "type": "value-cell",
-                    "label": "dataset-id",
-                    "selected": null
-                },
-                "metadata": {
-                    "type": "value-cell",
-                    "label": "metadata as JSON",
-                    "selected": null
-                },
-                "edit-metadata": {
-                    "type": "button",
-                    "label": "Edit Metadata"
-                }
-            }
-        },
+
         "r2d2-pp-create-dataset": {
             "label": "r2d2-pp-change-metadata",
             "description": "Creates a new dataset ( incl. initial metadata )",

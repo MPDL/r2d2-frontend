@@ -253,8 +253,8 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     let metaFormHandler = null
-    this.getMetaFormHandler = () => {
-        if (!metaFormHandler) {
+    this.getMetaFormHandler = (create = false) => {
+        if (!metaFormHandler || create) {
             metaFormHandler = new DynamicFormHandler()
         }
         return metaFormHandler

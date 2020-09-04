@@ -52,13 +52,16 @@ function Datasource() {
         translations: {},
         requests: {},
         results: {},
+        definitions: {},
         setup: {}
     }
 
     const updateConfig = data => {
+        console.log('DS:updateConfig data = ', data)
         config.setup = { ...config.setup, ...data.setup }
         config.defaultApi = _.isPlainObject(data.defaultApi) ? data.defaultApi : config.defaultApi
         config.setup.apiRoot = _.isString(data.setup.apiRoot) ? data.setup.apiRoot : ''
+        config.definitions = data.definitions || {}
     }
 
     const getFilteredConfig = () => {
@@ -286,6 +289,17 @@ function Datasource() {
                     item.label = _.isString(item.label) ? item.label : itemKey
                     if (item.type === 'dropdown') {
                         item = globals.setupDropdownFormCell(item)
+                    }
+                    if (_.isString(item.schema)) {
+                        let schema = item.schema.split('')
+                        const start = schema.shift()
+                        const end = schema.pop()
+                        if (start === '{' && end === '}') {
+                            schema = schema.join('')
+                            item.schema = _.get(config, schema) || null
+                        }
+                    } else {
+                        item.schema = _.isPlainObject(item.schema) ? item.schema : null
                     }
                 }
             })

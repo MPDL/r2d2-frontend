@@ -11,8 +11,7 @@ let r2
 export default {
     name: 'Metadata',
     props: {
-        config: Object,
-        form: Object
+        config: Object
     },
     data() {
         return {
@@ -24,7 +23,7 @@ export default {
     },
     created() {
         r2 = globals.getDataHandler('r2d2')
-        this.metaFormConfig.form = r2.getMetaFormHandler().getForm()
+        this.metaFormConfig.form = r2.getMetaFormHandler().getForm(this.config.form, this.config.schema)
     },
     mounted() {
         this.formKey++
@@ -34,7 +33,6 @@ export default {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         onFormAction(evt) {
-            console.log('MT:onFormAction evt = ', evt)
             r2.getMetaFormHandler().modifyForm(evt)
             this.metaFormConfig.form = r2.getMetaFormHandler().getForm()
             this.update()

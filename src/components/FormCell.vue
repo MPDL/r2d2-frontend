@@ -76,7 +76,13 @@
                     </b-input-group>
 
                     <b-input-group v-if="item.component === 'r2-meta'">
-                        <r2-meta :config="item" :form="request.form" />
+                        <r2-meta
+                            :config="{
+                                key: 'metadata',
+                                form: request.form.metadata.selected,
+                                schema: request.form.metadata.schema
+                            }"
+                        />
                     </b-input-group>
 
                     <b-input-group
@@ -193,8 +199,12 @@ export default {
         }
     },
     mounted() {
-        // console.log('FC:mounted +++ this.request = ', this.request)
-        console.log('FC:mounted this.request.form = ', this.request.form)
+        //
+    },
+    watch: {
+        // 'request.form.metadata.selected'(now, prev) {
+        //     console.log('FC:NN:W request.form.metadata.selected = ', this.request.key, now)
+        // }
     },
     methods: {
         update(updateKey = 'uKey') {
@@ -211,7 +221,6 @@ export default {
             })
         },
         onClickActionButton(evt) {
-            console.log('FC:onClickActionButton evt = ', evt)
             this.$emit('onClickFormAction', {
                 action: evt.action,
                 tree: evt.item.__strc.tree
