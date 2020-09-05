@@ -331,7 +331,11 @@ export default {
                         cfg = this.zones.changeMetadata
                         form = cfg.requests[cfg.id].form
                         form['dataset-id'].selected = r2.ppGetSelectedDataset().key
-                        form['metadata'].selected = data.metadata
+                        form['metadata'].config = {
+                            key: 'metadata',
+                            data: data.metadata,
+                            schema: form.metadata.schema
+                        }
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)

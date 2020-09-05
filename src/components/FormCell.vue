@@ -72,17 +72,12 @@
                     </div>
 
                     <b-input-group v-if="item.component === 'r2-chunky'">
+                        <!-- TODO Add item.config feature also here! -->
                         <r2-chunky :config="item" :form="request.form" />
                     </b-input-group>
-
+                    
                     <b-input-group v-if="item.component === 'r2-meta'">
-                        <r2-meta
-                            :config="{
-                                key: 'metadata',
-                                form: request.form.metadata.selected,
-                                schema: request.form.metadata.schema
-                            }"
-                        />
+                        <r2-meta :config="item.config" />
                     </b-input-group>
 
                     <b-input-group
@@ -200,11 +195,6 @@ export default {
     },
     mounted() {
         //
-    },
-    watch: {
-        // 'request.form.metadata.selected'(now, prev) {
-        //     console.log('FC:NN:W request.form.metadata.selected = ', this.request.key, now)
-        // }
     },
     methods: {
         update(updateKey = 'uKey') {

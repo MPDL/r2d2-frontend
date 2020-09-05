@@ -23,7 +23,7 @@ export default {
     },
     created() {
         r2 = globals.getDataHandler('r2d2')
-        this.metaFormConfig.form = r2.getMetaFormHandler().getForm(this.config.form, this.config.schema)
+        this.metaFormConfig.form = r2.getMetaFormHandler().getForm(this.$config.data, this.$config.schema)
     },
     mounted() {
         this.formKey++
@@ -36,6 +36,11 @@ export default {
             r2.getMetaFormHandler().modifyForm(evt)
             this.metaFormConfig.form = r2.getMetaFormHandler().getForm()
             this.update()
+        }
+    },
+    computed: {
+        $config() {
+            return this.config || { data: {}, schema: {} }
         }
     }
 }
