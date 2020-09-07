@@ -321,7 +321,10 @@ const DynamicFormHandler = function() {
                 level = tree.length
                 t = getCombinedTree(tree)
                 const indexInfo = indexTree[t.keyEndingArrayPath]
-                switch (node.layout) {
+                const sh = _.get(schema, t.schemaTree)
+                // TODO check why 'sh' sometimes gets undefined here, should not happen!!
+                const layout = sh && sh.__0 && sh.__0.sublist ? node.layout : null
+                switch (layout) {
                     case LY.START_OF_LIST:
                         ly = getLayoutItem(tree, { level, addNode: true, treeAdd: LY.ADD })
                         level > 1 ? items.push(ly) : null
