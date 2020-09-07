@@ -33,7 +33,10 @@
             />
         </div>
         <div :class="{ hidden: viewMode !== 'inspect-file' }">
-            <ActionCell class="view upload-file" :config="zones.inspectFile" @onClickFormButton="onClickFormButton" />
+            <ActionCell class="view inspect-file" :config="zones.inspectFile" @onClickFormButton="onClickFormButton" />
+        </div>
+        <div :class="{ hidden: viewMode !== 'delete-file' }">
+            <ActionCell class="view upload-file" :config="zones.deleteFile" @onClickFormButton="onClickFormButton" />
         </div>
         <!-- <div :class="{ hidden: viewMode !== 'update-file' }">
             <ActionCell
@@ -72,6 +75,7 @@
 //
 // TODO: Implement update File
 // TODO: refresh dataset list labels after metadata change
+// TODO: persist unsaved metadata, concept for handling reload vs. unsaved changes (dialog ?)
 //
 import ActionCell from '@/components/ActionCell.vue'
 const r2 = globals.getDataHandler('r2d2')
@@ -79,6 +83,7 @@ const r2 = globals.getDataHandler('r2d2')
 const VIEWMODE = {
     DEFAULT: 'default',
     INSPECT_FILE: 'inspect-file',
+    DELETE_FILE: 'delete-file',
     UPLOAD_FILE: 'upload-file',
     DOWNLOAD_FILE: 'download-file',
     CHANGE_METADATA: 'change-metadata',
@@ -264,6 +269,18 @@ export default {
                     sendFormEventKey: 'sendform--download-file',
                     updateFormEventKey: 'updateform--download-file',
                     selected: r2.ppGetSelectedFile().key
+                },
+                deleteFile: {
+                    id: 'r2d2-pp-delete-file',
+                    requests: {},
+                    options: {
+                        showSend: true,
+                        showResultList: false,
+                        showResultJson: true
+                    },
+                    sendFormEventKey: 'sendform--delete-file',
+                    updateFormEventKey: 'updateform--delete-file',
+                    selected: null
                 }
             }
         }
@@ -289,7 +306,6 @@ export default {
             if (evt.item.key === null) {
                 return this.setViewMode(VIEWMODE.CREATE_DATASET)
             }
-            console.log('R2P:onClickDatasetListItem evt = ', evt)
             this.setSelectedDataset(evt.item.key, evt.item.version, null)
             const cfg = this.zones.getDataset
             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
@@ -318,6 +334,8 @@ export default {
                     return this.setViewMode(VIEWMODE.UPLOAD_FILE)
                 case 'r2d2-pp-inspect-file--download':
                     return this.setViewMode(VIEWMODE.DOWNLOAD_FILE)
+                case 'r2d2-pp-inspect-file--delete':
+                    return this.setViewMode(VIEWMODE.DELETE_FILE)
             }
             this.setViewMode(VIEWMODE.DEFAULT)
             cfg = this.zones.getDataset
@@ -328,7 +346,6 @@ export default {
         },
         onZoneUpdateResults(evt) {
             let cfg, form
-            console.log('R2P:onZoneUpdateResults evt.id = ', evt.id)
             if (evt.id === 'r2d2-pp-get-dataset') {
                 setTimeout(() => {
                     const data = r2.getDataOfDataset(evt.raw)
@@ -398,6 +415,7 @@ export default {
             cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
             cfg.requests[cfg.id].form['file-id'].selected = null
             globals.eventBus.$emit(cfg.updateFormEventKey)
+
             //
             // cfg = this.zones.updateFile
             // cfg.selected = key
@@ -424,6 +442,13 @@ export default {
                 globals.eventBus.$emit(cfg.updateFormEventKey)
                 // downloadFile
                 cfg = this.zones.downloadFile
+                cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
+                cfg.requests[cfg.id].form['file-id'].selected = fileKey
+                cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
+                globals.eventBus.$emit(cfg.updateFormEventKey)
+                // delete File
+                cfg = this.zones.deleteFile
+                cfg.selected = ds.key
                 cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
                 cfg.requests[cfg.id].form['file-id'].selected = fileKey
                 cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
@@ -523,7 +548,8 @@ export default {
                 }
             }
         }
-        &.change-metadata {
+        &.change-metadata,
+        &.inspect-file {
             position: absolute;
             width: 810px;
             ::v-deep {

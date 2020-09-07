@@ -83,23 +83,34 @@ function Datasource() {
         return api
     }
 
-    const post = async (api, data = {}, options = {}) => {
+    const $post = async (api, data = {}, options = {}) => {
         return axios.create().post(getPath(api), data, options)
     }
 
-    const get = async (api, dta = {}, options = {}) => {
+    const $get = async (api, dta = {}, options = {}) => {
         return axios.create().get(getPath(api), options)
     }
 
-    const put = async (api, data = {}, options = {}) => {
+    const $put = async (api, data = {}, options = {}) => {
         return axios.create().put(getPath(api), data, options)
     }
 
-    const METHODS = {
-        post,
-        get,
-        put,
-        default: 'post'
+    const $delete = async (api, data = {}, options = {}) => {
+        return axios.create().delete(getPath(api), options)
+    }
+
+    const getMethod = input => {
+        if (_.isFunction(input)) {
+            return input
+        }
+        const METHODS = {
+            POST: $post,
+            GET: $get,
+            PUT: $put,
+            DELETE: $delete
+        }
+        input = _.isString(input) ? input.toUpperCase() : 'POST'
+        return METHODS[input] ? METHODS[input] : METHODS.POST
     }
 
     // Evaluate strange responseURL / second request after sending */logout:
@@ -169,8 +180,10 @@ function Datasource() {
         }
         // +++++++++++++++++ finalize data structure for sending
         api.target = parts.join('')
+
         const directDataKey = _.get(schema, 'data')
         const directDataValue = getValueByKey(directDataKey, data)
+
         switch (true) {
             case directDataKey === null:
                 data = null
@@ -193,7 +206,7 @@ function Datasource() {
             downloadFileName = data
         }
 
-        return METHODS[api.method](api.target, data, options)
+        return getMethod(api.method)(api.target, data, options)
             .then(res => {
                 if (downloadFileName) {
                     return downloadFile(res.data, downloadFileName)
@@ -275,9 +288,9 @@ function Datasource() {
             request.key = rqKey
             request.label = _.isString(request.label) ? request.label : rqKey
             request.api =
-                request.api && _.isString(request.api.target) ? request.api : { target: '/get', method: 'post' }
+                request.api && _.isString(request.api.target) ? request.api : { target: '/get', method: 'POST' }
 
-            request.api.method = METHODS[request.api.method] ? request.api.method : METHODS.default
+            request.api.method = getMethod(request.api.method)
             request.description = _.isString(request.description) ? request.description : rqKey
             _.each(request.form, (item, itemKey) => {
                 if (item.addToForm === false) {
@@ -341,7 +354,7 @@ function Datasource() {
         if (config.structure) {
             return config.structure
         }
-        return post(getStructureApi())
+        return getMethod('post')(getStructureApi())
             .then(res => {
                 updateConfig(res.data)
                 config.structure = generateStructure(res.data)
@@ -362,7 +375,7 @@ function Datasource() {
     }
 
     const getTranslations = () => {
-        return post(getTranslationsApi())
+        return getMethod('post')(getTranslationsApi())
             .then(res => {
                 config.translations = res.data // TODO merge
                 return res.data

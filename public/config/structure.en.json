@@ -80,6 +80,37 @@
         }
     },
     "requests": {
+        "r2d2-pp-delete-file": {
+            "label": "r2d2-pp-delete-file",
+            "description": "Deletes a file by file-id",
+            "api": {
+                "target": "{apiRoot}/files/{file-id}",
+                "method": "delete",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    },
+                    "data": null
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
+                    "selected": null
+                }
+            }
+        },
         "r2d2-pp-get-files": {
             "label": "r2d2-pp-get-files",
             "description": "Lists my (pool) files",
@@ -541,6 +572,7 @@
             "api": {
                 "target": "{apiRoot}/datasets/{file-id}",
                 "method": "get",
+                "data": null,
                 "schema": {
                     "header-set": {
                         "Authorization": "auth.token"
@@ -820,6 +852,10 @@
                 "update": {
                     "type": "button",
                     "label": "Update File"
+                },
+                "delete": {
+                    "type": "button",
+                    "label": "Delete File"
                 }
             }
         },

@@ -6,7 +6,8 @@ const R2D2DataHandler = function() {
         selectedDataset: {
             key: null,
             version: null,
-            data: null
+            data: null,
+            metadata: null
         },
         selectedFile: {
             key: null
@@ -15,6 +16,7 @@ const R2D2DataHandler = function() {
     }
     this.ppSetSelectedDataset = (key = null, version = null, data = null) => {
         let k = [null, 1]
+        let metadata = null
         if (_.isString(key)) {
             // this filteres the version, if included in key
             k = key.split('/')
@@ -26,11 +28,15 @@ const R2D2DataHandler = function() {
         if (!key && data) {
             key = data.id
             version = isNaN(data.versionNumber) ? 1 : data.versionNumber
+            metadata = data.metadata // prepare for changed metadata persisting
         }
         const vsKey = key ? `${key}/${version}` : null
-        ppStates.selectedDataset = { ...ppStates.selectedDataset, key, vsKey, data, version }
+        ppStates.selectedDataset = { ...ppStates.selectedDataset, key, vsKey, data, version, metadata }
     }
     this.ppGetSelectedDataset = () => ppStates.selectedDataset
+
+    // currently unused
+    this.ppUpdateMetadata = metadata => (ppStates.metadata = metadata)
 
     // this converts a simple (e.g. STAGE) filelist to a dataset, if needed
     this.ppCreateDatasetFromFileList = (key, data = null) => {
@@ -242,9 +248,22 @@ const R2D2DataHandler = function() {
             label: 'close'
         }
 
+  
         // get (pool) files
         id = 'r2d2-pp-get-files'
         rq = requests[id] = _.cloneDeep(raw[id])
+
+      // delete file
+      id = 'r2d2-pp-delete-file'
+      rq = requests[id] = _.cloneDeep(raw[id])
+      rq.form['close'] = {
+          type: 'button',
+          key: 'close',
+          label: 'close'
+      }
+
+
+
 
         return requests
     }
