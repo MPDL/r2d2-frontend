@@ -71,6 +71,7 @@
 <script>
 //
 // TODO: Implement update File
+// TODO: refresh dataset list labels after metadata change
 //
 import ActionCell from '@/components/ActionCell.vue'
 const r2 = globals.getDataHandler('r2d2')
@@ -103,11 +104,12 @@ export default {
             mtKey: 1,
             upKey: 1,
             viewMode: VIEWMODE.DEFAULT,
+            // TODO refactor all remeining 'me' to 'this'
             zones: {
                 login: {
                     id: 'r2d2-login',
                     requests: {},
-                    getResult: (data, me = this.zones.login) => {
+                    getResult: data => {
                         console.log('PT:login getResult  data = ', data)
                     }
                 },
@@ -118,18 +120,15 @@ export default {
                 getDatasets: {
                     id: 'r2d2-get-datasets',
                     requests: {},
-                    getResult: (data, me = this.zones.getDatasets) => {
-                        // this part updates the selection, if it comes back e.g. from request zone
-                        const ds = me.initialRequest ? r2.ppGetSelectedDataset() : { key: null, data: null }
-                        me.initialRequest = false
-                        return r2.getDatasets(data, { as: 'key-list' })
+                    // use 'function' declaration here to get 'this' working inside object!
+                    getResult: function(data) {
+                        return r2.getDatasets(data, { as: 'key-list', addVersionToKey: true })
                     },
                     sendFormEventKey: 'sendform--get-datasets',
-                    selected: r2.ppGetSelectedDataset().key,
-                    initialRequest: true
+                    selected: null // initial update in 'created' hook
                 },
                 getDataset: {
-                    id: 'r2d2-get-dataset',
+                    id: 'r2d2-pp-get-dataset',
                     requests: {},
                     options: {
                         showSend: false
@@ -137,7 +136,7 @@ export default {
                     getResult: data => {
                         const dsKey = r2.ppGetSelectedDataset().key
                         data = r2.ppCreateDatasetFromFileList(dsKey, data)
-                        this.setSelectedDataset(null, data)
+                        this.setSelectedDataset(null, null, data)
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
                     },
                     getApi: (key, me = this.zones.getDataset) => {
@@ -147,8 +146,8 @@ export default {
                         }
                         return me.requests[key].api
                     },
-                    sendFormEventKey: 'sendform--get-dataset',
-                    selected: r2.ppGetSelectedFile().key,
+                    sendFormEventKey: 'sendform--pp-get-dataset',
+                    selected: null,
                     initialRequest: true
                 },
                 startChangeMetadata: {
@@ -159,12 +158,13 @@ export default {
                         showResultList: false
                     },
                     getResult: (data, me = this.zones.getDataset) => {
+                        // ??
                         const key = me.initialRequest ? r2.ppGetSelectedFile(key) : null
                         me.initialRequest = false
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
                     },
                     updateFormEventKey: 'updateform--start-change-metadata',
-                    selected: r2.ppGetSelectedFile().key,
+                    selected: null,
                     initialRequest: true
                 },
                 changeMetadata: {
@@ -175,14 +175,20 @@ export default {
                         showResultList: false,
                         showResultJson: true
                     },
-                    collectData: data => {
-                        console.log('changeMetadata:collectData data = ', data)
-                        // TODO make this generic and realtime
-                        // TODO get data from meta component here!
-                        // data['send-data'].metadata.title = data.title
-                        // data['send-data'].metadata.description = data.description
+                    data: {
+                        modificationDate: null,
+                        metadata: null
+                    },
+                    collectData: function(data) {
+                        this.data.metadata = data.metadata
+                        data['send-data'] = this.data
                         return data
                     },
+                    getResult: function(data) {
+                        this.data.modificationDate = data.modificationDate
+                        return data
+                    },
+
                     sendFormEventKey: 'sendform--change-metadata',
                     updateFormEventKey: 'updateform--change-metadata'
                 },
@@ -266,6 +272,10 @@ export default {
         ActionCell
     },
     created() {
+        const ds = r2.ppGetSelectedDataset()
+        this.zones.getDatasets.selected = ds.vsKey
+        this.zones.startChangeMetadata.selected = ds.vsKey
+        // TODO all init here!
         this.loadData()
     },
     methods: {
@@ -279,7 +289,8 @@ export default {
             if (evt.item.key === null) {
                 return this.setViewMode(VIEWMODE.CREATE_DATASET)
             }
-            this.setSelectedDataset(evt.item.key, null)
+            console.log('R2P:onClickDatasetListItem evt = ', evt)
+            this.setSelectedDataset(evt.item.key, evt.item.version, null)
             const cfg = this.zones.getDataset
             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
         },
@@ -317,25 +328,29 @@ export default {
         },
         onZoneUpdateResults(evt) {
             let cfg, form
-            if (evt.id === 'r2d2-get-dataset') {
+            console.log('R2P:onZoneUpdateResults evt.id = ', evt.id)
+            if (evt.id === 'r2d2-pp-get-dataset') {
                 setTimeout(() => {
                     const data = r2.getDataOfDataset(evt.raw)
                     if (data) {
                         //
                         cfg = this.zones.startChangeMetadata
                         form = cfg.requests[cfg.id].form
-                        form['dataset-id'].selected = r2.ppGetSelectedDataset().key
+                        form['dataset-id'].selected = r2.ppGetSelectedDataset().vsKey
                         form['metadata'].selected = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                         //
                         cfg = this.zones.changeMetadata
                         form = cfg.requests[cfg.id].form
-                        form['dataset-id'].selected = r2.ppGetSelectedDataset().key
-                        form['metadata'].config = {
+                        // changeMetadata uses the unversioned key!!
+                        form['dataset-id'].selected = r2.ppGetSelectedDataset().key // !!
+                        form['metadata'].setup = {
                             key: 'metadata',
                             data: data.metadata,
                             schema: form.metadata.schema
                         }
+                        cfg.data.modificationDate = data.modificationDate
+                        cfg.data.metadata = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)
@@ -348,28 +363,28 @@ export default {
             })
             this.update()
         },
-        setSelectedDataset(key, data = null) {
-            r2.ppSetSelectedDataset(key, data)
+        setSelectedDataset(key, version = null, data = null) {
+            r2.ppSetSelectedDataset(key, version, data)
             const ds = r2.ppGetSelectedDataset()
             //
             let cfg
             //
             cfg = this.zones.getDatasets
-            cfg.selected = ds.key
+            cfg.selected = ds.vsKey
             //
             cfg = this.zones.getDataset
-            cfg.requests[cfg.id].form['file-id-select'].selected = ds.key
+            cfg.requests[cfg.id].form['ds-select'].selected = ds.vsKey
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.startChangeMetadata
             cfg.selected = ds.key
-            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
+            cfg.requests[cfg.id].form['dataset-id'].selected = ds.vsKey
             cfg.requests[cfg.id].form['metadata'].selected = null
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.changeMetadata
             cfg.selected = ds.key
-            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
+            cfg.requests[cfg.id].form['dataset-id'].selected = ds.vsKey
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.createDataset

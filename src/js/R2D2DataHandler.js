@@ -5,6 +5,7 @@ const R2D2DataHandler = function() {
     const ppStates = {
         selectedDataset: {
             key: null,
+            version: null,
             data: null
         },
         selectedFile: {
@@ -12,26 +13,24 @@ const R2D2DataHandler = function() {
             // data: null
         }
     }
-    this.ppSetSelectedDataset = (key = null, data = null) => {
+    this.ppSetSelectedDataset = (key = null, version = null, data = null) => {
+        let k = [null, 1]
+        if (_.isString(key)) {
+            // this filteres the version, if included in key
+            k = key.split('/')
+            key = k[0]
+            k[1] = parseInt(k[1])
+        }
+        version = isNaN(version) ? k[1] : version
+        version = isNaN(version) ? 1 : version
         if (!key && data) {
             key = data.id
-            // check if the version nummer is included, or add one if not
-            const num = parseInt(key.split('/')[1])
-            if (isNaN(num) && key !== 'STAGE') {
-                const vNum = _.isNumber(data.versionNumber) ? data.versionNumber : 1
-                key = `${key}/${vNum}`
-            }
+            version = isNaN(data.versionNumber) ? 1 : data.versionNumber
         }
-        ppStates.selectedDataset.key = key
-        ppStates.selectedDataset.data = data
+        const vsKey = key ? `${key}/${version}` : null
+        ppStates.selectedDataset = { ...ppStates.selectedDataset, key, vsKey, data, version }
     }
-    this.ppGetSelectedDataset = () => {
-        const res = {
-            key: ppStates.selectedDataset.key,
-            data: ppStates.selectedDataset.data
-        }
-        return res
-    }
+    this.ppGetSelectedDataset = () => ppStates.selectedDataset
 
     // this converts a simple (e.g. STAGE) filelist to a dataset, if needed
     this.ppCreateDatasetFromFileList = (key, data = null) => {
@@ -83,10 +82,14 @@ const R2D2DataHandler = function() {
         if (options.as === 'key-list') {
             _.each(data.hits.hits, (value, index) => {
                 const d = {
-                    key: value._id,
+                    key: value._source.id,
+                    version: value._source.versionNumber,
                     title: value._source.metadata.title
                 }
-                d.label = `${d.title} | ${d.key}`
+                if (options.addVersionToKey) {
+                    d.key = `${d.key}/${d.version}`
+                }
+                d.label = `${d.title} | ${d.key} (vers: ${d.version})`
                 res[value._id] = d
             })
         }
@@ -168,13 +171,11 @@ const R2D2DataHandler = function() {
         //
         // get files
         // clone request as its inner data gets mutated !
-        id = 'r2d2-get-dataset'
+        id = 'r2d2-pp-get-dataset'
         rq = requests[id] = _.cloneDeep(raw[id])
-        rq.form['file-id-select'].label = 'dataset-id:'
-        rq.form['file-id-select'].type = 'value-cell'
-        rq.form['file-id-select'].selected = null
-        rq.form['file-id-select'].updateEventKey = `update--${id}`
+        rq.form['ds-select'].updateEventKey = `update--${id}`
         rq.description = 'lists all files of a dataset'
+        //
         // start change metadata
         // clone request as its inner data gets mutated !
         id = 'r2d2-pp-start-change-metadata'

@@ -77,7 +77,7 @@
                     </b-input-group>
                     
                     <b-input-group v-if="item.component === 'r2-meta'">
-                        <r2-meta :config="item.config" />
+                        <r2-meta :config="item" />
                     </b-input-group>
 
                     <b-input-group

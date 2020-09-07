@@ -162,6 +162,7 @@ export default {
             return _.isFunction(this.config.collectData) ? this.config.collectData(res) : res
         },
         async sendForm(key) {
+            globals.eventBus.$emit('beforeCollectData')
             const api = this.getApi(key)
             await datasource.request(key, api, this.collectData(key, api.schema))
         },

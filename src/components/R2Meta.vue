@@ -22,13 +22,20 @@ export default {
         }
     },
     created() {
+        globals.eventBus.$on('beforeCollectData', this.prepareCollectData)
         r2 = globals.getDataHandler('r2d2')
         this.metaFormConfig.form = r2.getMetaFormHandler().getForm(this.$config.data, this.$config.schema)
     },
     mounted() {
         this.formKey++
     },
+    beforeDestroy() {
+        globals.eventBus.$off('beforeCollectData', this.prepareCollectData)
+    },
     methods: {
+        prepareCollectData() {
+            this.config.selected =  r2.getMetaFormHandler().getData()
+        },
         update(updateKey = 'uKey') {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
@@ -40,7 +47,7 @@ export default {
     },
     computed: {
         $config() {
-            return this.config || { data: {}, schema: {} }
+            return this.config && this.config.setup ? this.config.setup : { data: {}, schema: {} }
         }
     }
 }

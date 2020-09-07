@@ -50,6 +50,8 @@ const DynamicFormHandler = function() {
     this.getForm = (data = null, schema = null) => (data ? createNewForm(data, schema) : form)
     // this.getForm = () => {} // TEST ON
     //
+    this.getData = () => collectData()
+
     //
     const createSortingTree = (source = {}, target = []) => {
         _.each(source, (elm, key) => {

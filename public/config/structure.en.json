@@ -29,11 +29,14 @@
             "title": {
                 "__0": {
                     "type": "input",
-                    "default": "no title set",
-                    "test": "ROOT.title"
+                    "default": "no title set"
                 }
             },
-            "description": {},
+            "description": {
+                "__0": {
+                    "type": "textarea"
+                }
+            },
             "language": {},
             "doi": {
                 "default": "no DOI set"
@@ -44,8 +47,7 @@
             "authors": [
                 {
                     "__0": {
-                        "sublist": true,
-                        "test": "ROOT.title.authors"
+                        "sublist": true
                     },
                     "givenName": {},
                     "familyName": {},
@@ -55,14 +57,7 @@
                             "__0": {
                                 "sublist": true
                             },
-                            "department": {
-                                "__0": {
-                                    "type": "dropdown",
-                                    "options": ["Dep. A", "Dep. B", "Dep. C", "Dep. D"],
-                                    "test": "ROOT.title.authors.affiliations.department"
-                                },
-                                "default": 2
-                            },
+                            "department": {},
                             "organization": { "default": "default organization" },
                             "id": {
                                 "default": "no id set"
@@ -173,7 +168,7 @@
                 "metadata": {
                     "type": "value-cell",
                     "label": "metadata as JSON",
-                    "selected": 876
+                    "selected": null
                 },
                 "edit-metadata": {
                     "type": "button",
@@ -185,6 +180,7 @@
             "label": "r2d2-pp-change-metadata",
             "description": "Changes metadata of a dataset",
             "api": {
+                "targetXX": "{apiRoot}/datasets/{dataset-id}?metadata=default:false",
                 "target": "{apiRoot}/datasets/{dataset-id}",
                 "method": "put",
                 "schema": {
@@ -200,17 +196,11 @@
                     "label": "dataset-id",
                     "selected": null
                 },
-                "send-dataXX": {
-                    "addToForm": false,
-                    "type": "value-cell",
-                    "label": "data 2 send as JSON",
-                    "selected": 456
-                },
                 "metadata": {
                     "component": "r2-meta",
                     "label": "Metadata:",
-                    "selected": 123,
-                    "schema": "{definitions.metadata}"
+                    "schema": "{definitions.metadata}",
+                    "selected": null
                 }
             }
         },
@@ -520,6 +510,27 @@
                     "type": "dropdown",
                     "label": "select target mock-filesize",
                     "options": [556333, 77766777, 0, null, -1],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-pp-get-dataset": {
+            "label": "r2d2-get-dataset",
+            "description": "Calls a single dataset",
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "ds-select": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "sendKey": "dataset-id",
                     "selected": 0
                 }
             }

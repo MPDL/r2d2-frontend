@@ -283,8 +283,8 @@ input:-ms-input-placeholder {
         margin: 10px;
         flex-direction: column;
         height: calc(100vh - 170px - 70px);
-        input {
-            font-size: 14px;
+        input, textarea {
+            font-size: 13px;
         }
         .alert {
             padding: 0.5rem 0.5rem;
