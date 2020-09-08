@@ -80,6 +80,51 @@
         }
     },
     "requests": {
+        "r2d2-grid-ous": {
+            "label": "r2d2-grid-ous",
+            "description": "loads grid-ous",
+            "api": {
+                "target": "http://130.183.216.136/node/osiris/documents",
+                "method": "post",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "keys": {
+                    "type": "dropdown",
+                    "label": "grid-ous maxx",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "all grid-ous die wo es gibt",
+                            "value": {
+                                "index": "grid_ous_20200311",
+                                "body": {
+                                    "query": {
+                                        "bool": {
+                                            "should": {
+                                                "term": {
+                                                    "relationships.label.keyword": "Max Planck Society"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "text": "nixxe gut",
+                            "value": ""
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+
         "r2d2-pp-delete-file": {
             "label": "r2d2-pp-delete-file",
             "description": "Deletes a file by file-id",
