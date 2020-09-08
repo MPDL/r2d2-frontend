@@ -5,7 +5,7 @@
                 class="view change-metadata edit"
                 :key="mtKey"
                 :config="zones.changeMetadata"
-                @onClickFormButton="onClickFormButton('change-metadata')"
+                @form-button-clicked="onClickFormButton"
             />
         </div>
         <div :class="{ hidden: viewMode !== 'create-dataset' }">
@@ -13,7 +13,7 @@
                 class="view change-metadata edit"
                 :key="mtKey"
                 :config="zones.createDataset"
-                @onClickFormButton="onClickFormButton('create-dataset')"
+                @form-button-clicked="onClickFormButton"
             />
         </div>
         <div :class="{ hidden: viewMode !== 'upload-file' }">
@@ -21,7 +21,7 @@
                 class="view upload-file"
                 :config="zones.uploadFile"
                 @onUpdateResults="onZoneUpdateResults"
-                @onClickFormButton="onClickFormButton"
+                @form-button-clicked="onClickFormButton"
             />
         </div>
         <div :class="{ hidden: viewMode !== 'download-file' }">
@@ -29,14 +29,18 @@
                 class="view upload-file"
                 :config="zones.downloadFile"
                 @onUpdateResults="onZoneUpdateResults"
-                @onClickFormButton="onClickFormButton"
+                @form-button-clicked="onClickFormButton"
             />
         </div>
         <div :class="{ hidden: viewMode !== 'inspect-file' }">
-            <ActionCell class="view inspect-file" :config="zones.inspectFile" @onClickFormButton="onClickFormButton" />
+            <ActionCell
+                class="view inspect-file"
+                :config="zones.inspectFile"
+                @form-button-clicked="onClickFormButton"
+            />
         </div>
         <div :class="{ hidden: viewMode !== 'delete-file' }">
-            <ActionCell class="view upload-file" :config="zones.deleteFile" @onClickFormButton="onClickFormButton" />
+            <ActionCell class="view upload-file" :config="zones.deleteFile" @form-button-clicked="onClickFormButton" />
         </div>
         <!-- <div :class="{ hidden: viewMode !== 'update-file' }">
             <ActionCell
@@ -44,7 +48,7 @@
                 :config="zones.updateFile"
                 @onClickListItem="onClickFileListItem"
                 @onUpdateResults="onZoneUpdateResults"
-                @onClickFormButton="onClickFormButton('update-file')"
+                @form-button-clicked="onClickFormButton"
             />
         </div> -->
         <div :class="{ hidden: viewMode !== 'default' }">
@@ -65,7 +69,7 @@
                 class="view start-change-metadata"
                 :key="mtKey"
                 :config="zones.startChangeMetadata"
-                @onClickFormButton="onClickEditMetadata"
+                @form-button-clicked="onClickFormButton"
             />
         </div>
     </div>
@@ -76,6 +80,7 @@
 // TODO: Implement update File
 // TODO: refresh dataset list labels after metadata change
 // TODO: persist unsaved metadata, concept for handling reload vs. unsaved changes (dialog ?)
+// BUG: after closing 'createDataset' fix DOM panic / non unique ids
 //
 import ActionCell from '@/components/ActionCell.vue'
 const r2 = globals.getDataHandler('r2d2')
@@ -88,6 +93,22 @@ const VIEWMODE = {
     DOWNLOAD_FILE: 'download-file',
     CHANGE_METADATA: 'change-metadata',
     CREATE_DATASET: 'create-dataset'
+}
+
+const RQ = {
+    login: 'r2d2-login',
+    logout: 'r2d2-logout',
+    getDatasets: 'r2d2-get-datasets',
+    getDataset: 'r2d2-pp-get-dataset',
+    createDataset: 'r2d2-pp-create-dataset',
+    startChangeMetadata: 'r2d2-pp-start-change-metadata',
+    changeMetadata: 'r2d2-pp-change-metadata',
+    uploadFile: 'r2d2-pp-chunk-upload-file',
+    inspectFile: 'r2d2-pp-inspect-file',
+    updateFile: 'r2d2-pp-update-file',
+    downloadFile: 'r2d2-pp-download-file',
+    deleteFile: 'r2d2-pp-delete-file',
+    getStageFiles: 'r2d2-pp-get-files'
 }
 
 //
@@ -112,28 +133,28 @@ export default {
             // TODO refactor all remeining 'me' to 'this'
             zones: {
                 login: {
-                    id: 'r2d2-login',
+                    id: RQ.login,
                     requests: {},
                     getResult: data => {
                         console.log('PT:login getResult  data = ', data)
                     }
                 },
                 logout: {
-                    id: 'r2d2-logout',
+                    id: RQ.logout,
                     requests: {}
                 },
                 getDatasets: {
-                    id: 'r2d2-get-datasets',
+                    id: RQ.getDatasets,
                     requests: {},
                     // use 'function' declaration here to get 'this' working inside object!
                     getResult: function(data) {
                         return r2.getDatasets(data, { as: 'key-list', addVersionToKey: true })
                     },
-                    sendFormEventKey: 'sendform--get-datasets',
+                    sendFormEventKey: `sendform--${RQ.getDatasets}`,
                     selected: null // initial update in 'created' hook
                 },
                 getDataset: {
-                    id: 'r2d2-pp-get-dataset',
+                    id: RQ.getDataset,
                     requests: {},
                     options: {
                         showSend: false
@@ -147,16 +168,16 @@ export default {
                     getApi: (key, me = this.zones.getDataset) => {
                         const dsKey = r2.ppGetSelectedDataset().key
                         if (dsKey === 'STAGE') {
-                            key = 'r2d2-pp-get-files'
+                            key = RQ.getStageFiles
                         }
                         return me.requests[key].api
                     },
-                    sendFormEventKey: 'sendform--pp-get-dataset',
+                    sendFormEventKey: `sendform--${RQ.getDataset}`,
                     selected: null,
                     initialRequest: true
                 },
                 startChangeMetadata: {
-                    id: 'r2d2-pp-start-change-metadata',
+                    id: RQ.startChangeMetadata,
                     requests: {},
                     options: {
                         showSend: false,
@@ -168,12 +189,12 @@ export default {
                         me.initialRequest = false
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
                     },
-                    updateFormEventKey: 'updateform--start-change-metadata',
+                    updateFormEventKey: `updateform--${RQ.startChangeMetadata}`,
                     selected: null,
                     initialRequest: true
                 },
                 changeMetadata: {
-                    id: 'r2d2-pp-change-metadata',
+                    id: RQ.changeMetadata,
                     requests: {},
                     options: {
                         showSend: true,
@@ -194,92 +215,91 @@ export default {
                         return data
                     },
 
-                    sendFormEventKey: 'sendform--change-metadata',
-                    updateFormEventKey: 'updateform--change-metadata'
+                    sendFormEventKey: `sendform--${RQ.changeMetadata}`,
+                    updateFormEventKey: `updateform--${RQ.changeMetadata}`
                 },
                 createDataset: {
                     // TODO refresh ds-list after creation
-                    id: 'r2d2-pp-create-dataset',
+                    id: RQ.createDataset,
                     requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
                         showResultJson: true
                     },
-                    collectData: data => {
-                        // console.log('createDataset:collectData data = ', data)
-                        // TODO make this generic and realtime
-                        // TODO get data from meta component here!
-                        // data['send-data'].metadata.title = data.title
-                        // data['send-data'].metadata.description = data.description
+                    data: {
+                        metadata: null
+                    },
+                    collectData: function(data) {
+                        this.data.metadata = data.metadata
+                        data['send-data'] = this.data
                         return data
                     },
-                    sendFormEventKey: 'sendform--create-dataset',
-                    updateFormEventKey: 'updateform--create-dataset',
-                    initalData: {
-                        metadata: {}
-                    }
+                    getResult: function(data) {
+                        return data
+                    },
+                    sendFormEventKey: `sendform--${RQ.createDataset}`,
+                    updateFormEventKey: `updateform--${RQ.createDataset}`,
+                    initalData: {}
                 },
                 uploadFile: {
-                    id: 'r2d2-pp-chunk-upload-file',
+                    id: RQ.uploadFile,
                     requests: {},
                     options: {
                         showSend: false,
                         showResultList: false,
                         showResultJson: true
                     },
-                    sendFormEventKey: 'sendform--upload-file',
-                    updateFormEventKey: 'updateform--upload-file',
+                    sendFormEventKey: `sendform--${RQ.uploadFile}`,
+                    updateFormEventKey: `updateform--${RQ.uploadFile}`,
                     selected: r2.ppGetSelectedFile().key
                 },
                 inspectFile: {
-                    id: 'r2d2-pp-inspect-file',
+                    id: RQ.inspectFile,
                     requests: {},
                     options: {
                         showSend: false,
                         showResultList: false,
                         showResultJson: true
                     },
-                    sendFormEventKey: 'sendform--upload-file',
-                    updateFormEventKey: 'updateform--upload-file',
+                    sendFormEventKey: `sendform--${RQ.inspectFile}`,
+                    updateFormEventKey: `updateform--${RQ.inspectFile}`,
                     selected: r2.ppGetSelectedFile().key
                 },
-
-                // r2d2-pp-get-file
                 updateFile: {
-                    id: 'r2d2-pp-update-file',
+                    id: RQ.updateFile,
                     requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
                         showResultJson: true
                     },
-                    sendFormEventKey: 'sendform--update-file',
-                    updateFormEventKey: 'updateform--update-file',
+                    sendFormEventKey: `sendform--${RQ.updateFile}`,
+                    updateFormEventKey: `updateform--${RQ.updateFile}`,
                     selected: r2.ppGetSelectedFile().key
                 },
                 downloadFile: {
-                    id: 'r2d2-pp-download-file',
+                    id: RQ.downloadFile,
                     requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
                         showResultJson: true
                     },
-                    sendFormEventKey: 'sendform--download-file',
-                    updateFormEventKey: 'updateform--download-file',
+                    sendFormEventKey: `sendform--${RQ.downloadFile}`,
+                    updateFormEventKey: `updateform--${RQ.downloadFile}`,
                     selected: r2.ppGetSelectedFile().key
                 },
                 deleteFile: {
-                    id: 'r2d2-pp-delete-file',
+                    id: RQ.deleteFile,
                     requests: {},
                     options: {
                         showSend: true,
                         showResultList: false,
                         showResultJson: true
                     },
-                    sendFormEventKey: 'sendform--delete-file',
-                    updateFormEventKey: 'updateform--delete-file',
+                    sendFormEventKey: `sendform--${RQ.deleteFile}`,
+                    updateFormEventKey: `updateform--${RQ.deleteFile}`,
                     selected: null
                 }
             }
@@ -303,11 +323,22 @@ export default {
             this.viewMode = viewKey
         },
         onClickDatasetListItem(evt) {
+            let cfg = null
             if (evt.item.key === null) {
+                cfg = this.zones.createDataset
+                const form = cfg.requests[cfg.id].form
+                form['dataset-id'].selected = 'new-dataset'
+                form['metadata'].setup = {
+                    key: 'metadata',
+                    data: cfg.initalData,
+                    schema: form.metadata.schema
+                }
+                cfg.data.metadata = cfg.initalData
+                globals.eventBus.$emit(cfg.updateFormEventKey)
                 return this.setViewMode(VIEWMODE.CREATE_DATASET)
             }
             this.setSelectedDataset(evt.item.key, evt.item.version, null)
-            const cfg = this.zones.getDataset
+            cfg = this.zones.getDataset
             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
         },
         async onClickFileListItem(evt) {
@@ -315,26 +346,27 @@ export default {
             const viewMode = evt.item.key ? VIEWMODE.INSPECT_FILE : VIEWMODE.UPLOAD_FILE
             if (viewMode === VIEWMODE.UPLOAD_FILE) {
                 globals.eventBus.$emit('onLoadResults', {
-                    key: 'r2d2-pp-chunk-upload-file',
+                    key: RQ.uploadFile,
                     filteredResult: { result: null }
                 })
             }
             this.setViewMode(viewMode)
         },
-        onClickEditMetadata(evt) {
-            this.setViewMode(VIEWMODE.CHANGE_METADATA)
-        },
         onClickFormButton(evt) {
             let cfg
-            switch (evt.key) {
-                case 'create-dataset':
+            switch (true) {
+                case evt.key === RQ.createDataset && evt.action === 'close':
                     cfg = this.zones.getDatasets
-                    return globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
-                case 'r2d2-pp-inspect-file--update':
+                    globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
+                // TODO add reload ds-list trigger here!
+                // break
+                case evt.key === RQ.startChangeMetadata && evt.action === 'edit-metadata':
+                    return this.setViewMode(VIEWMODE.CHANGE_METADATA)
+                case evt.key === RQ.inspectFile && evt.action === 'update':
                     return this.setViewMode(VIEWMODE.UPLOAD_FILE)
-                case 'r2d2-pp-inspect-file--download':
+                case evt.key === RQ.inspectFile && evt.action === 'download':
                     return this.setViewMode(VIEWMODE.DOWNLOAD_FILE)
-                case 'r2d2-pp-inspect-file--delete':
+                case evt.key === RQ.inspectFile && evt.action === 'delete':
                     return this.setViewMode(VIEWMODE.DELETE_FILE)
             }
             this.setViewMode(VIEWMODE.DEFAULT)
@@ -346,7 +378,7 @@ export default {
         },
         onZoneUpdateResults(evt) {
             let cfg, form
-            if (evt.id === 'r2d2-pp-get-dataset') {
+            if (evt.id === RQ.getDataset) {
                 setTimeout(() => {
                     const data = r2.getDataOfDataset(evt.raw)
                     if (data) {
@@ -394,7 +426,6 @@ export default {
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.startChangeMetadata
-            cfg.selected = ds.key
             cfg.requests[cfg.id].form['dataset-id'].selected = ds.vsKey
             cfg.requests[cfg.id].form['metadata'].selected = null
             globals.eventBus.$emit(`update--${cfg.id}`)
@@ -407,7 +438,8 @@ export default {
             cfg = this.zones.createDataset
             cfg.selected = ds.key
             cfg.requests[cfg.id].form['dataset-id'].selected = null
-            cfg.requests[cfg.id].form['send-data'].selected = cfg.initalData
+            // cfg.requests[cfg.id].form['send-data'].selected = cfg.initalData
+            cfg.requests[cfg.id].form['metadata'].selected = cfg.initalData
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.uploadFile

@@ -75,7 +75,7 @@
                         <!-- TODO Add item.config feature also here! -->
                         <r2-chunky :config="item" :form="request.form" />
                     </b-input-group>
-                    
+
                     <b-input-group v-if="item.component === 'r2-meta'">
                         <r2-meta :config="item" />
                     </b-input-group>
@@ -86,7 +86,7 @@
                         :prepend="item.prepend"
                         :append="item.append"
                     >
-                        <b-button :id="item.key" class="bt-form" size="sm" @click="onClickButton(item.key)">
+                        <b-button :id="item.key" class="bt-form" size="sm" @click="onClickButton(item)">
                             {{ item.label }}
                         </b-button>
                     </b-input-group>
@@ -205,9 +205,11 @@ export default {
                 item
             })
         },
-        onClickButton(key) {
+        onClickButton(item) {
+            const action = item.key.split('--')[1]
             this.$emit('onClickButton', {
-                key
+                key: item.key,
+                action
             })
         },
         onClickActionButton(evt) {

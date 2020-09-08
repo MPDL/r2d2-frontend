@@ -207,6 +207,33 @@
                 }
             }
         },
+        "r2d2-pp-create-dataset": {
+            "label": "r2d2-pp-create-dataset",
+            "description": "Creates a new dataset ( incl. initial metadata )",
+            "api": {
+                "target": "{apiRoot}/datasets/",
+                "method": "post",
+                "schema": {
+                    "data": "send-data",
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "metadata": {
+                    "component": "r2-meta",
+                    "label": "Metadata:",
+                    "schema": "{definitions.metadata}",
+                    "selected": null
+                }
+            }
+        },
         "r2d2-pp-change-metadata": {
             "label": "r2d2-pp-change-metadata",
             "description": "Changes metadata of a dataset",
@@ -647,39 +674,6 @@
                         }
                     ],
                     "selected": 0
-                }
-            }
-        },
-
-        "r2d2-pp-create-dataset": {
-            "label": "r2d2-pp-change-metadata",
-            "description": "Creates a new dataset ( incl. initial metadata )",
-            "api": {
-                "target": "{apiRoot}/datasets/",
-                "method": "post",
-                "schema": {
-                    "data": "send-data",
-                    "header-set": {
-                        "Authorization": "auth.token"
-                    }
-                }
-            },
-            "form": {
-                "dataset-id": {
-                    "type": "value-cell",
-                    "label": "dataset-id",
-                    "selected": null
-                },
-                "send-data": {
-                    "type": "value-cell",
-                    "label": "data 2 send as JSON",
-                    "selected": null
-                },
-                "title": {
-                    "type": "input"
-                },
-                "description": {
-                    "type": "textarea"
                 }
             }
         },

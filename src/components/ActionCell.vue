@@ -20,7 +20,7 @@
                 <FormCell
                     :request="request"
                     :key="formKey"
-                    @onClickButton="$emit('onClickFormButton', arguments[0])"
+                    @onClickButton="$emit('form-button-clicked', { action: arguments[0].action, key: config.id })"
                 ></FormCell>
                 <div v-if="showResultList || showResultJson" class="scoll-area-edge"></div>
 

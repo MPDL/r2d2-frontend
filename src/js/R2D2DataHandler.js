@@ -30,7 +30,8 @@ const R2D2DataHandler = function() {
             version = isNaN(data.versionNumber) ? 1 : data.versionNumber
             metadata = data.metadata // prepare for changed metadata persisting
         }
-        const vsKey = key ? `${key}/${version}` : null
+        let vsKey = key ? `${key}/${version}` : null
+        vsKey = key === 'STAGE' ? key : vsKey
         ppStates.selectedDataset = { ...ppStates.selectedDataset, key, vsKey, data, version, metadata }
     }
     this.ppGetSelectedDataset = () => ppStates.selectedDataset
