@@ -227,6 +227,10 @@
                         "api-upload-chunk": "r2d2-pp-chunky-chunk",
                         "api-upload-finalize": "r2d2-pp-chunky-finalize"
                     }
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         },
@@ -247,7 +251,17 @@
                 },
                 "edit-metadata": {
                     "type": "button",
-                    "label": "Edit Metadata"
+                    "label": "Edit Metadata",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
+                "publish-dataset": {
+                    "type": "button",
+                    "label": "Publish",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
                 }
             }
         },
@@ -275,6 +289,10 @@
                     "label": "Metadata:",
                     "schema": "{definitions.metadata}",
                     "selected": null
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         },
@@ -303,6 +321,10 @@
                     "label": "Metadata:",
                     "schema": "{definitions.metadata}",
                     "selected": null
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         },
@@ -754,6 +776,10 @@
                 "cunky": {
                     "component": "r2-chunky",
                     "label": "Select file"
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         },
@@ -787,6 +813,10 @@
                 "cunky": {
                     "component": "r2-chunky",
                     "label": "Select file"
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         },
@@ -887,21 +917,41 @@
                     "label": "file-name",
                     "selected": null
                 },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                },
                 "download": {
                     "type": "button",
-                    "label": "Download File"
+                    "label": "Download File",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
                 },
                 "update": {
                     "type": "button",
-                    "label": "Update File"
+                    "label": "Update File",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
                 },
                 "delete": {
                     "type": "button",
-                    "label": "Delete File"
+                    "label": "Delete File",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
                 },
                 "addFileToDataset": {
                     "type": "button",
-                    "label": "Add file to dataset"
+                    "label": "Add file to dataset",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
+                "sp-2": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         },
@@ -942,6 +992,10 @@
                     "type": "input",
                     "label": "file-name",
                     "selected": "filename"
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         },
@@ -980,6 +1034,10 @@
                     "type": "value-cell",
                     "label": "file-name",
                     "selected": null
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
                 }
             }
         }

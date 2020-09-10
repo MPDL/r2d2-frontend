@@ -92,7 +92,7 @@ const R2D2DataHandler = function() {
                 }
                 break
         }
-        // 'key-list' is the base 
+        // 'key-list' is the base
         console.log('R2:getDatasets options = ', options)
         _.each(data.hits.hits, (value, index) => {
             const d = {
@@ -164,7 +164,10 @@ const R2D2DataHandler = function() {
             form[key] = {
                 type: 'button',
                 key,
-                label: key
+                label: key,
+                __strc: {
+                    class: 'align-lr'
+                }
             }
         })
     }

@@ -218,6 +218,11 @@ input:-ms-input-placeholder {
             $dx: 30px;
             .form-group {
                 width: 400px;
+                &.align-lr {
+                    width: unset;
+                    float: left;
+                    margin-right: 10px;
+                }
                 &.level-1 {
                     margin-left: calc(#{$dx} * 0) !important;
                 }
@@ -379,4 +384,3 @@ input:-ms-input-placeholder {
         height: calc(100vh - 310px);
     }
 }
-
