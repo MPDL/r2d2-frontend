@@ -24,7 +24,7 @@
                         :showDoubleQuotes="false"
                     ></vue-json-pretty>
                 </vue-custom-scrollbar>
-                <div class="scoll-area-edge"></div>
+                <!-- <div class="scoll-area-edge"></div> -->
             </b-tab>
         </b-tabs>
     </div>

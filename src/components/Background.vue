@@ -38,6 +38,8 @@ export default {
         width: 100%;
         height: 100%;
         position: absolute;
+        height: 800px;
+        
         // visibility: hidden;
         &.heidi-cool {
             $url: '~@/assets/heidi-cool.png';
@@ -45,6 +47,7 @@ export default {
             background-size: 300px;
             left: calc(100vw - 230px);
             top: 10px;
+            width: 215px;
         }
         &.heidi-splash {
             $url: '~@/assets/heidi-splash.png';
@@ -52,6 +55,7 @@ export default {
             background-size: 180px;
             left: calc(100vw - 296px);
             top: 30px;
+            width: 200px;
         }
         &.dev-store-splash {
             $url: '~@/assets/dev-store-splash.png';
@@ -59,6 +63,7 @@ export default {
             background-size: 80px;
             left: calc(100vw - 206px);
             top: 95px;
+            width: 200px;
         }
     }
 }

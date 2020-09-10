@@ -42,6 +42,7 @@ export default {
 .head-navigation {
     //
     position: absolute;
+    top: 0px;
     height: 24px;
     width: 100vw;
     line-height: 26px;

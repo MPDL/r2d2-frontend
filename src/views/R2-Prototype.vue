@@ -603,9 +603,9 @@ export default {
                     }
                 }
                 .scroll-area.results {
-                    height: 350px;
-                    min-height: 350px;
-                    max-height: 350px;
+                    height: 200px;
+                    // min-height: 350px;
+                    // max-height: 350px;
                 }
             }
         }

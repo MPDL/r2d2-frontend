@@ -27,13 +27,13 @@ export default {
 @import 'css/basics.scss';
 @import 'css/dev-store.scss';
 
-.background,
-.view {
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-}
+// .background,
+// .view {
+//     margin: 0;
+//     padding: 0;
+//     position: absolute;
+//     width: 100vw;
+//     height: 100vh;
+//     overflow: hidden;
+// }
 </style>
