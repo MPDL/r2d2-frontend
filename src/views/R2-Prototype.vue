@@ -1,14 +1,15 @@
 <template>
     <div class="r2-prototype" :key="uKey">
-        <div :class="{ hidden: viewMode !== 'change-metadata' }">
+        <div :class="{ hidden: viewMode !== VIEWMODE.CHANGE_METADATA }">
             <ActionCell
                 class="view change-metadata edit"
                 :key="mtKey"
+                c
                 :config="zones.changeMetadata"
                 @form-button-clicked="onClickFormButton"
             />
         </div>
-        <div :class="{ hidden: viewMode !== 'create-dataset' }">
+        <div :class="{ hidden: viewMode !== VIEWMODE.CREATE_DATASET }">
             <ActionCell
                 class="view change-metadata edit"
                 :key="mtKey"
@@ -16,7 +17,7 @@
                 @form-button-clicked="onClickFormButton"
             />
         </div>
-        <div :class="{ hidden: viewMode !== 'upload-file' }">
+        <div :class="{ hidden: viewMode !== VIEWMODE.UPLOAD_FILE }">
             <ActionCell
                 class="view upload-file"
                 :config="zones.uploadFile"
@@ -24,7 +25,7 @@
                 @form-button-clicked="onClickFormButton"
             />
         </div>
-        <div :class="{ hidden: viewMode !== 'download-file' }">
+        <div :class="{ hidden: viewMode !== VIEWMODE.DOWNLOAD_FILE }">
             <ActionCell
                 class="view upload-file"
                 :config="zones.downloadFile"
@@ -32,14 +33,21 @@
                 @form-button-clicked="onClickFormButton"
             />
         </div>
-        <div :class="{ hidden: viewMode !== 'inspect-file' }">
+        <div :class="{ hidden: viewMode !== VIEWMODE.ADD_FILE_TO_DATASET }">
+            <ActionCell
+                class="view upload-file"
+                :config="zones.addFileToDataset"
+                @form-button-clicked="onClickFormButton"
+            />
+        </div>
+        <div :class="{ hidden: viewMode !== VIEWMODE.INSPECT_FILE }">
             <ActionCell
                 class="view inspect-file"
                 :config="zones.inspectFile"
                 @form-button-clicked="onClickFormButton"
             />
         </div>
-        <div :class="{ hidden: viewMode !== 'delete-file' }">
+        <div :class="{ hidden: viewMode !== VIEWMODE.DELETE_FILE }">
             <ActionCell class="view upload-file" :config="zones.deleteFile" @form-button-clicked="onClickFormButton" />
         </div>
         <!-- <div :class="{ hidden: viewMode !== 'update-file' }">
@@ -92,7 +100,8 @@ const VIEWMODE = {
     UPLOAD_FILE: 'upload-file',
     DOWNLOAD_FILE: 'download-file',
     CHANGE_METADATA: 'change-metadata',
-    CREATE_DATASET: 'create-dataset'
+    CREATE_DATASET: 'create-dataset',
+    ADD_FILE_TO_DATASET: 'add-file-to-dataset'
 }
 
 const RQ = {
@@ -108,7 +117,8 @@ const RQ = {
     updateFile: 'r2d2-pp-update-file',
     downloadFile: 'r2d2-pp-download-file',
     deleteFile: 'r2d2-pp-delete-file',
-    getStageFiles: 'r2d2-pp-get-files'
+    getStageFiles: 'r2d2-pp-get-files',
+    addFileToDataset: 'r2d2-pp-add-file-to-dataset'
 }
 
 //
@@ -148,7 +158,7 @@ export default {
                     requests: {},
                     // use 'function' declaration here to get 'this' working inside object!
                     getResult: function(data) {
-                        return r2.getDatasets(data, { as: 'key-list', addVersionToKey: true })
+                        return r2.getDatasets(data, { as: 'key-list', addVersionToKey: true, addNew:true, addStage:true })
                     },
                     sendFormEventKey: `sendform--${RQ.getDatasets}`,
                     selected: null // initial update in 'created' hook
@@ -301,6 +311,20 @@ export default {
                     sendFormEventKey: `sendform--${RQ.deleteFile}`,
                     updateFormEventKey: `updateform--${RQ.deleteFile}`,
                     selected: null
+                },
+                addFileToDataset: {
+                    // TODO discuss edge cases and messages, e.g. when file is moved from one ds to another
+                    // or meaning of noving back to STAGE / pool
+                    id: RQ.addFileToDataset,
+                    requests: {},
+                    options: {
+                        showSend: true,
+                        showResultList: false,
+                        showResultJson: true
+                    },
+                    sendFormEventKey: `sendform--${RQ.addFileToDataset}`,
+                    updateFormEventKey: `updateform--${RQ.addFileToDataset}`,
+                    selected: null
                 }
             }
         }
@@ -312,6 +336,7 @@ export default {
         const ds = r2.ppGetSelectedDataset()
         this.zones.getDatasets.selected = ds.vsKey
         this.zones.startChangeMetadata.selected = ds.vsKey
+        globals.eventBus.$on('onLoadResults', this.updateResults)
         // TODO all init here!
         this.loadData()
     },
@@ -321,6 +346,18 @@ export default {
         },
         setViewMode(viewKey = VIEWMODE.DEFAULT) {
             this.viewMode = viewKey
+        },
+        updateResults(evt) {
+            if (evt.key === RQ.getDatasets) {
+                console.log('obj:fc evt = ', evt)
+                const options = r2.getDatasets(evt.result.data, {
+                    as: 'option-list'
+                })
+                console.log('obj:fc options = ', options)
+                const cfg = this.zones.addFileToDataset
+                cfg.requests[cfg.id].form['dataset-id'].options = options
+            }
+            console.log('R2P:updateResults evt = ', evt)
         },
         onClickDatasetListItem(evt) {
             let cfg = null
@@ -362,12 +399,17 @@ export default {
                 // break
                 case evt.key === RQ.startChangeMetadata && evt.action === 'edit-metadata':
                     return this.setViewMode(VIEWMODE.CHANGE_METADATA)
-                case evt.key === RQ.inspectFile && evt.action === 'update':
-                    return this.setViewMode(VIEWMODE.UPLOAD_FILE)
-                case evt.key === RQ.inspectFile && evt.action === 'download':
-                    return this.setViewMode(VIEWMODE.DOWNLOAD_FILE)
-                case evt.key === RQ.inspectFile && evt.action === 'delete':
-                    return this.setViewMode(VIEWMODE.DELETE_FILE)
+                case evt.key === RQ.inspectFile:
+                    switch (evt.action) {
+                        case 'update':
+                            return this.setViewMode(VIEWMODE.UPLOAD_FILE)
+                        case 'download':
+                            return this.setViewMode(VIEWMODE.DOWNLOAD_FILE)
+                        case 'delete':
+                            return this.setViewMode(VIEWMODE.DELETE_FILE)
+                        case 'addFileToDataset':
+                            return this.setViewMode(VIEWMODE.ADD_FILE_TO_DATASET)
+                    }
             }
             this.setViewMode(VIEWMODE.DEFAULT)
             cfg = this.zones.getDataset
@@ -482,6 +524,13 @@ export default {
                 cfg = this.zones.deleteFile
                 cfg.selected = ds.key
                 cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
+                cfg.requests[cfg.id].form['file-id'].selected = fileKey
+                cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
+                globals.eventBus.$emit(cfg.updateFormEventKey)
+                // addFileToDataset
+                cfg = this.zones.addFileToDataset
+                cfg.selected = ds.key
+                cfg.requests[cfg.id].form['dataset-id'].selected = null
                 cfg.requests[cfg.id].form['file-id'].selected = fileKey
                 cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
                 globals.eventBus.$emit(cfg.updateFormEventKey)

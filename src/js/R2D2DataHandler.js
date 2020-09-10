@@ -1,4 +1,5 @@
 import DynamicFormHandler from '@/js/DynamicFormHandler'
+import { _ } from 'core-js'
 
 const R2D2DataHandler = function() {
     //
@@ -76,31 +77,52 @@ const R2D2DataHandler = function() {
         if (!data) {
             return {}
         }
-        const res = {
-            _new: {
-                key: null,
-                label: '>> create new dataset'
-            },
-            _pool: {
-                key: 'STAGE',
-                label: '>> list staging files'
+        const res = {}
+        switch (true) {
+            case options.addNew === true:
+                res._new = {
+                    key: null,
+                    label: '>> create new dataset'
+                }
+                break
+            case options.addStage === true:
+                res._pool = {
+                    key: null,
+                    label: '>> create new dataset'
+                }
+                break
+        }
+        // 'key-list' is the base 
+        console.log('R2:getDatasets options = ', options)
+        _.each(data.hits.hits, (value, index) => {
+            const d = {
+                key: value._source.id,
+                version: value._source.versionNumber,
+                title: value._source.metadata.title
             }
-        }
+            if (options.addVersionToKey) {
+                d.key = `${d.key}/${d.version}`
+            }
+            d.label = `${d.title} | ${d.key} (vers: ${d.version})`
+            res[d.key] = d
+        })
         if (options.as === 'key-list') {
-            _.each(data.hits.hits, (value, index) => {
-                const d = {
-                    key: value._source.id,
-                    version: value._source.versionNumber,
-                    title: value._source.metadata.title
-                }
-                if (options.addVersionToKey) {
-                    d.key = `${d.key}/${d.version}`
-                }
-                d.label = `${d.title} | ${d.key} (vers: ${d.version})`
-                res[value._id] = d
-            })
+            return res
         }
-        return res
+        //
+        const opts = []
+        if (options.as === 'option-list') {
+            // res = Object.keys(res)
+            _.each(res, (item, key) => {
+                opts.push({
+                    value: key,
+                    text: `${item.title} | ${item.key}`
+                })
+            })
+            return opts
+        }
+
+        return null
     }
     //
     this.getFilesOfDataset = (data = null, options = {}) => {
@@ -135,6 +157,17 @@ const R2D2DataHandler = function() {
     // +++++++ prototype page
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    const addNavButtons = (form, keys = []) => {
+        keys.push('close')
+        _.each(keys, key => {
+            form[key] = {
+                type: 'button',
+                key,
+                label: key
+            }
+        })
+    }
 
     this.ppGetRequests = async () => {
         const raw = datasource.getRequests()
@@ -195,76 +228,48 @@ const R2D2DataHandler = function() {
         id = 'r2d2-pp-change-metadata'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
-        rq.form['close'] = {
-            type: 'button',
-            key: 'close',
-            label: 'close'
-        }
+        addNavButtons(rq.form)
         // create dataset (and set initial metadata)
         // clone request as its inner data gets mutated !
         id = 'r2d2-pp-create-dataset'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
-        rq.form['close'] = {
-            type: 'button',
-            key: 'close',
-            label: 'close'
-        }
+        addNavButtons(rq.form)
         //
         // upload file
         // clone request as its inner data gets mutated !
         id = 'r2d2-pp-chunk-upload-file'
         rq = requests[id] = _.cloneDeep(raw[id])
-        rq.form['close'] = {
-            type: 'button',
-            key: 'close',
-            label: 'close'
-        }
+        addNavButtons(rq.form, ['back'])
         //
         // update file
         // clone request as its inner data gets mutated !
         // id = 'r2d2-pp-update-file'
         // rq = requests[id] = _.cloneDeep(raw[id])
-        // rq.form['close'] = {
-        //     type: 'button',
-        //     key: 'close',
-        //     label: 'close'
-        // }
 
         // inspect file
         id = 'r2d2-pp-inspect-file'
         rq = requests[id] = _.cloneDeep(raw[id])
-        rq.form['close'] = {
-            type: 'button',
-            key: 'close',
-            label: 'close'
-        }
+        addNavButtons(rq.form)
 
         // download file
         id = 'r2d2-pp-download-file'
         rq = requests[id] = _.cloneDeep(raw[id])
-        rq.form['close'] = {
-            type: 'button',
-            key: 'close',
-            label: 'close'
-        }
+        addNavButtons(rq.form, ['back'])
 
-  
         // get (pool) files
         id = 'r2d2-pp-get-files'
         rq = requests[id] = _.cloneDeep(raw[id])
 
-      // delete file
-      id = 'r2d2-pp-delete-file'
-      rq = requests[id] = _.cloneDeep(raw[id])
-      rq.form['close'] = {
-          type: 'button',
-          key: 'close',
-          label: 'close'
-      }
+        // delete file
+        id = 'r2d2-pp-delete-file'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        addNavButtons(rq.form, ['back'])
 
-
-
+        // add file to dataset
+        id = 'r2d2-pp-add-file-to-dataset'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        addNavButtons(rq.form, ['back'])
 
         return requests
     }

@@ -124,7 +124,6 @@
                 }
             }
         },
-
         "r2d2-pp-delete-file": {
             "label": "r2d2-pp-delete-file",
             "description": "Deletes a file by file-id",
@@ -458,6 +457,10 @@
                         {
                             "text": "Zatonga's Fileset: *-32ca3f9c43b3",
                             "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        },
+                        {
+                            "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
                         }
                     ],
                     "selected": 0
@@ -895,6 +898,50 @@
                 "delete": {
                     "type": "button",
                     "label": "Delete File"
+                },
+                "addFileToDataset": {
+                    "type": "button",
+                    "label": "Add file to dataset"
+                }
+            }
+        },
+        "r2d2-pp-add-file-to-dataset": {
+            "label": "r2d2-pp-add-file-to-dataset",
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
+                "method": "put",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    },
+                    "data": null
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "dropdown",
+                    "label": "dataset select",
+                    "options": [
+                        {
+                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        },
+                        {
+                            "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
+                        }
+                    ],
+                    "placeholder": "select man, RIGHT NOW !!",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "input",
+                    "selected": "1234"
+                },
+                "file-name": {
+                    "type": "input",
+                    "label": "file-name",
+                    "selected": "filename"
                 }
             }
         },

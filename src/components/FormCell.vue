@@ -110,12 +110,9 @@
                     </b-input-group>
 
                     <b-input-group v-if="item.type === 'dropdown'" :prepend="item.prepend" :append="item.append">
-                        <b-form-select
-                            :id="item.key"
-                            v-model="item.selected"
-                            :options="item.options"
-                            size="sm"
-                        ></b-form-select>
+                        <b-form-select :id="item.key" v-model="item.selected" :options="item.options" size="sm">
+                            <option :value="null" :name="item.key" disabled>{{ item.placeholder }}</option>
+                        </b-form-select>
                     </b-input-group>
                     <b-input-group v-if="item.type === 'tags'" :prepend="item.prepend" :append="item.append">
                         <b-form-tags
