@@ -17,6 +17,14 @@
                 @form-button-clicked="onClickFormButton"
             />
         </div>
+        <div :class="{ hidden: viewMode !== VIEWMODE.PUBLISH_DATASET }">
+            <ActionCell
+                class="view change-metadata edit"
+                :key="mtKey"
+                :config="zones.publishDataset"
+                @form-button-clicked="onClickFormButton"
+            />
+        </div>
         <div :class="{ hidden: viewMode !== VIEWMODE.UPLOAD_FILE }">
             <ActionCell
                 class="view upload-file"
@@ -101,6 +109,7 @@ const VIEWMODE = {
     DOWNLOAD_FILE: 'download-file',
     CHANGE_METADATA: 'change-metadata',
     CREATE_DATASET: 'create-dataset',
+    PUBLISH_DATASET: 'publish-dataset',
     ADD_FILE_TO_DATASET: 'add-file-to-dataset'
 }
 
@@ -112,6 +121,7 @@ const RQ = {
     createDataset: 'r2d2-pp-create-dataset',
     startChangeMetadata: 'r2d2-pp-start-change-metadata',
     changeMetadata: 'r2d2-pp-change-metadata',
+    publishDataset: 'r2d2-pp-publish-dataset',
     uploadFile: 'r2d2-pp-chunk-upload-file',
     inspectFile: 'r2d2-pp-inspect-file',
     updateFile: 'r2d2-pp-update-file',
@@ -234,7 +244,6 @@ export default {
                     updateFormEventKey: `updateform--${RQ.changeMetadata}`
                 },
                 createDataset: {
-                    // TODO refresh ds-list after creation
                     id: RQ.createDataset,
                     requests: {},
                     options: {
@@ -250,12 +259,23 @@ export default {
                         data['send-data'] = this.data
                         return data
                     },
-                    getResult: function(data) {
-                        return data
-                    },
+                    // getResult: function(data) {
+                    //     return data
+                    // },
                     sendFormEventKey: `sendform--${RQ.createDataset}`,
                     updateFormEventKey: `updateform--${RQ.createDataset}`,
                     initalData: {}
+                },
+                publishDataset: {
+                    id: RQ.publishDataset,
+                    requests: {},
+                    options: {
+                        showSend: true,
+                        showResultList: false,
+                        showResultJson: true
+                    },
+                    sendFormEventKey: `sendform--${RQ.createDataset}`,
+                    updateFormEventKey: `updateform--${RQ.createDataset}`
                 },
                 uploadFile: {
                     id: RQ.uploadFile,
@@ -392,6 +412,7 @@ export default {
             this.setViewMode(viewMode)
         },
         onClickFormButton(evt) {
+            // console.log('R2P:onClickFormButton evt = ', evt)
             let cfg
             switch (true) {
                 case evt.action === 'back':
@@ -404,15 +425,20 @@ export default {
                     }
                     break
                 case evt.key === RQ.createDataset && evt.action === 'close':
-                    // clear form (fix the DOM multiple id error) and update the dataset list here
+                    // clear form (DOM multiple id error still there!!) and update the dataset list here
                     cfg = this.zones.createDataset
                     cfg.requests[cfg.id].form['metadata'].selected = null
                     globals.eventBus.$emit(cfg.updateFormEventKey)
                     cfg = this.zones.getDatasets
                     globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
                     break
-                case evt.key === RQ.startChangeMetadata && evt.action === 'edit-metadata':
-                    return this.setViewMode(VIEWMODE.CHANGE_METADATA)
+                case evt.key === RQ.startChangeMetadata:
+                    switch (evt.action) {
+                        case 'edit-metadata':
+                            return this.setViewMode(VIEWMODE.CHANGE_METADATA)
+                        case 'publish-dataset':
+                            return this.setViewMode(VIEWMODE.PUBLISH_DATASET)
+                    }
                 case evt.key === RQ.inspectFile:
                     switch (evt.action) {
                         case 'update':
@@ -439,16 +465,18 @@ export default {
                     const data = r2.getDataOfDataset(evt.raw)
                     if (data) {
                         //
+                        const ds = r2.ppGetSelectedDataset()
+                        //
                         cfg = this.zones.startChangeMetadata
                         form = cfg.requests[cfg.id].form
-                        form['dataset-id'].selected = r2.ppGetSelectedDataset().vsKey
+                        form['dataset-id'].selected = ds.vsKey
                         form['metadata'].selected = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                         //
                         cfg = this.zones.changeMetadata
                         form = cfg.requests[cfg.id].form
                         // changeMetadata uses the unversioned key!!
-                        form['dataset-id'].selected = r2.ppGetSelectedDataset().key // !!
+                        form['dataset-id'].selected = ds.key // !!
                         form['metadata'].setup = {
                             key: 'metadata',
                             data: data.metadata,
@@ -456,6 +484,13 @@ export default {
                         }
                         cfg.data.modificationDate = data.modificationDate
                         cfg.data.metadata = data.metadata
+                        globals.eventBus.$emit(cfg.updateFormEventKey)
+                        //
+                        // publishDataset uses the unversioned key!!
+                        cfg = this.zones.publishDataset
+                        form = cfg.requests[cfg.id].form
+                        form['dataset-id'].selected = ds.key
+                        form['modification-date'].selected = ds.modificationDate 
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)
@@ -496,6 +531,13 @@ export default {
             cfg.requests[cfg.id].form['dataset-id'].selected = null
             // cfg.requests[cfg.id].form['send-data'].selected = cfg.initalData
             cfg.requests[cfg.id].form['metadata'].selected = cfg.initalData
+            globals.eventBus.$emit(cfg.updateFormEventKey)
+            //
+            cfg = this.zones.publishDataset
+            cfg.selected = ds.key
+            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
+            // console.log('obj:fc ds = ',ds)
+            cfg.requests[cfg.id].form['modification-date'].selected = ds.modificationDate
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.uploadFile

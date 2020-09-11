@@ -8,7 +8,8 @@ const R2D2DataHandler = function() {
             key: null,
             version: null,
             data: null,
-            metadata: null
+            metadata: null,
+            modificationDate: null
         },
         selectedFile: {
             key: null
@@ -18,6 +19,7 @@ const R2D2DataHandler = function() {
     this.ppSetSelectedDataset = (key = null, version = null, data = null) => {
         let k = [null, 1]
         let metadata = null
+        let modificationDate = null
         if (_.isString(key)) {
             // this filteres the version, if included in key
             k = key.split('/')
@@ -30,10 +32,11 @@ const R2D2DataHandler = function() {
             key = data.id
             version = isNaN(data.versionNumber) ? 1 : data.versionNumber
             metadata = data.metadata // prepare for changed metadata persisting
+            modificationDate = data.modificationDate
         }
         let vsKey = key ? `${key}/${version}` : null
         vsKey = key === 'STAGE' ? key : vsKey
-        ppStates.selectedDataset = { ...ppStates.selectedDataset, key, vsKey, data, version, metadata }
+        ppStates.selectedDataset = { ...ppStates.selectedDataset, key, vsKey, data, version, metadata, modificationDate }
     }
     this.ppGetSelectedDataset = () => ppStates.selectedDataset
 
@@ -164,7 +167,7 @@ const R2D2DataHandler = function() {
             const ky = `${rq.key}--${key}`
             rq.form[key] = {
                 type: 'button',
-                key : ky,
+                key: ky,
                 label: key,
                 __strc: {
                     class: 'align-lr'
@@ -233,9 +236,17 @@ const R2D2DataHandler = function() {
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
         addNavButtons(rq)
+
         // create dataset (and set initial metadata)
         // clone request as its inner data gets mutated !
         id = 'r2d2-pp-create-dataset'
+        rq = requests[id] = _.cloneDeep(raw[id])
+        rq.form['dataset-id'].updateEventKey = `update--${id}`
+        addNavButtons(rq)
+
+        // publish dataset (and set initial metadata)
+        // clone request as its inner data gets mutated !
+        id = 'r2d2-pp-publish-dataset'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
         addNavButtons(rq)

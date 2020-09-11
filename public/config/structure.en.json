@@ -265,6 +265,36 @@
                 }
             }
         },
+        "r2d2-pp-publish-dataset": {
+            "label": "r2d2-pp-publish-dataset",
+            "description": "Publishes a dataset",
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}/publish?lmd={modification-date}",
+                "method": "put",
+                "schema": {
+                    "data": null,
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "modification-date": {
+                    "type": "value-cell",
+                    "label": "modification-date",
+                    "selected": null
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                }
+            }
+        },
         "r2d2-pp-create-dataset": {
             "label": "r2d2-pp-create-dataset",
             "description": "Creates a new dataset ( incl. initial metadata )",
