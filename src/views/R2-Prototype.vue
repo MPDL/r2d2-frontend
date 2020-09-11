@@ -158,7 +158,12 @@ export default {
                     requests: {},
                     // use 'function' declaration here to get 'this' working inside object!
                     getResult: function(data) {
-                        return r2.getDatasets(data, { as: 'key-list', addVersionToKey: true, addNew:true, addStage:true })
+                        return r2.getDatasets(data, {
+                            as: 'key-list',
+                            addVersionToKey: true,
+                            addNew: true,
+                            addStage: true
+                        })
                     },
                     sendFormEventKey: `sendform--${RQ.getDatasets}`,
                     selected: null // initial update in 'created' hook
@@ -349,15 +354,12 @@ export default {
         },
         updateResults(evt) {
             if (evt.key === RQ.getDatasets) {
-                console.log('obj:fc evt = ', evt)
                 const options = r2.getDatasets(evt.result.data, {
                     as: 'option-list'
                 })
-                console.log('obj:fc options = ', options)
                 const cfg = this.zones.addFileToDataset
                 cfg.requests[cfg.id].form['dataset-id'].options = options
             }
-            console.log('R2P:updateResults evt = ', evt)
         },
         onClickDatasetListItem(evt) {
             let cfg = null
@@ -392,11 +394,23 @@ export default {
         onClickFormButton(evt) {
             let cfg
             switch (true) {
+                case evt.action === 'back':
+                    switch (evt.key) {
+                        case RQ.uploadFile:
+                        case RQ.downloadFile:
+                        case RQ.deleteFile:
+                        case RQ.addFileToDataset:
+                            return this.setViewMode(VIEWMODE.INSPECT_FILE)
+                    }
+                    break
                 case evt.key === RQ.createDataset && evt.action === 'close':
+                    // clear form (fix the DOM multiple id error) and update the dataset list here
+                    cfg = this.zones.createDataset
+                    cfg.requests[cfg.id].form['metadata'].selected = null
+                    globals.eventBus.$emit(cfg.updateFormEventKey)
                     cfg = this.zones.getDatasets
                     globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
-                // TODO add reload ds-list trigger here!
-                // break
+                    break
                 case evt.key === RQ.startChangeMetadata && evt.action === 'edit-metadata':
                     return this.setViewMode(VIEWMODE.CHANGE_METADATA)
                 case evt.key === RQ.inspectFile:

@@ -158,12 +158,13 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-    const addNavButtons = (form, keys = []) => {
+    const addNavButtons = (rq, keys = []) => {
         keys.push('close')
         _.each(keys, key => {
-            form[key] = {
+            const ky = `${rq.key}--${key}`
+            rq.form[key] = {
                 type: 'button',
-                key,
+                key : ky,
                 label: key,
                 __strc: {
                     class: 'align-lr'
@@ -231,19 +232,19 @@ const R2D2DataHandler = function() {
         id = 'r2d2-pp-change-metadata'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
-        addNavButtons(rq.form)
+        addNavButtons(rq)
         // create dataset (and set initial metadata)
         // clone request as its inner data gets mutated !
         id = 'r2d2-pp-create-dataset'
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
-        addNavButtons(rq.form)
+        addNavButtons(rq)
         //
         // upload file
         // clone request as its inner data gets mutated !
         id = 'r2d2-pp-chunk-upload-file'
         rq = requests[id] = _.cloneDeep(raw[id])
-        addNavButtons(rq.form, ['back'])
+        addNavButtons(rq, ['back'])
         //
         // update file
         // clone request as its inner data gets mutated !
@@ -253,12 +254,12 @@ const R2D2DataHandler = function() {
         // inspect file
         id = 'r2d2-pp-inspect-file'
         rq = requests[id] = _.cloneDeep(raw[id])
-        addNavButtons(rq.form)
+        addNavButtons(rq)
 
         // download file
         id = 'r2d2-pp-download-file'
         rq = requests[id] = _.cloneDeep(raw[id])
-        addNavButtons(rq.form, ['back'])
+        addNavButtons(rq, ['back'])
 
         // get (pool) files
         id = 'r2d2-pp-get-files'
@@ -267,12 +268,12 @@ const R2D2DataHandler = function() {
         // delete file
         id = 'r2d2-pp-delete-file'
         rq = requests[id] = _.cloneDeep(raw[id])
-        addNavButtons(rq.form, ['back'])
+        addNavButtons(rq, ['back'])
 
         // add file to dataset
         id = 'r2d2-pp-add-file-to-dataset'
         rq = requests[id] = _.cloneDeep(raw[id])
-        addNavButtons(rq.form, ['back'])
+        addNavButtons(rq, ['back'])
 
         return requests
     }
