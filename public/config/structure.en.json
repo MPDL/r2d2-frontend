@@ -320,6 +320,13 @@
                     "schema": "{definitions.metadata}",
                     "selected": null
                 },
+                "reset": {
+                    "type": "button",
+                    "label": "Reset to defaults",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
                 "sp-1": {
                     "type": "LY",
                     "label": ""
@@ -351,6 +358,13 @@
                     "label": "Metadata:",
                     "schema": "{definitions.metadata}",
                     "selected": null
+                },
+                "reset": {
+                    "type": "button",
+                    "label": "Reset to defaults",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
                 },
                 "sp-1": {
                     "type": "LY",

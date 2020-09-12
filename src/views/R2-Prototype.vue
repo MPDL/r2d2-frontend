@@ -223,9 +223,13 @@ export default {
                         this.data.modificationDate = data.modificationDate
                         return data
                     },
+                    resetMetadata: function() {
+                        const form = this.requests[this.id].form
+                        form['metadata'].setup.data = {}
+                    },
                     sendFormEventKey: `sendform--${RQ.changeMetadata}`,
                     updateFormEventKey: `updateform--${RQ.changeMetadata}`,
-                    clearMetaFormEventKey: `clear--${RQ.changeMetadata}--metadata`
+                    clearMetaFormEventKey: `clear--${RQ.changeMetadata}--metadata` // TODO still needed ?
                 },
                 createDataset: {
                     id: RQ.createDataset,
@@ -243,9 +247,13 @@ export default {
                         data['send-data'] = this.data
                         return data
                     },
+                    resetMetadata: function() {
+                        const form = this.requests[this.id].form
+                        form['metadata'].setup.data = {}
+                    },
                     sendFormEventKey: `sendform--${RQ.createDataset}`,
                     updateFormEventKey: `updateform--${RQ.createDataset}`,
-                    clearMetaFormEventKey: `clear--${RQ.createDataset}--metadata`,
+                    clearMetaFormEventKey: `clear--${RQ.createDataset}--metadata`, // TODO still needed ?
                     initalData: {}
                 },
                 publishDataset: {
@@ -407,15 +415,31 @@ export default {
                             return this.setViewMode(VIEWMODE.INSPECT_FILE)
                     }
                     break
-                case evt.key === RQ.createDataset && evt.action === 'close':
+                case evt.key === RQ.createDataset:
                     cfg = this.zones.createDataset
-                    globals.eventBus.$emit(cfg.clearMetaFormEventKey)
-                    cfg = this.zones.getDatasets
-                    globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
+                    switch (evt.action) {
+                        case 'close':
+                            cfg = this.zones.getDatasets
+                            globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
+
+                            break
+                        case 'reset':
+                            const form = cfg.requests[cfg.id].form
+                            cfg.resetMetadata()
+                            return globals.eventBus.$emit(cfg.updateFormEventKey)
+                    }
                     break
-                case evt.key === RQ.changeMetadata && evt.action === 'close':
+                case evt.key === RQ.changeMetadata:
                     cfg = this.zones.changeMetadata
-                    globals.eventBus.$emit(cfg.clearMetaFormEventKey)
+                    switch (evt.action) {
+                        case 'close':
+                            globals.eventBus.$emit(cfg.clearMetaFormEventKey)
+                            break
+                        case 'reset':
+                            const form = cfg.requests[cfg.id].form
+                            cfg.resetMetadata()
+                            return globals.eventBus.$emit(cfg.updateFormEventKey)
+                    }
                     break
                 case evt.key === RQ.startChangeMetadata:
                     switch (evt.action) {

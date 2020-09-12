@@ -32,7 +32,9 @@ export default {
             const setup = this.config.setup
             this.hasData = true
             globals.eventBus.$on('beforeCollectData', this.prepareCollectData)
-            globals.eventBus.$on(setup.clearFormEventKey, this.clearForm)
+            // TODO check if this event is longer needed, as it seems that 100% resets are done by 
+            // 'beforeDestroy' upfront!
+            globals.eventBus.$on(setup.clearFormEventKey, () => this.clearForm('clear-event'))
             this.metaFormConfig = {
                 // TODO add persist option here!
                 form: r2.getMetaFormHandler().getForm(setup.data, setup.schema)
@@ -44,15 +46,15 @@ export default {
         this.formKey++
     },
     beforeDestroy() {
-        this.clearForm()
-        globals.eventBus.$off('beforeCollectData', this.prepareCollectData)
+        this.clearForm('beforeDestroy')
+        globals.eventBus.$off('beforeCollectData')
         if (this.config.setup) {
-            globals.eventBus.$off(this.config.setup.clearFormEventKey, this.clearForm)
+            globals.eventBus.$off(this.config.setup.clearFormEventKey)
         }
         this.hasData = false
     },
     methods: {
-        clearForm() {
+        clearForm(source) {
             this.metaFormConfig.form = null
             if (this.config.setup) {
                 this.config.setup.data = null
@@ -67,7 +69,6 @@ export default {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         onFormAction(evt) {
-            console.log('META:onFormAction evt = ', evt)
             r2.getMetaFormHandler().modifyForm(evt)
             this.metaFormConfig.form = r2.getMetaFormHandler().getForm()
             this.update()
