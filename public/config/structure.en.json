@@ -1029,6 +1029,53 @@
                 }
             }
         },
+
+        "r2d2-pp-add-multiple-files-to-dataset-test": {
+            "label": "r2d2-pp-add-multiple-files-to-dataset TEST",
+            "description": "Modified simple version to use a single file for testing",
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}",
+                "method": "put",
+                "schema": {
+                    "data": "send-data",
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "dropdown",
+                    "label": "dataset select",
+                    "options": [
+                        {
+                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        },
+                        {
+                            "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
+                        }
+                    ],
+                    "placeholder": "select man, RIGHT NOW !!",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "input",
+                    "selected": "1234"
+                },
+                "file-name": {
+                    "type": "input",
+                    "label": "file-name",
+                    "selected": "filename"
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                }
+            }
+        },
+
         "r2d2-pp-download-file": {
             "label": "r2d2-pp-download-file",
             "description": "Get (download) a single, real file",

@@ -1,6 +1,12 @@
 <template>
     <div class="meta-component">
-        <FormCell class="form" :key="uKey" :request="metaFormConfig" @onClickFormAction="onFormAction"></FormCell>
+        <FormCell
+            v-if="hasData"
+            class="form"
+            :key="uKey"
+            :request="metaFormConfig"
+            @onClickFormAction="onFormAction"
+        ></FormCell>
     </div>
 </template>
 
@@ -15,39 +21,61 @@ export default {
     },
     data() {
         return {
-            metaFormConfig: {
-                form: {}
-            },
-            uKey: 0
+            hasData: false,
+            metaFormConfig: {},
+            uKey: 0,
+            hasData: false
         }
     },
     created() {
-        globals.eventBus.$on('beforeCollectData', this.prepareCollectData)
+        if (this.config.setup && this.config.setup.data) {
+            const setup = this.config.setup
+            this.hasData = true
+            globals.eventBus.$on('beforeCollectData', this.prepareCollectData)
+            globals.eventBus.$on(setup.clearFormEventKey, this.clearForm)
+            this.metaFormConfig = {
+                // TODO add persist option here!
+                form: r2.getMetaFormHandler().getForm(setup.data, setup.schema)
+            }
+        }
         r2 = globals.getDataHandler('r2d2')
-        this.metaFormConfig.form = r2.getMetaFormHandler().getForm(this.$config.data, this.$config.schema)
     },
     mounted() {
         this.formKey++
     },
     beforeDestroy() {
+        this.clearForm()
         globals.eventBus.$off('beforeCollectData', this.prepareCollectData)
+        if (this.config.setup) {
+            globals.eventBus.$off(this.config.setup.clearFormEventKey, this.clearForm)
+        }
+        this.hasData = false
     },
     methods: {
-        prepareCollectData() {
-            this.config.selected =  r2.getMetaFormHandler().getData()
+        clearForm() {
+            this.metaFormConfig.form = null
+            if (this.config.setup) {
+                this.config.setup.data = null
+            }
+        },
+        prepareCollectData(evt) {
+            if (evt.key === this.$keys[0]) {
+                this.config.selected = r2.getMetaFormHandler().getData()
+            }
         },
         update(updateKey = 'uKey') {
             this[updateKey] = this[updateKey] > 1000 ? 1 : ++this[updateKey]
         },
         onFormAction(evt) {
+            console.log('META:onFormAction evt = ', evt)
             r2.getMetaFormHandler().modifyForm(evt)
             this.metaFormConfig.form = r2.getMetaFormHandler().getForm()
             this.update()
         }
     },
     computed: {
-        $config() {
-            return this.config && this.config.setup ? this.config.setup : { data: {}, schema: {} }
+        $keys() {
+            return this.config.key.split('--')
         }
     }
 }
@@ -60,6 +88,9 @@ export default {
         border: 1px solid #86b1bd;
         border-radius: 5px;
         padding: 12px;
+    }
+    .hide {
+        display: none;
     }
 }
 </style>

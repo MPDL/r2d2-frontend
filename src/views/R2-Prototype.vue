@@ -113,23 +113,7 @@ const VIEWMODE = {
     ADD_FILE_TO_DATASET: 'add-file-to-dataset'
 }
 
-const RQ = {
-    login: 'r2d2-login',
-    logout: 'r2d2-logout',
-    getDatasets: 'r2d2-get-datasets',
-    getDataset: 'r2d2-pp-get-dataset',
-    createDataset: 'r2d2-pp-create-dataset',
-    startChangeMetadata: 'r2d2-pp-start-change-metadata',
-    changeMetadata: 'r2d2-pp-change-metadata',
-    publishDataset: 'r2d2-pp-publish-dataset',
-    uploadFile: 'r2d2-pp-chunk-upload-file',
-    inspectFile: 'r2d2-pp-inspect-file',
-    updateFile: 'r2d2-pp-update-file',
-    downloadFile: 'r2d2-pp-download-file',
-    deleteFile: 'r2d2-pp-delete-file',
-    getStageFiles: 'r2d2-pp-get-files',
-    addFileToDataset: 'r2d2-pp-add-file-to-dataset'
-}
+const RQ = r2.ppGetRequestKeys()
 
 //
 export default {
@@ -239,9 +223,9 @@ export default {
                         this.data.modificationDate = data.modificationDate
                         return data
                     },
-
                     sendFormEventKey: `sendform--${RQ.changeMetadata}`,
-                    updateFormEventKey: `updateform--${RQ.changeMetadata}`
+                    updateFormEventKey: `updateform--${RQ.changeMetadata}`,
+                    clearMetaFormEventKey: `clear--${RQ.changeMetadata}--metadata`
                 },
                 createDataset: {
                     id: RQ.createDataset,
@@ -259,11 +243,9 @@ export default {
                         data['send-data'] = this.data
                         return data
                     },
-                    // getResult: function(data) {
-                    //     return data
-                    // },
                     sendFormEventKey: `sendform--${RQ.createDataset}`,
                     updateFormEventKey: `updateform--${RQ.createDataset}`,
+                    clearMetaFormEventKey: `clear--${RQ.createDataset}--metadata`,
                     initalData: {}
                 },
                 publishDataset: {
@@ -384,15 +366,16 @@ export default {
         onClickDatasetListItem(evt) {
             let cfg = null
             if (evt.item.key === null) {
+                // console.log('R2P:META:onClickDatasetListItem evt.item.key = ', evt.item.key)
                 cfg = this.zones.createDataset
                 const form = cfg.requests[cfg.id].form
                 form['dataset-id'].selected = 'new-dataset'
                 form['metadata'].setup = {
                     key: 'metadata',
                     data: cfg.initalData,
-                    schema: form.metadata.schema
+                    schema: form.metadata.schema,
+                    clearFormEventKey: cfg.clearMetaFormEventKey
                 }
-                cfg.data.metadata = cfg.initalData
                 globals.eventBus.$emit(cfg.updateFormEventKey)
                 return this.setViewMode(VIEWMODE.CREATE_DATASET)
             }
@@ -425,12 +408,14 @@ export default {
                     }
                     break
                 case evt.key === RQ.createDataset && evt.action === 'close':
-                    // clear form (DOM multiple id error still there!!) and update the dataset list here
                     cfg = this.zones.createDataset
-                    cfg.requests[cfg.id].form['metadata'].selected = null
-                    globals.eventBus.$emit(cfg.updateFormEventKey)
+                    globals.eventBus.$emit(cfg.clearMetaFormEventKey)
                     cfg = this.zones.getDatasets
                     globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
+                    break
+                case evt.key === RQ.changeMetadata && evt.action === 'close':
+                    cfg = this.zones.changeMetadata
+                    globals.eventBus.$emit(cfg.clearMetaFormEventKey)
                     break
                 case evt.key === RQ.startChangeMetadata:
                     switch (evt.action) {
@@ -480,8 +465,10 @@ export default {
                         form['metadata'].setup = {
                             key: 'metadata',
                             data: data.metadata,
-                            schema: form.metadata.schema
+                            schema: form.metadata.schema,
+                            clearFormEventKey: cfg.clearMetaFormEventKey
                         }
+
                         cfg.data.modificationDate = data.modificationDate
                         cfg.data.metadata = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
@@ -490,7 +477,7 @@ export default {
                         cfg = this.zones.publishDataset
                         form = cfg.requests[cfg.id].form
                         form['dataset-id'].selected = ds.key
-                        form['modification-date'].selected = ds.modificationDate 
+                        form['modification-date'].selected = ds.modificationDate
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)
@@ -524,13 +511,6 @@ export default {
             cfg = this.zones.changeMetadata
             cfg.selected = ds.key
             cfg.requests[cfg.id].form['dataset-id'].selected = ds.vsKey
-            globals.eventBus.$emit(cfg.updateFormEventKey)
-            //
-            cfg = this.zones.createDataset
-            cfg.selected = ds.key
-            cfg.requests[cfg.id].form['dataset-id'].selected = null
-            // cfg.requests[cfg.id].form['send-data'].selected = cfg.initalData
-            cfg.requests[cfg.id].form['metadata'].selected = cfg.initalData
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.publishDataset

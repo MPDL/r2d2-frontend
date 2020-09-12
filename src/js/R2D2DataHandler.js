@@ -1,5 +1,4 @@
 import DynamicFormHandler from '@/js/DynamicFormHandler'
-import { _ } from 'core-js'
 
 const R2D2DataHandler = function() {
     //
@@ -161,6 +160,29 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
+    const RQ = {
+        login: 'r2d2-login',
+        logout: 'r2d2-logout',
+        getDatasets: 'r2d2-get-datasets',
+        getDataset: 'r2d2-pp-get-dataset',
+        createDataset: 'r2d2-pp-create-dataset',
+        startChangeMetadata: 'r2d2-pp-start-change-metadata',
+        changeMetadata: 'r2d2-pp-change-metadata',
+        publishDataset: 'r2d2-pp-publish-dataset',
+        uploadFile: 'r2d2-pp-chunk-upload-file',
+        inspectFile: 'r2d2-pp-inspect-file',
+        updateFile: 'r2d2-pp-update-file',
+        downloadFile: 'r2d2-pp-download-file',
+        deleteFile: 'r2d2-pp-delete-file',
+        getStageFiles: 'r2d2-pp-get-files',
+        addFileToDataset: 'r2d2-pp-add-file-to-dataset',
+        addMultipleFilesToDatasetTest: 'r2d2-pp-add-multiple-files-to-dataset-test'
+    }
+
+    this.ppGetRequestKeys = () => RQ
+    
+
     const addNavButtons = (rq, keys = []) => {
         keys.push('close')
         _.each(keys, key => {
@@ -183,7 +205,7 @@ const R2D2DataHandler = function() {
         let id
         // login
         // clone request as its inner data gets mutated !
-        id = 'r2d2-login'
+        id = RQ.login
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form = {
             username: {
@@ -204,12 +226,12 @@ const R2D2DataHandler = function() {
         //
         // logout
         // clone request as its inner data gets mutated !
-        id = 'r2d2-logout'
+        id = RQ.logout
         rq = requests[id] = _.cloneDeep(raw[id])
         //
         // get datasets
         // clone request as its inner data gets mutated !
-        id = 'r2d2-get-datasets'
+        id = RQ.getDatasets
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['keys'].label = 'query:'
         rq.form['keys'].type = 'value-cell'
@@ -218,73 +240,80 @@ const R2D2DataHandler = function() {
         //
         // get files
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-get-dataset'
+        id = RQ.getDataset
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['ds-select'].updateEventKey = `update--${id}`
         rq.description = 'lists all files of a dataset'
         //
         // start change metadata
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-start-change-metadata'
+        id = RQ.startChangeMetadata
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
         rq.form['metadata'].updateEventKey = `update--${id}`
         //
         // change metadata
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-change-metadata'
+        id = RQ.changeMetadata
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
         addNavButtons(rq)
 
         // create dataset (and set initial metadata)
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-create-dataset'
+        id = RQ.createDataset
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
         addNavButtons(rq)
 
         // publish dataset (and set initial metadata)
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-publish-dataset'
+        id = RQ.publishDataset
         rq = requests[id] = _.cloneDeep(raw[id])
         rq.form['dataset-id'].updateEventKey = `update--${id}`
         addNavButtons(rq)
         //
         // upload file
         // clone request as its inner data gets mutated !
-        id = 'r2d2-pp-chunk-upload-file'
+        id = RQ.uploadFile
         rq = requests[id] = _.cloneDeep(raw[id])
         addNavButtons(rq, ['back'])
         //
         // update file
         // clone request as its inner data gets mutated !
-        // id = 'r2d2-pp-update-file'
+        // id = RQ.updateFile
         // rq = requests[id] = _.cloneDeep(raw[id])
 
         // inspect file
-        id = 'r2d2-pp-inspect-file'
+        id = RQ.inspectFile
         rq = requests[id] = _.cloneDeep(raw[id])
         addNavButtons(rq)
 
         // download file
-        id = 'r2d2-pp-download-file'
+        id = RQ.downloadFile
         rq = requests[id] = _.cloneDeep(raw[id])
         addNavButtons(rq, ['back'])
 
         // get (pool) files
-        id = 'r2d2-pp-get-files'
+        id = RQ.getStageFiles
         rq = requests[id] = _.cloneDeep(raw[id])
 
         // delete file
-        id = 'r2d2-pp-delete-file'
+        id = RQ.deleteFile
         rq = requests[id] = _.cloneDeep(raw[id])
         addNavButtons(rq, ['back'])
 
         // add file to dataset
-        id = 'r2d2-pp-add-file-to-dataset'
+        id = RQ.addFileToDataset
         rq = requests[id] = _.cloneDeep(raw[id])
         addNavButtons(rq, ['back'])
+
+        // add multiple files to dataset TEST
+        id = RQ.addMultipleFilesToDatasetTest
+        rq = requests[id] = _.cloneDeep(raw[id])
+        addNavButtons(rq, ['back'])
+
+        
 
         return requests
     }
