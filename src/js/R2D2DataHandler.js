@@ -95,7 +95,7 @@ const R2D2DataHandler = function() {
                 break
         }
         // 'key-list' is the base
-        console.log('R2:getDatasets options = ', options)
+        // console.log('R2:getDatasets options = ', options)
         _.each(data.hits.hits, (value, index) => {
             const d = {
                 key: value._source.id,
@@ -189,6 +189,7 @@ const R2D2DataHandler = function() {
             const ky = `${rq.key}--${key}`
             rq.form[key] = {
                 type: 'button',
+                show: true,
                 key: ky,
                 label: key,
                 __strc: {
@@ -210,12 +211,14 @@ const R2D2DataHandler = function() {
         rq.form = {
             username: {
                 type: 'input',
+                show: true,
                 label: 'username:',
                 sendKey: 'username',
                 selected: rq.form['dd-auth'].options[0].value.username
             },
             password: {
                 type: 'input',
+                show: true,
                 label: 'password:',
                 sendKey: 'password',
                 selected: rq.form['dd-auth'].options[0].value.password

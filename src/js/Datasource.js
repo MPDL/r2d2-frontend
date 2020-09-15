@@ -296,6 +296,7 @@ function Datasource() {
                 if (item.addToForm === false) {
                     delete request.form[itemKey]
                 } else {
+                    item.show = item.show !== false // this flag may be used for realtime form mods
                     item.sendKey = _.isString(item.sendKey) ? item.sendKey : itemKey
                     item.key = `${rqKey}--${itemKey}`
                     item.description = _.isString(item.description) ? item.description : null

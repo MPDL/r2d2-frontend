@@ -425,6 +425,7 @@ const DynamicFormHandler = function() {
             item.selected = _.isArray(item.selected) ? item.selected.join(',') : item.selected
         }
         //
+        item.show = true
         return item
     }
     //

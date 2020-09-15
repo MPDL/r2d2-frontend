@@ -71,17 +71,17 @@
                         </div>
                     </div>
 
-                    <b-input-group v-if="item.component === 'r2-chunky'">
+                    <b-input-group v-if="item.component === 'r2-chunky' && item.show">
                         <!-- TODO Add item.config feature also here! -->
                         <r2-chunky :config="item" :form="request.form" />
                     </b-input-group>
 
-                    <b-input-group v-if="item.component === 'r2-meta'">
+                    <b-input-group v-if="item.component === 'r2-meta' && item.show">
                         <r2-meta :config="item" />
                     </b-input-group>
 
                     <b-input-group
-                        v-if="item.type === 'button'"
+                        v-if="item.type === 'button' && item.show"
                         size="sm"
                         :prepend="item.prepend"
                         :append="item.append"
@@ -91,7 +91,7 @@
                         </b-button>
                     </b-input-group>
 
-                    <b-input-group v-if="item.type === 'input'" size="sm" :prepend="item.prepend" :append="item.append">
+                    <b-input-group v-if="item.type === 'input' && item.show" size="sm" :prepend="item.prepend" :append="item.append">
                         <b-form-input
                             :id="item.key"
                             :placeholder="item.placeholder"
@@ -99,7 +99,7 @@
                         ></b-form-input>
                     </b-input-group>
 
-                    <b-input-group v-if="item.type === 'textarea'" :prepend="item.prepend" :append="item.append">
+                    <b-input-group v-if="item.type === 'textarea' && item.show" :prepend="item.prepend" :append="item.append">
                         <b-form-textarea
                             :id="item.key"
                             v-model="item.selected"
@@ -108,8 +108,7 @@
                             :max-rows="item.maxRows"
                         ></b-form-textarea>
                     </b-input-group>
-
-                    <b-input-group v-if="item.type === 'dropdown'" :prepend="item.prepend" :append="item.append">
+                    <b-input-group v-if="item.type === 'dropdown' && item.show" :prepend="item.prepend" :append="item.append">
                         <b-form-select :id="item.key" v-model="item.selected" :options="item.options" size="sm">
                             <option :value="null" :name="item.key" disabled>{{ item.placeholder }}</option>
                         </b-form-select>
@@ -122,7 +121,7 @@
                             size="md"
                         ></b-form-tags>
                     </b-input-group>
-                    <b-input-group v-if="item.type === 'date'">
+                    <b-input-group v-if="item.type === 'date' && item.show">
                         <b-form-datepicker :id="item.key" v-model="item.selected" class="mb-2"></b-form-datepicker>
                     </b-input-group>
                     <b-input-group v-if="item.type === 'multi-select'">
@@ -133,7 +132,7 @@
                             :options="item.options"
                         ></b-form-checkbox-group>
                     </b-input-group>
-                    <b-input-group v-if="item.type === 'single-select'">
+                    <b-input-group v-if="item.type === 'single-select' && item.show">
                         <b-form-radio-group
                             :id="item.key"
                             class="pointer"
@@ -141,7 +140,7 @@
                             :options="item.options"
                         ></b-form-radio-group>
                     </b-input-group>
-                    <b-input-group v-if="item.type === 'file-upload'" class="pointer">
+                    <b-input-group v-if="item.type === 'file-upload' && item.show" class="pointer">
                         <b-form-file
                             :id="item.key"
                             v-model="item.meta"
@@ -151,7 +150,7 @@
                             @input="onFileInput(item)"
                         ></b-form-file>
                     </b-input-group>
-                    <value-cell v-if="item.type === 'value-cell'" :config="item" v-model="item.selected"></value-cell>
+                    <value-cell v-if="item.type === 'value-cell' && item.show" :config="item" v-model="item.selected"></value-cell>
                 </b-form-group>
             </div>
         </vue-custom-scrollbar>

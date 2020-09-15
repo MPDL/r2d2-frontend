@@ -272,6 +272,20 @@ export default {
                         showResultList: false,
                         showResultJson: true
                     },
+                    modBackup: null,
+                    modifyForm: function(mod) {
+                        if (mod === 'no-back') {
+                            this.modBackup = _.cloneDeep(this.form.back)
+                            this.form.back.show = false
+                            this.form.back.__strc.class = '' // but why needed ??
+                        }
+                    },
+                    beforeClose: function() {
+                        if (this.modBackup) {
+                            this.form.back = this.modBackup
+                            this.modBackup = null
+                        }
+                    },
                     sendFormEventKey: `sendform--${RQ.uploadFile}`,
                     updateFormEventKey: `updateform--${RQ.uploadFile}`,
                     selected: r2.ppGetSelectedFile().key
@@ -392,12 +406,8 @@ export default {
             const viewMode = evt.item.key ? VIEWMODE.INSPECT_FILE : VIEWMODE.UPLOAD_FILE
             if (viewMode === VIEWMODE.UPLOAD_FILE) {
                 const cfg = this.zones.uploadFile
-                // console.log('R2P:onClickFileListItem cfg = ', cfg)
-                // delete cfg.form.back // TEST // ok
+                cfg.modifyForm('no-back')
                 globals.eventBus.$emit(cfg.updateFormEventKey)
-
-                // TODO remove the back-button on 'uploadFile' here
-                // Implement a form modify / override function
                 globals.eventBus.$emit('onLoadResults', {
                     key: RQ.uploadFile,
                     filteredResult: { result: null }
@@ -406,8 +416,15 @@ export default {
             this.setViewMode(viewMode)
         },
         onClickFormButton(evt) {
-            // console.log('R2P:onClickFormButton evt = ', evt)
             let cfg
+            // console.log('R2P:onClickFormButton evt = ', evt)
+            if (evt.action === 'close') {
+                _.each(this.zones, zone => {
+                    if (zone.id === evt.key && _.isFunction(zone.beforeClose)) {
+                        zone.beforeClose()
+                    }
+                })
+            }
             switch (true) {
                 case evt.action === 'back':
                     switch (evt.key) {
@@ -424,7 +441,6 @@ export default {
                         case 'close':
                             cfg = this.zones.getDatasets
                             globals.eventBus.$emit(cfg.sendFormEventKey, cfg.id)
-
                             break
                         case 'reset':
                             cfg.resetMetadata()
@@ -540,7 +556,7 @@ export default {
             cfg = this.zones.publishDataset
             cfg.selected = ds.key
             cfg.form['dataset-id'].selected = ds.key
-            // 
+            //
             cfg.form['modification-date'].selected = ds.modificationDate
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
