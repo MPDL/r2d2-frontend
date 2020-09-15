@@ -14,7 +14,7 @@
                 <div v-if="showApiInfo" class="target">
                     <span>api-target: {{ request.api.target }}</span>
                     <br />
-                    <span>api-method: {{ request.api.method }}</span>
+                    <span>api-method: {{ request.api.methodKey }}</span>
                 </div>
                 <div class="scoll-area-edge"></div>
                 <FormCell

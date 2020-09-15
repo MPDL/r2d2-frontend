@@ -80,6 +80,10 @@
                         <r2-meta :config="item" />
                     </b-input-group>
 
+                    <b-input-group v-if="item.component === 'auto-complete' && item.show">
+                        <auto-complete :config="item" />
+                    </b-input-group>
+
                     <b-input-group
                         v-if="item.type === 'button' && item.show"
                         size="sm"
@@ -91,7 +95,12 @@
                         </b-button>
                     </b-input-group>
 
-                    <b-input-group v-if="item.type === 'input' && item.show" size="sm" :prepend="item.prepend" :append="item.append">
+                    <b-input-group
+                        v-if="item.type === 'input' && item.show"
+                        size="sm"
+                        :prepend="item.prepend"
+                        :append="item.append"
+                    >
                         <b-form-input
                             :id="item.key"
                             :placeholder="item.placeholder"
@@ -99,7 +108,11 @@
                         ></b-form-input>
                     </b-input-group>
 
-                    <b-input-group v-if="item.type === 'textarea' && item.show" :prepend="item.prepend" :append="item.append">
+                    <b-input-group
+                        v-if="item.type === 'textarea' && item.show"
+                        :prepend="item.prepend"
+                        :append="item.append"
+                    >
                         <b-form-textarea
                             :id="item.key"
                             v-model="item.selected"
@@ -108,7 +121,11 @@
                             :max-rows="item.maxRows"
                         ></b-form-textarea>
                     </b-input-group>
-                    <b-input-group v-if="item.type === 'dropdown' && item.show" :prepend="item.prepend" :append="item.append">
+                    <b-input-group
+                        v-if="item.type === 'dropdown' && item.show"
+                        :prepend="item.prepend"
+                        :append="item.append"
+                    >
                         <b-form-select :id="item.key" v-model="item.selected" :options="item.options" size="sm">
                             <option :value="null" :name="item.key" disabled>{{ item.placeholder }}</option>
                         </b-form-select>
@@ -150,7 +167,11 @@
                             @input="onFileInput(item)"
                         ></b-form-file>
                     </b-input-group>
-                    <value-cell v-if="item.type === 'value-cell' && item.show" :config="item" v-model="item.selected"></value-cell>
+                    <value-cell
+                        v-if="item.type === 'value-cell' && item.show"
+                        :config="item"
+                        v-model="item.selected"
+                    ></value-cell>
                 </b-form-group>
             </div>
         </vue-custom-scrollbar>
@@ -166,6 +187,7 @@ import R2Chunky from '@/components/R2Chunky.vue'
 import R2Meta from '@/components/R2Meta.vue'
 import ValueCell from '@/components/ValueCell.vue'
 import VueJsonPretty from '@/lib/vue-json-pretty.1.6.3.js'
+import AutoComplete from '@/components/AutoComplete.vue'
 
 export default {
     name: 'FormCell',
@@ -174,7 +196,8 @@ export default {
         R2Chunky,
         R2Meta,
         VueJsonPretty,
-        ValueCell
+        ValueCell,
+        AutoComplete
     },
     props: {
         request: Object
@@ -189,7 +212,11 @@ export default {
             tme: null
         }
     },
+    created() {
+        console.log('FORM:created this.request.form = ', this.request.form)
+    },
     mounted() {
+        // console.log('FORM:mounted this.request.form = ', this.request.form)
         //
     },
     methods: {

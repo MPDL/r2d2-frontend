@@ -290,7 +290,8 @@ function Datasource() {
             request.api =
                 request.api && _.isString(request.api.target) ? request.api : { target: '/get', method: 'POST' }
 
-            request.api.method = getMethod(request.api.method)
+            request.api.methodKey = request.api.method.toLowerCase()
+            request.api.method = getMethod(request.api.methodKey)
             request.description = _.isString(request.description) ? request.description : rqKey
             _.each(request.form, (item, itemKey) => {
                 if (item.addToForm === false) {

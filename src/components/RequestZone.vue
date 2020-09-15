@@ -22,105 +22,11 @@
                 <div class="target">
                     <span>api-target: {{ request.api.target }}</span>
                     <br />
-                    <span>api-method: {{ request.api.method }}</span>
+                    <span>api-method: {{ request.api.methodKey }}</span>
                 </div>
                 <div class="scoll-area-edge"></div>
                 <vue-custom-scrollbar class="scroll-area">
-                    <div class="form-elements">
-                        <b-form-group
-                            v-for="(item, index) in request.form"
-                            :key="index"
-                            :id="item.key"
-                            :label="item.label"
-                            :label-for="item.key"
-                            :description="item.description"
-                        >
-                            <b-input-group v-if="item.component === 'r2-chunky'">
-                                <r2-chunky :config="item" :form="request.form" />
-                            </b-input-group>
-
-                            <b-input-group
-                                v-if="item.type === 'input'"
-                                size="sm"
-                                :prepend="item.prepend"
-                                :append="item.append"
-                            >
-                                <b-form-input
-                                    :id="item.key"
-                                    :placeholder="item.placeholder"
-                                    v-model="item.selected"
-                                ></b-form-input>
-                            </b-input-group>
-
-                            <b-input-group
-                                v-if="item.type === 'textarea'"
-                                :prepend="item.prepend"
-                                :append="item.append"
-                            >
-                                <b-form-textarea
-                                    :id="item.key"
-                                    v-model="item.selected"
-                                    :placeholder="item.placeholder"
-                                    :rows="item.rows"
-                                    :max-rows="item.maxRows"
-                                ></b-form-textarea>
-                            </b-input-group>
-
-                            <b-input-group
-                                v-if="item.type === 'dropdown'"
-                                :prepend="item.prepend"
-                                :append="item.append"
-                            >
-                                <b-form-select
-                                    :id="item.key"
-                                    v-model="item.selected"
-                                    :options="item.options"
-                                    size="sm"
-                                ></b-form-select>
-                            </b-input-group>
-                            <b-input-group v-if="item.type === 'tags'" :prepend="item.prepend" :append="item.append">
-                                <b-form-tags
-                                    :id="item.key"
-                                    v-model="item.selected"
-                                    :options="item.options"
-                                    size="md"
-                                ></b-form-tags>
-                            </b-input-group>
-                            <b-input-group v-if="item.type === 'date'">
-                                <b-form-datepicker
-                                    :id="item.key"
-                                    v-model="item.selected"
-                                    class="mb-2"
-                                ></b-form-datepicker>
-                            </b-input-group>
-                            <b-input-group v-if="item.type === 'multi-select'">
-                                <b-form-checkbox-group
-                                    :id="item.key"
-                                    class="pointer"
-                                    v-model="item.selected"
-                                    :options="item.options"
-                                ></b-form-checkbox-group>
-                            </b-input-group>
-                            <b-input-group v-if="item.type === 'single-select'">
-                                <b-form-radio-group
-                                    :id="item.key"
-                                    class="pointer"
-                                    v-model="item.selected"
-                                    :options="item.options"
-                                ></b-form-radio-group>
-                            </b-input-group>
-                            <b-input-group v-if="item.type === 'file-upload'" class="pointer">
-                                <b-form-file
-                                    :id="item.key"
-                                    v-model="item.meta"
-                                    :state="Boolean(item.meta)"
-                                    :placeholder="item.placeholder"
-                                    :drop-placeholder="item.placeholder"
-                                    @input="onFileInput(item)"
-                                ></b-form-file>
-                            </b-input-group>
-                        </b-form-group>
-                    </div>
+                    <FormCell :request="request"></FormCell>
                 </vue-custom-scrollbar>
                 <!-- <div class="scoll-area-edge"></div> -->
             </b-tab>

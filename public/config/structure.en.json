@@ -37,7 +37,9 @@
                     "type": "textarea"
                 }
             },
-            "language": {},
+            "language": {
+                "type": "autocomplete"
+            },
             "doi": {
                 "default": "no DOI set"
             },
@@ -80,6 +82,16 @@
         }
     },
     "requests": {
+        "autocomplete": {
+            "api": null,
+            "form": {
+                "complety": {
+                    "component": "auto-complete",
+                    "label": "auto-complete yeah!",
+                    "show": true
+                }
+            }
+        },
         "r2d2-grid-ous": {
             "label": "r2d2-grid-ous",
             "description": "loads grid-ous",
