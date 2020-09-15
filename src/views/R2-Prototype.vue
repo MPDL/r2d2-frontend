@@ -134,7 +134,6 @@ export default {
             mtKey: 1,
             upKey: 1,
             viewMode: VIEWMODE.DEFAULT,
-            // TODO refactor all remeining 'me' to 'this'
             zones: {
                 login: {
                     id: RQ.login,
@@ -160,7 +159,7 @@ export default {
                         })
                     },
                     sendFormEventKey: `sendform--${RQ.getDatasets}`,
-                    selected: null // initial update in 'created' hook
+                    selected: null // initial update moved to 'created' hook
                 },
                 getDataset: {
                     id: RQ.getDataset,
@@ -174,12 +173,12 @@ export default {
                         this.setSelectedDataset(null, null, data)
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
                     },
-                    getApi: (key, me = this.zones.getDataset) => {
+                    getApi: function(key) {
                         const dsKey = r2.ppGetSelectedDataset().key
                         if (dsKey === 'STAGE') {
                             key = RQ.getStageFiles
                         }
-                        return me.requests[key].api
+                        return this.requests[key].api
                     },
                     sendFormEventKey: `sendform--${RQ.getDataset}`,
                     selected: null,
@@ -192,10 +191,10 @@ export default {
                         showSend: false,
                         showResultList: false
                     },
-                    getResult: (data, me = this.zones.getDataset) => {
+                    getResult: function(data) {
                         // ??
-                        const key = me.initialRequest ? r2.ppGetSelectedFile(key) : null
-                        me.initialRequest = false
+                        const key = this.initialRequest ? r2.ppGetSelectedFile(key) : null
+                        this.initialRequest = false
                         return r2.getFilesOfDataset(data, { as: 'key-list' })
                     },
                     updateFormEventKey: `updateform--${RQ.startChangeMetadata}`,
@@ -224,12 +223,11 @@ export default {
                         return data
                     },
                     resetMetadata: function() {
-                        const form = this.requests[this.id].form
-                        form['metadata'].setup.data = {}
+                        this.form['metadata'].setup.data = {}
                     },
                     sendFormEventKey: `sendform--${RQ.changeMetadata}`,
                     updateFormEventKey: `updateform--${RQ.changeMetadata}`,
-                    clearMetaFormEventKey: `clear--${RQ.changeMetadata}--metadata` // TODO still needed ?
+                    clearMetaFormEventKey: `clear--${RQ.changeMetadata}--metadata`
                 },
                 createDataset: {
                     id: RQ.createDataset,
@@ -248,12 +246,11 @@ export default {
                         return data
                     },
                     resetMetadata: function() {
-                        const form = this.requests[this.id].form
-                        form['metadata'].setup.data = {}
+                        this.form['metadata'].setup.data = {}
                     },
                     sendFormEventKey: `sendform--${RQ.createDataset}`,
                     updateFormEventKey: `updateform--${RQ.createDataset}`,
-                    clearMetaFormEventKey: `clear--${RQ.createDataset}--metadata`, // TODO still needed ?
+                    clearMetaFormEventKey: `clear--${RQ.createDataset}--metadata`,
                     initalData: {}
                 },
                 publishDataset: {
@@ -368,7 +365,7 @@ export default {
                     as: 'option-list'
                 })
                 const cfg = this.zones.addFileToDataset
-                cfg.requests[cfg.id].form['dataset-id'].options = options
+                cfg.form['dataset-id'].options = options
             }
         },
         onClickDatasetListItem(evt) {
@@ -376,12 +373,11 @@ export default {
             if (evt.item.key === null) {
                 // console.log('R2P:META:onClickDatasetListItem evt.item.key = ', evt.item.key)
                 cfg = this.zones.createDataset
-                const form = cfg.requests[cfg.id].form
-                form['dataset-id'].selected = 'new-dataset'
-                form['metadata'].setup = {
+                cfg.form['dataset-id'].selected = 'new-dataset'
+                cfg.form['metadata'].setup = {
                     key: 'metadata',
                     data: cfg.initalData,
-                    schema: form.metadata.schema,
+                    schema: cfg.form.metadata.schema,
                     clearFormEventKey: cfg.clearMetaFormEventKey
                 }
                 globals.eventBus.$emit(cfg.updateFormEventKey)
@@ -395,6 +391,13 @@ export default {
             this.setSelectedFile(evt.item.key)
             const viewMode = evt.item.key ? VIEWMODE.INSPECT_FILE : VIEWMODE.UPLOAD_FILE
             if (viewMode === VIEWMODE.UPLOAD_FILE) {
+                const cfg = this.zones.uploadFile
+                // console.log('R2P:onClickFileListItem cfg = ', cfg)
+                // delete cfg.form.back // TEST // ok
+                globals.eventBus.$emit(cfg.updateFormEventKey)
+
+                // TODO remove the back-button on 'uploadFile' here
+                // Implement a form modify / override function
                 globals.eventBus.$emit('onLoadResults', {
                     key: RQ.uploadFile,
                     filteredResult: { result: null }
@@ -424,7 +427,6 @@ export default {
 
                             break
                         case 'reset':
-                            const form = cfg.requests[cfg.id].form
                             cfg.resetMetadata()
                             return globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
@@ -436,7 +438,6 @@ export default {
                             globals.eventBus.$emit(cfg.clearMetaFormEventKey)
                             break
                         case 'reset':
-                            const form = cfg.requests[cfg.id].form
                             cfg.resetMetadata()
                             return globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
@@ -468,7 +469,7 @@ export default {
             this.navigation = nav
         },
         onZoneUpdateResults(evt) {
-            let cfg, form
+            let cfg
             if (evt.id === RQ.getDataset) {
                 setTimeout(() => {
                     const data = r2.getDataOfDataset(evt.raw)
@@ -477,31 +478,27 @@ export default {
                         const ds = r2.ppGetSelectedDataset()
                         //
                         cfg = this.zones.startChangeMetadata
-                        form = cfg.requests[cfg.id].form
-                        form['dataset-id'].selected = ds.vsKey
-                        form['metadata'].selected = data.metadata
+                        cfg.form['dataset-id'].selected = ds.vsKey
+                        cfg.form['metadata'].selected = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                         //
                         cfg = this.zones.changeMetadata
-                        form = cfg.requests[cfg.id].form
                         // changeMetadata uses the unversioned key!!
-                        form['dataset-id'].selected = ds.key // !!
-                        form['metadata'].setup = {
+                        cfg.form['dataset-id'].selected = ds.key // !!
+                        cfg.form['metadata'].setup = {
                             key: 'metadata',
                             data: data.metadata,
-                            schema: form.metadata.schema,
+                            schema: cfg.form.metadata.schema,
                             clearFormEventKey: cfg.clearMetaFormEventKey
                         }
-
                         cfg.data.modificationDate = data.modificationDate
                         cfg.data.metadata = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                         //
                         // publishDataset uses the unversioned key!!
                         cfg = this.zones.publishDataset
-                        form = cfg.requests[cfg.id].form
-                        form['dataset-id'].selected = ds.key
-                        form['modification-date'].selected = ds.modificationDate
+                        cfg.form['dataset-id'].selected = ds.key
+                        cfg.form['modification-date'].selected = ds.modificationDate
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                     }
                 }, 100)
@@ -511,6 +508,9 @@ export default {
             const requests = await r2.ppGetRequests()
             _.each(this.zones, (cfg, key) => {
                 cfg.requests = requests
+                if (requests[cfg.id]) {
+                    cfg.form = requests[cfg.id].form
+                }
             })
             this.update()
         },
@@ -524,37 +524,37 @@ export default {
             cfg.selected = ds.vsKey
             //
             cfg = this.zones.getDataset
-            cfg.requests[cfg.id].form['ds-select'].selected = ds.vsKey
+            cfg.form['ds-select'].selected = ds.vsKey
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.startChangeMetadata
-            cfg.requests[cfg.id].form['dataset-id'].selected = ds.vsKey
-            cfg.requests[cfg.id].form['metadata'].selected = null
+            cfg.form['dataset-id'].selected = ds.vsKey
+            cfg.form['metadata'].selected = null
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.changeMetadata
             cfg.selected = ds.key
-            cfg.requests[cfg.id].form['dataset-id'].selected = ds.vsKey
+            cfg.form['dataset-id'].selected = ds.vsKey
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.publishDataset
             cfg.selected = ds.key
-            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
-            // console.log('obj:fc ds = ',ds)
-            cfg.requests[cfg.id].form['modification-date'].selected = ds.modificationDate
+            cfg.form['dataset-id'].selected = ds.key
+            // 
+            cfg.form['modification-date'].selected = ds.modificationDate
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.uploadFile
             cfg.selected = ds.key
-            cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
-            cfg.requests[cfg.id].form['file-id'].selected = null
+            cfg.form['dataset-id'].selected = ds.key
+            cfg.form['file-id'].selected = null
             globals.eventBus.$emit(cfg.updateFormEventKey)
 
             //
             // cfg = this.zones.updateFile
             // cfg.selected = key
-            // cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
-            // cfg.requests[cfg.id].form['file-id'].selected = null
+            // cfg.form['dataset-id'].selected = ds.key
+            // cfg.form['file-id'].selected = null
             // globals.eventBus.$emit(cfg.updateFormEventKey)
         },
         setSelectedFile(fileKey = null) {
@@ -570,35 +570,35 @@ export default {
                 const fProps = r2.ppGetNativeFileProperties(fileKey)
                 // inspectFile
                 cfg = this.zones.inspectFile
-                cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
-                cfg.requests[cfg.id].form['file-id'].selected = fileKey
-                cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
+                cfg.form['dataset-id'].selected = ds.key
+                cfg.form['file-id'].selected = fileKey
+                cfg.form['file-name'].selected = fProps.filename
                 globals.eventBus.$emit(cfg.updateFormEventKey)
                 // downloadFile
                 cfg = this.zones.downloadFile
-                cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
-                cfg.requests[cfg.id].form['file-id'].selected = fileKey
-                cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
+                cfg.form['dataset-id'].selected = ds.key
+                cfg.form['file-id'].selected = fileKey
+                cfg.form['file-name'].selected = fProps.filename
                 globals.eventBus.$emit(cfg.updateFormEventKey)
                 // delete File
                 cfg = this.zones.deleteFile
                 cfg.selected = ds.key
-                cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
-                cfg.requests[cfg.id].form['file-id'].selected = fileKey
-                cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
+                cfg.form['dataset-id'].selected = ds.key
+                cfg.form['file-id'].selected = fileKey
+                cfg.form['file-name'].selected = fProps.filename
                 globals.eventBus.$emit(cfg.updateFormEventKey)
                 // addFileToDataset
                 cfg = this.zones.addFileToDataset
                 cfg.selected = ds.key
-                cfg.requests[cfg.id].form['dataset-id'].selected = null
-                cfg.requests[cfg.id].form['file-id'].selected = fileKey
-                cfg.requests[cfg.id].form['file-name'].selected = fProps.filename
+                cfg.form['dataset-id'].selected = null
+                cfg.form['file-id'].selected = fileKey
+                cfg.form['file-name'].selected = fProps.filename
                 globals.eventBus.$emit(cfg.updateFormEventKey)
                 //
             } else {
                 cfg = this.zones.uploadFile
-                cfg.requests[cfg.id].form['dataset-id'].selected = ds.key
-                cfg.requests[cfg.id].form['file-id'].selected = fileKey
+                cfg.form['dataset-id'].selected = ds.key
+                cfg.form['file-id'].selected = fileKey
                 globals.eventBus.$emit(cfg.updateFormEventKey)
             }
         }

@@ -32,11 +32,9 @@ export default {
             const setup = this.config.setup
             this.hasData = true
             globals.eventBus.$on('beforeCollectData', this.prepareCollectData)
-            // TODO check if this event is longer needed, as it seems that 100% resets are done by 
-            // 'beforeDestroy' upfront!
-            globals.eventBus.$on(setup.clearFormEventKey, () => this.clearForm('clear-event'))
+            globals.eventBus.$on(setup.clearFormEventKey, this.onClearForm)
             this.metaFormConfig = {
-                // TODO add persist option here!
+                // TODO add metadata persist option here !
                 form: r2.getMetaFormHandler().getForm(setup.data, setup.schema)
             }
         }
@@ -47,13 +45,18 @@ export default {
     },
     beforeDestroy() {
         this.clearForm('beforeDestroy')
-        globals.eventBus.$off('beforeCollectData')
+        // !! always destroy global events WITH target function,
+        // otherwise the global event ist removed completely for all component instances !
+        globals.eventBus.$off('beforeCollectData', this.prepareCollectData)
         if (this.config.setup) {
-            globals.eventBus.$off(this.config.setup.clearFormEventKey)
+            globals.eventBus.$off(this.config.setup.clearFormEventKey, this.onClearForm)
         }
         this.hasData = false
     },
     methods: {
+        onClearForm (){
+            this.clearForm('clear-event')
+        },
         clearForm(source) {
             this.metaFormConfig.form = null
             if (this.config.setup) {
