@@ -35,7 +35,15 @@ const R2D2DataHandler = function() {
         }
         let vsKey = key ? `${key}/${version}` : null
         vsKey = key === 'STAGE' ? key : vsKey
-        ppStates.selectedDataset = { ...ppStates.selectedDataset, key, vsKey, data, version, metadata, modificationDate }
+        ppStates.selectedDataset = {
+            ...ppStates.selectedDataset,
+            key,
+            vsKey,
+            data,
+            version,
+            metadata,
+            modificationDate
+        }
     }
     this.ppGetSelectedDataset = () => ppStates.selectedDataset
 
@@ -95,12 +103,13 @@ const R2D2DataHandler = function() {
                 break
         }
         // 'key-list' is the base
-        // console.log('R2:getDatasets options = ', options)
-        _.each(data.hits.hits, (value, index) => {
+        //console.log('R2:getDatasets options = ', options)
+
+        _.each(data.hits, (value, index) => {
             const d = {
-                key: value._source.id,
-                version: value._source.versionNumber,
-                title: value._source.metadata.title
+                key: value.source.id,
+                version: value.source.versionNumber,
+                title: value.source.metadata.title
             }
             if (options.addVersionToKey) {
                 d.key = `${d.key}/${d.version}`
@@ -160,28 +169,29 @@ const R2D2DataHandler = function() {
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
     const RQ = {
-        login: 'r2d2-login',
-        logout: 'r2d2-logout',
-        getDatasets: 'r2d2-get-datasets',
+        login: 'r2d2-pp-login',
+        // datasets
+        getDatasets: 'r2d2-pp-get-datasets',
         getDataset: 'r2d2-pp-get-dataset',
         createDataset: 'r2d2-pp-create-dataset',
+        publishDataset: 'r2d2-pp-publish-dataset',
+        // metadata
         startChangeMetadata: 'r2d2-pp-start-change-metadata',
         changeMetadata: 'r2d2-pp-change-metadata',
-        publishDataset: 'r2d2-pp-publish-dataset',
-        uploadFile: 'r2d2-pp-chunk-upload-file',
+        // files
+        getStageFiles: 'r2d2-pp-get-files', // now universal get files method ?
         inspectFile: 'r2d2-pp-inspect-file',
-        updateFile: 'r2d2-pp-update-file',
         downloadFile: 'r2d2-pp-download-file',
         deleteFile: 'r2d2-pp-delete-file',
-        getStageFiles: 'r2d2-pp-get-files',
         addFileToDataset: 'r2d2-pp-add-file-to-dataset',
-        addMultipleFilesToDatasetTest: 'r2d2-pp-add-multiple-files-to-dataset-test'
+        addMultipleFilesToDatasetTest: 'test-add-multiple-files-to-dataset',
+        // upload
+        uploadFile: 'r2d2-pp-chunk-upload-file',
+        updateFile: 'r2d2-pp-update-file'
     }
 
     this.ppGetRequestKeys = () => RQ
-    
 
     const addNavButtons = (rq, keys = []) => {
         keys.push('close')
@@ -245,7 +255,8 @@ const R2D2DataHandler = function() {
         // clone request as its inner data gets mutated !
         id = RQ.getDataset
         rq = requests[id] = _.cloneDeep(raw[id])
-        rq.form['ds-select'].updateEventKey = `update--${id}`
+        console.log('R2D: getDataset rq = ',rq)
+        rq.form['ds-id'].updateEventKey = `update--${id}`
         rq.description = 'lists all files of a dataset'
         //
         // start change metadata
@@ -315,8 +326,6 @@ const R2D2DataHandler = function() {
         id = RQ.addMultipleFilesToDatasetTest
         rq = requests[id] = _.cloneDeep(raw[id])
         addNavButtons(rq, ['back'])
-
-        
 
         return requests
     }

@@ -360,8 +360,8 @@ export default {
     },
     created() {
         const ds = r2.ppGetSelectedDataset()
-        this.zones.getDatasets.selected = ds.vsKey
-        this.zones.startChangeMetadata.selected = ds.vsKey
+        this.zones.getDatasets.selected = ds.key
+        this.zones.startChangeMetadata.selected = ds.key
         globals.eventBus.$on('onLoadResults', this.updateResults)
         // TODO all init here!
         this.loadData()
@@ -494,7 +494,7 @@ export default {
                         const ds = r2.ppGetSelectedDataset()
                         //
                         cfg = this.zones.startChangeMetadata
-                        cfg.form['dataset-id'].selected = ds.vsKey
+                        cfg.form['dataset-id'].selected = ds.key
                         cfg.form['metadata'].selected = data.metadata
                         globals.eventBus.$emit(cfg.updateFormEventKey)
                         //
@@ -537,20 +537,20 @@ export default {
             let cfg
             //
             cfg = this.zones.getDatasets
-            cfg.selected = ds.vsKey
+            cfg.selected = ds.key
             //
             cfg = this.zones.getDataset
-            cfg.form['ds-select'].selected = ds.vsKey
+            cfg.form['ds-id'].selected = ds.key
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.startChangeMetadata
-            cfg.form['dataset-id'].selected = ds.vsKey
+            cfg.form['dataset-id'].selected = ds.key
             cfg.form['metadata'].selected = null
             globals.eventBus.$emit(`update--${cfg.id}`)
             //
             cfg = this.zones.changeMetadata
             cfg.selected = ds.key
-            cfg.form['dataset-id'].selected = ds.vsKey
+            cfg.form['dataset-id'].selected = ds.key
             globals.eventBus.$emit(cfg.updateFormEventKey)
             //
             cfg = this.zones.publishDataset

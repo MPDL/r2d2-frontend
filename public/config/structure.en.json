@@ -81,8 +81,38 @@
             ]
         }
     },
+    "requests-examples": {
+        "parameters-example": {
+            "label": "parameters-example",
+            "description": "this shows how to set query parameters like <query>?val1=...",
+            "api": {
+                "target": "{apiRoot}/parameters-example/",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    },
+                    "data": null,
+                    "params": {
+                        "version": "version-number",
+                        "confuse": "confuse-me"
+                    }
+                }
+            },
+            "form": {
+                "version-number": {
+                    "type": "value-cell",
+                    "selected": 3
+                },
+                "confuse-me": {
+                    "type": "value-cell",
+                    "selected": true
+                }
+            }
+        }
+    },
     "requests": {
-        "autocomplete": {
+        "test-autocomplete": {
             "api": null,
             "form": {
                 "complety": {
@@ -92,7 +122,7 @@
                 }
             }
         },
-        "r2d2-grid-ous": {
+        "test-r2d2-grid-ous": {
             "label": "r2d2-grid-ous",
             "description": "loads grid-ous",
             "api": {
@@ -136,52 +166,53 @@
                 }
             }
         },
-        "r2d2-pp-delete-file": {
-            "label": "r2d2-pp-delete-file",
-            "description": "Deletes a file by file-id",
+        "test-add-multiple-files-to-dataset": {
+            "label": "r2d2-pp-add-multiple-files-to-dataset TEST",
+            "description": "Modified simple version to use a single file for testing",
             "api": {
-                "target": "{apiRoot}/files/{file-id}",
-                "method": "delete",
+                "target": "{apiRoot}/datasets/{dataset-id}",
+                "method": "put",
                 "schema": {
-                    "header-set": {
-                        "Authorization": "auth.token"
-                    },
-                    "data": null
-                }
-            },
-            "form": {
-                "dataset-id": {
-                    "type": "value-cell",
-                    "label": "dataset-id",
-                    "selected": null
-                },
-                "file-id": {
-                    "type": "value-cell",
-                    "label": "file-id",
-                    "selected": null
-                },
-                "file-name": {
-                    "type": "value-cell",
-                    "label": "file-name",
-                    "selected": null
-                }
-            }
-        },
-        "r2d2-pp-get-files": {
-            "label": "r2d2-pp-get-files",
-            "description": "Lists my (pool) files",
-            "api": {
-                "target": "{apiRoot}/files",
-                "method": "get",
-                "schema": {
+                    "data": "send-data",
                     "header-set": {
                         "Authorization": "auth.token"
                     }
                 }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "dropdown",
+                    "label": "dataset select",
+                    "options": [
+                        {
+                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        },
+                        {
+                            "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
+                        }
+                    ],
+                    "placeholder": "select man, RIGHT NOW !!",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "input",
+                    "selected": "1234"
+                },
+                "file-name": {
+                    "type": "input",
+                    "label": "file-name",
+                    "selected": "filename"
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                }
             }
         },
-        "r2d2-login": {
-            "label": "r2d2-login-post",
+        "r2d2-pp-login": {
+            "label": "r2d2-pp-login",
             "description": "Heidi calls for a ride with R2  ;-)",
             "api": {
                 "target": "{apiRoot}/login",
@@ -210,100 +241,66 @@
                 }
             }
         },
-        "r2d2-pp-chunk-upload-file": {
-            "label": "r2d2-pp-chunk-upload-file",
-            "description": "Uploads a file (multiple chunk)",
-            "api": null,
-            "form": {
-                "dataset-id": {
-                    "type": "value-cell",
-                    "label": "dataset-id",
-                    "selected": null
-                },
-                "file-id": {
-                    "type": "value-cell",
-                    "label": "file-id",
-                    "selected": null
-                },
-                "num-of-chunks": {
-                    "type": "dropdown",
-                    "label": "num-of-chunks",
-                    "options": [1, 2, 4, 6, 7, 8, 17, 32, 64, 128],
-                    "selected": "1"
-                },
-                "cunky": {
-                    "component": "r2-chunky",
-                    "label": "Select file",
-                    "options": {
-                        "api-upload-initial": "r2d2-pp-chunky-initial",
-                        "api-upload-chunk": "r2d2-pp-chunky-chunk",
-                        "api-upload-finalize": "r2d2-pp-chunky-finalize"
-                    }
-                },
-                "sp-1": {
-                    "type": "LY",
-                    "label": ""
-                }
-            }
-        },
-        "r2d2-pp-start-change-metadata": {
-            "label": "r2d2-pp-start-change-metadata",
-            "description": "Start change metadata of a dataset from here",
-            "api": null,
-            "form": {
-                "dataset-id": {
-                    "type": "value-cell",
-                    "label": "dataset-id",
-                    "selected": null
-                },
-                "metadata": {
-                    "type": "value-cell",
-                    "label": "metadata as JSON",
-                    "selected": null
-                },
-                "edit-metadata": {
-                    "type": "button",
-                    "label": "Edit Metadata",
-                    "__strc": {
-                        "class": "align-lr"
-                    }
-                },
-                "publish-dataset": {
-                    "type": "button",
-                    "label": "Publish",
-                    "__strc": {
-                        "class": "align-lr"
-                    }
-                }
-            }
-        },
-        "r2d2-pp-publish-dataset": {
-            "label": "r2d2-pp-publish-dataset",
-            "description": "Publishes a dataset",
+        "r2d2-pp-get-datasets": {
+            "label": "r2d2-get-datasets",
+            "description": "Calls multiple datasets",
             "api": {
-                "target": "{apiRoot}/datasets/{dataset-id}/publish?lmd={modification-date}",
-                "method": "put",
+                "target": "{apiRoot}/datasets",
+                "method": "get",
                 "schema": {
-                    "data": null,
                     "header-set": {
                         "Authorization": "auth.token"
                     }
                 }
             },
             "form": {
-                "dataset-id": {
+                "keys": {
+                    "type": "dropdown",
+                    "label": "mocky keys",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "all",
+                            "value": {
+                                "query": {
+                                    "match_all": {}
+                                },
+                                "size": 200,
+                                "sort": [
+                                    {
+                                        "modificationDate": {
+                                            "order": "desc"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "invalid",
+                            "value": ""
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-pp-get-dataset": {
+            "label": "r2d2-pp-get-dataset",
+            "description": "Calls a single dataset",
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "ds-id": {
                     "type": "value-cell",
-                    "label": "dataset-id",
-                    "selected": null
-                },
-                "modification-date": {
-                    "type": "value-cell",
-                    "label": "modification-date",
-                    "selected": null
-                },
-                "sp-1": {
-                    "type": "LY",
-                    "label": ""
+                    "sendKey": "dataset-id",
+                    "selected": "ds-id-444333"
                 }
             }
         },
@@ -342,6 +339,67 @@
                 "sp-1": {
                     "type": "LY",
                     "label": ""
+                }
+            }
+        },
+        "r2d2-pp-publish-dataset": {
+            "label": "r2d2-pp-publish-dataset",
+            "description": "Publishes a dataset",
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}/publish?lmd={modification-date}",
+                "method": "put",
+                "schema": {
+                    "data": null,
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "modification-date": {
+                    "type": "value-cell",
+                    "label": "modification-date",
+                    "selected": null
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                }
+            }
+        },
+        "r2d2-pp-start-change-metadata": {
+            "label": "r2d2-pp-start-change-metadata",
+            "description": "Start change metadata of a dataset from here",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "metadata": {
+                    "type": "value-cell",
+                    "label": "metadata as JSON",
+                    "selected": null
+                },
+                "edit-metadata": {
+                    "type": "button",
+                    "label": "Edit Metadata",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
+                "publish-dataset": {
+                    "type": "button",
+                    "label": "Publish",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
                 }
             }
         },
@@ -384,7 +442,195 @@
                 }
             }
         },
-        "r2d2-pp-chunk-upload-file-Api1": {
+        "r2d2-pp-get-files": {
+            "label": "r2d2-pp-get-files",
+            "description": "Lists my (pool) files",
+            "api": {
+                "target": "{apiRoot}/files",
+                "method": "get",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            }
+        },
+        "r2d2-pp-inspect-file": {
+            "label": "r2d2-pp-inspect-file",
+            "description": "View file properties and select update / download file here",
+            "api": null,
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
+                    "selected": null
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                },
+                "download": {
+                    "type": "button",
+                    "label": "Download File",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
+                "update": {
+                    "type": "button",
+                    "label": "Update File",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
+                "delete": {
+                    "type": "button",
+                    "label": "Delete File",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
+                "addFileToDataset": {
+                    "type": "button",
+                    "label": "Add file to dataset",
+                    "__strc": {
+                        "class": "align-lr"
+                    }
+                },
+                "sp-2": {
+                    "type": "LY",
+                    "label": ""
+                }
+            }
+        },
+        "r2d2-pp-download-file": {
+            "label": "r2d2-pp-download-file",
+            "description": "Get (download) a single, real file",
+            "api": {
+                "targetVnumIncluded": "{apiRoot}/datasets/{dataset-id}/{version-number}/files/{file-id}",
+                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
+                "method": "get",
+                "responseTypeXX": "blob (works also)",
+                "responseType": "arraybuffer",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    },
+                    "data": "file-name"
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "selected": null
+                },
+                "version-number": {
+                    "type": "dropdown",
+                    "options": [1, 2, 3, 4],
+                    "selected": 0,
+                    "addToForm": false
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
+                    "selected": null
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                }
+            }
+        },
+        "r2d2-pp-delete-file": {
+            "label": "r2d2-pp-delete-file",
+            "description": "Deletes a file by file-id",
+            "api": {
+                "target": "{apiRoot}/files/{file-id}",
+                "method": "delete",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    },
+                    "data": null
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "value-cell",
+                    "label": "dataset-id",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "value-cell",
+                    "label": "file-id",
+                    "selected": null
+                },
+                "file-name": {
+                    "type": "value-cell",
+                    "label": "file-name",
+                    "selected": null
+                }
+            }
+        },
+        "r2d2-pp-add-file-to-dataset": {
+            "label": "r2d2-pp-add-file-to-dataset",
+            "api": {
+                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
+                "method": "put",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    },
+                    "data": null
+                }
+            },
+            "form": {
+                "dataset-id": {
+                    "type": "dropdown",
+                    "label": "dataset select",
+                    "options": [
+                        {
+                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
+                        },
+                        {
+                            "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
+                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
+                        }
+                    ],
+                    "placeholder": "select man, RIGHT NOW !!",
+                    "selected": null
+                },
+                "file-id": {
+                    "type": "input",
+                    "selected": "1234"
+                },
+                "file-name": {
+                    "type": "input",
+                    "label": "file-name",
+                    "selected": "filename"
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                }
+            }
+        },
+        "r2d2-pp-chunk-upload-file": {
             "label": "r2d2-pp-chunk-upload-file",
             "description": "Uploads a file (multiple chunk)",
             "api": null,
@@ -403,31 +649,72 @@
                     "type": "dropdown",
                     "label": "num-of-chunks",
                     "options": [1, 2, 4, 6, 7, 8, 17, 32, 64, 128],
-                    "selected": "2"
+                    "selected": "1"
                 },
                 "cunky": {
                     "component": "r2-chunky",
                     "label": "Select file",
                     "options": {
-                        "api-initial": "r2d2-pp-chunky-initial",
-                        "api-follow": "r2d2-pp-chunky-follow"
+                        "api-upload-initial": "r2d2-pp-chunky-initial",
+                        "api-upload-chunk": "r2d2-pp-chunky-chunk",
+                        "api-upload-finalize": "r2d2-pp-chunky-finalize"
+                    }
+                },
+                "sp-1": {
+                    "type": "LY",
+                    "label": ""
+                }
+            }
+        },
+        "r2d2-pp-chunky-initial": {
+            "api": {
+                "target": "{apiRoot}/files/multipart",
+                "targetXX": "http://locahost/files/multipart",
+                "method": "post",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "File-Name": "cunky.filename",
+                        "Content-Type": "cunky.contentType"
+                    },
+                    "data": null
+                }
+            }
+        },
+        "r2d2-pp-chunky-chunk": {
+            "api": {
+                "target": "{apiRoot}/files/multipart/{file-id}",
+                "info": "PUT /files/multipart/{file_id}?part=<number>",
+                "method": "put",
+                "schema": {
+                    "data": "cunky.binary",
+                    "params": {
+                        "part": "cunky.chunknumber"
+                    },
+                    "header-set": {
+                        "Authorization": "auth.token",
+                        "Content-Type": "cunky.contentType"
                     }
                 }
             }
         },
-        "r2d2-logout": {
-            "label": "logged-in",
-            "description": "logged in, click send to log out",
+        "r2d2-pp-chunky-finalize": {
             "api": {
-                "target": "{apiRoot}/logout",
-                "method": "get",
+                "target": "{apiRoot}/files/multipart/{file-id}",
+                "method": "post",
                 "schema": {
+                    "data": null,
+                    "params": {
+                        "parts": "cunky.totalchunks"
+                    },
                     "header-set": {
                         "Authorization": "auth.token"
                     }
                 }
             }
-        },
+        }
+    },
+    "requests-pool": {
         "r2d2-get-file": {
             "label": "r2d2-get-file",
             "description": "Get single, real file",
@@ -539,45 +826,6 @@
                         {
                             "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
                             "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
-                        }
-                    ],
-                    "selected": 0
-                }
-            }
-        },
-        "r2d2-dataset-create": {
-            "label": "r2d2-dataset-create",
-            "description": "Creates a dataset",
-            "api": {
-                "target": "{apiRoot}/datasets/",
-                "method": "post",
-                "schema": {
-                    "header-set": {
-                        "Authorization": "auth.token"
-                    }
-                }
-            },
-            "form": {
-                "create": {
-                    "type": "dropdown",
-                    "label": "mocky create dataset",
-                    "sendKey": "",
-                    "options": [
-                        {
-                            "text": "Uri Zatonga's Amazi'n World Formula",
-                            "value": {
-                                "creator": {
-                                    "name": "Uri Zatonga"
-                                },
-                                "metadata": {
-                                    "title": "Amazin World Formula",
-                                    "authors": [],
-                                    "doi": 666,
-                                    "keywords": "42",
-                                    "license": "dtfyw",
-                                    "language": "ru"
-                                }
-                            }
                         }
                     ],
                     "selected": 0
@@ -698,27 +946,6 @@
                 }
             }
         },
-        "r2d2-pp-get-dataset": {
-            "label": "r2d2-get-dataset",
-            "description": "Calls a single dataset",
-            "api": {
-                "target": "{apiRoot}/datasets/{dataset-id}",
-                "method": "get",
-                "schema": {
-                    "header-set": {
-                        "Authorization": "auth.token"
-                    }
-                }
-            },
-            "form": {
-                "ds-select": {
-                    "type": "value-cell",
-                    "label": "dataset-id",
-                    "sendKey": "dataset-id",
-                    "selected": 0
-                }
-            }
-        },
         "r2d2-get-dataset": {
             "label": "r2d2-get-dataset",
             "description": "Calls a single dataset",
@@ -755,49 +982,6 @@
                         "c42f96b0-80f1-48ff-bf51-9f2ad5bbad6d",
                         "1a8fe164-9eab-48c6-b072-c409854df3ac",
                         "4bd0eecc-37fb-4319-ba6e-e11bc6c386f5"
-                    ],
-                    "selected": 0
-                }
-            }
-        },
-        "r2d2-get-datasets": {
-            "label": "r2d2-get-datasets",
-            "description": "Calls multiple datasets",
-            "api": {
-                "target": "{apiRoot}/datasets/search",
-                "method": "post",
-                "schema": {
-                    "header-set": {
-                        "Authorization": "auth.token"
-                    }
-                }
-            },
-            "form": {
-                "keys": {
-                    "type": "dropdown",
-                    "label": "mocky keys",
-                    "sendKey": "",
-                    "options": [
-                        {
-                            "text": "all",
-                            "value": {
-                                "query": {
-                                    "match_all": {}
-                                },
-                                "size": 200,
-                                "sort": [
-                                    {
-                                        "modificationDate": {
-                                            "order": "desc"
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            "text": "invalid",
-                            "value": ""
-                        }
                     ],
                     "selected": 0
                 }
@@ -877,53 +1061,6 @@
             }
         },
         "r2d2-pp-chunk-upload-file-POS": {},
-        "r2d2-pp-chunky-initial": {
-            "api": {
-                "target": "{apiRoot}/files/multipart",
-                "targetXX": "http://locahost/files/multipart",
-                "method": "post",
-                "schema": {
-                    "header-set": {
-                        "Authorization": "auth.token",
-                        "File-Name": "cunky.filename",
-                        "Content-Type": "cunky.contentType"
-                    },
-                    "data": null
-                }
-            }
-        },
-        "r2d2-pp-chunky-chunk": {
-            "api": {
-                "target": "{apiRoot}/files/multipart/{file-id}",
-                "info": "PUT /files/multipart/{file_id}?part=<number>",
-                "method": "put",
-                "schema": {
-                    "data": "cunky.binary",
-                    "params": {
-                        "part": "cunky.chunknumber"
-                    },
-                    "header-set": {
-                        "Authorization": "auth.token",
-                        "Content-Type": "cunky.contentType"
-                    }
-                }
-            }
-        },
-        "r2d2-pp-chunky-finalize": {
-            "api": {
-                "target": "{apiRoot}/files/multipart/{file-id}",
-                "method": "post",
-                "schema": {
-                    "data": null,
-                    "params": {
-                        "parts": "cunky.totalchunks"
-                    },
-                    "header-set": {
-                        "Authorization": "auth.token"
-                    }
-                }
-            }
-        },
         "r2d2-pp-chunky-initial-v1": {
             "api": {
                 "target": "{apiRoot}/datasets/{dataset-id}/files",
@@ -953,9 +1090,48 @@
                 }
             }
         },
-        "r2d2-pp-inspect-file": {
-            "label": "r2d2-pp-inspect-file",
-            "description": "View file properties and select update / download file here",
+        "r2d2-pp-dataset-create": {
+            "label": "r2d2-dataset-create",
+            "description": "Creates a dataset",
+            "api": {
+                "target": "{apiRoot}/datasets/",
+                "method": "post",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
+                }
+            },
+            "form": {
+                "create": {
+                    "type": "dropdown",
+                    "label": "mocky create dataset",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "Uri Zatonga's Amazi'n World Formula",
+                            "value": {
+                                "creator": {
+                                    "name": "Uri Zatonga"
+                                },
+                                "metadata": {
+                                    "title": "Amazin World Formula",
+                                    "authors": [],
+                                    "doi": 666,
+                                    "keywords": "42",
+                                    "license": "dtfyw",
+                                    "language": "ru"
+                                }
+                            }
+                        }
+                    ],
+                    "selected": 0
+                }
+            }
+        },
+        "r2d2-pp-chunk-upload-file-Api1": {
+            "label": "r2d2-pp-chunk-upload-file",
+            "description": "Uploads a file (multiple chunk)",
             "api": null,
             "form": {
                 "dataset-id": {
@@ -968,184 +1144,78 @@
                     "label": "file-id",
                     "selected": null
                 },
-                "file-name": {
-                    "type": "value-cell",
-                    "label": "file-name",
-                    "selected": null
-                },
-                "sp-1": {
-                    "type": "LY",
-                    "label": ""
-                },
-                "download": {
-                    "type": "button",
-                    "label": "Download File",
-                    "__strc": {
-                        "class": "align-lr"
-                    }
-                },
-                "update": {
-                    "type": "button",
-                    "label": "Update File",
-                    "__strc": {
-                        "class": "align-lr"
-                    }
-                },
-                "delete": {
-                    "type": "button",
-                    "label": "Delete File",
-                    "__strc": {
-                        "class": "align-lr"
-                    }
-                },
-                "addFileToDataset": {
-                    "type": "button",
-                    "label": "Add file to dataset",
-                    "__strc": {
-                        "class": "align-lr"
-                    }
-                },
-                "sp-2": {
-                    "type": "LY",
-                    "label": ""
-                }
-            }
-        },
-        "r2d2-pp-add-file-to-dataset": {
-            "label": "r2d2-pp-add-file-to-dataset",
-            "api": {
-                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
-                "method": "put",
-                "schema": {
-                    "header-set": {
-                        "Authorization": "auth.token"
-                    },
-                    "data": null
-                }
-            },
-            "form": {
-                "dataset-id": {
+                "num-of-chunks": {
                     "type": "dropdown",
-                    "label": "dataset select",
-                    "options": [
-                        {
-                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
-                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
-                        },
-                        {
-                            "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
-                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
-                        }
-                    ],
-                    "placeholder": "select man, RIGHT NOW !!",
-                    "selected": null
+                    "label": "num-of-chunks",
+                    "options": [1, 2, 4, 6, 7, 8, 17, 32, 64, 128],
+                    "selected": "2"
                 },
-                "file-id": {
-                    "type": "input",
-                    "selected": "1234"
-                },
-                "file-name": {
-                    "type": "input",
-                    "label": "file-name",
-                    "selected": "filename"
-                },
-                "sp-1": {
-                    "type": "LY",
-                    "label": ""
-                }
-            }
-        },
-
-        "r2d2-pp-add-multiple-files-to-dataset-test": {
-            "label": "r2d2-pp-add-multiple-files-to-dataset TEST",
-            "description": "Modified simple version to use a single file for testing",
-            "api": {
-                "target": "{apiRoot}/datasets/{dataset-id}",
-                "method": "put",
-                "schema": {
-                    "data": "send-data",
-                    "header-set": {
-                        "Authorization": "auth.token"
+                "cunky": {
+                    "component": "r2-chunky",
+                    "label": "Select file",
+                    "options": {
+                        "api-initial": "r2d2-pp-chunky-initial",
+                        "api-follow": "r2d2-pp-chunky-follow"
                     }
                 }
-            },
-            "form": {
-                "dataset-id": {
-                    "type": "dropdown",
-                    "label": "dataset select",
-                    "options": [
-                        {
-                            "text": "Zatonga's Fileset: *-32ca3f9c43b3",
-                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c43b3"
-                        },
-                        {
-                            "text": "Zatonga's Fileset 2: *-32ca3f9c4366",
-                            "value": "24dc7aba-901b-4d6d-bc4b-32ca3f9c4366"
-                        }
-                    ],
-                    "placeholder": "select man, RIGHT NOW !!",
-                    "selected": null
-                },
-                "file-id": {
-                    "type": "input",
-                    "selected": "1234"
-                },
-                "file-name": {
-                    "type": "input",
-                    "label": "file-name",
-                    "selected": "filename"
-                },
-                "sp-1": {
-                    "type": "LY",
-                    "label": ""
-                }
             }
         },
-
-        "r2d2-pp-download-file": {
-            "label": "r2d2-pp-download-file",
-            "description": "Get (download) a single, real file",
+        "r2d2-logout": {
+            "label": "logged-in",
+            "description": "logged in, click send to log out",
             "api": {
-                "targetVnumIncluded": "{apiRoot}/datasets/{dataset-id}/{version-number}/files/{file-id}",
-                "target": "{apiRoot}/datasets/{dataset-id}/files/{file-id}",
+                "target": "{apiRoot}/logout",
                 "method": "get",
-                "responseTypeXX": "blob (works also)",
-                "responseType": "arraybuffer",
                 "schema": {
                     "header-set": {
                         "Authorization": "auth.token"
-                    },
-                    "data": "file-name"
+                    }
+                }
+            }
+        },
+        "r2d2-get-datasets-API2": {
+            "label": "r2d2-get-datasets",
+            "description": "Calls multiple datasets by elastic search query",
+            "api": {
+                "target": "{apiRoot}/datasets/search",
+                "method": "post",
+                "schema": {
+                    "header-set": {
+                        "Authorization": "auth.token"
+                    }
                 }
             },
             "form": {
-                "dataset-id": {
-                    "type": "value-cell",
-                    "selected": null
-                },
-                "file-id": {
-                    "type": "value-cell",
-                    "selected": null
-                },
-                "version-number": {
+                "keys": {
                     "type": "dropdown",
-                    "options": [1, 2, 3, 4],
-                    "selected": 0,
-                    "addToForm": false
-                },
-                "file-name": {
-                    "type": "value-cell",
-                    "label": "file-name",
-                    "selected": null
-                },
-                "sp-1": {
-                    "type": "LY",
-                    "label": ""
+                    "label": "mocky keys",
+                    "sendKey": "",
+                    "options": [
+                        {
+                            "text": "all",
+                            "value": {
+                                "query": {
+                                    "match_all": {}
+                                },
+                                "size": 200,
+                                "sort": [
+                                    {
+                                        "modificationDate": {
+                                            "order": "desc"
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "invalid",
+                            "value": ""
+                        }
+                    ],
+                    "selected": 0
                 }
             }
-        }
-    },
-    "requestsXX": {
+        },
         "initial": {
             "description": "Sends the initial request and gives some useless stuff ;-)",
             "form": {

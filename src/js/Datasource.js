@@ -120,13 +120,14 @@ function Datasource() {
         api = _.isPlainObject(api) ? { ...getApi(api) } : { ...config.defaultApi }
         const schema = _.isPlainObject(api.schema) ? api.schema : {}
         // TODO extract 'getValueByKey' to global class or someting ...
-        const getValueByKey = (key, data, cut = false) => {
+        const getValueByKey = (key, dta, cut = false) => {
             switch (true) {
-                case _.isString(data):
-                    return data
-                case _.isPlainObject(data):
-                    const res = _.get(data, key)
-                    cut ? _.unset(data, key) : null
+                // source key must be a string to refer to a value inside the data object
+                case _.isString(dta):
+                    return dta
+                case _.isPlainObject(dta):
+                    const res = _.get(dta, key)
+                    cut ? _.unset(dta, key) : null
                     return res
             }
             return undefined
@@ -152,7 +153,6 @@ function Datasource() {
         if (api.responseType) {
             options.responseType = api.responseType
         }
-
         // +++++++++++++++++
         // TODO extract api-target-parser to global class or someting ...
         let inside = false
